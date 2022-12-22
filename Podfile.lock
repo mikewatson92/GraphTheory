@@ -1,0 +1,16 @@
+PODS:
+  - iosMath (0.9.4)
+
+DEPENDENCIES:
+  - iosMath
+
+SPEC REPOS:
+  trunk:
+    - iosMath
+
+SPEC CHECKSUMS:
+  iosMath: f7a6cbadf9d836d2149c2a84c435b1effc244cba
+
+PODFILE CHECKSUM: f1711a70b5b56e04c1a07555dc7ab551795c7230
+
+COCOAPODS: 1.11.3

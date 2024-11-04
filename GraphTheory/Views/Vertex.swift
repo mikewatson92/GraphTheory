@@ -160,7 +160,7 @@ struct VertexView: View {
                     .gesture(moveGesture)
                     .gesture(deleteGesture)
                     .gesture(changeLabel)
-            } else {
+            } else if model.vertices.contains(vertex){
                 switch vertex.status {
                 case .none:
                     Circle()
@@ -224,7 +224,8 @@ struct Vertex_Previews: PreviewProvider {
             let x = CGFloat(100)
             let y = CGFloat(100)
             let position = CGPoint(x: x, y: y)
-            VertexView(vertex: Vertex(position: position), model: ModelData())
+            let vertex = Vertex(position: position)
+            VertexView(vertex: vertex, model: ModelData(vertices: [vertex]))
         }
     }
 }

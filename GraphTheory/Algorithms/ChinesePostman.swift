@@ -24,7 +24,7 @@ class ChinesePostmanModel: ObservableObject {
     }
     var oddVertexPairings: [[Vertex]] {
         if !oddVertices.isEmpty{
-            return Permutation.permuteVertices(oddVertices)
+            return Permutation<Vertex>.permute(oddVertices)
         } else {
             return [[]]
         }

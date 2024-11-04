@@ -410,6 +410,83 @@ struct EdgeView: View {
         }
     }
     
+    var drawKruskalEdge: some View {
+        ZStack{
+            if (edge.isSelected && edge.status != .error) {
+                edge.draw()
+                    .stroke(.green, lineWidth: edgeThickness)
+                    .shadow(color: .green, radius: 8)
+            } else if (edge.isSelected && edge.status == .error) {
+                edge.draw()
+                    .stroke(.red, lineWidth: edgeThickness)
+                    .shadow(color: .red, radius: 8)
+            } else if (edge.status == .correct) {
+                edge.draw()
+                    .stroke(.green, lineWidth: edgeThickness)
+            } else {
+                edge.draw()
+                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
+            }
+        }
+    }
+    
+    var drawPrimEdge: some View {
+        ZStack{
+            if (edge.isSelected && edge.status != .error) {
+                edge.draw()
+                .stroke(.green, lineWidth: edgeThickness)
+                .shadow(color: .green, radius: 8)
+            } else if (edge.isSelected && edge.status == .error) {
+                edge.draw()
+                    .stroke(.red, lineWidth: edgeThickness)
+                    .shadow(color: .red, radius: 8)
+            } else{
+                edge.draw()
+                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
+            }
+        }
+    }
+    
+    var drawChinesePostmanEdge: some View {
+        ZStack{
+            edge.draw()
+                .stroke(ChinesePostmanModel.colors[edge.timesSelectedCPP % 4], lineWidth: edgeThickness)
+        }
+    }
+    
+    var drawTSPEdge: some View {
+        ZStack {
+            switch edge.status {
+            case .none:
+                edge.draw()
+                    .stroke(.white, lineWidth: edgeThickness)
+            case .error:
+                edge.draw()
+                    .stroke(.red, lineWidth: edgeThickness)
+            case .correct:
+                edge.draw()
+                    .stroke(.green, lineWidth: edgeThickness)
+            case .deleted:
+                edge.draw()
+                    .stroke(.gray, style: StrokeStyle(lineWidth: edgeThickness / 2, dash: [10]))
+                    .opacity(0.33)
+            }
+        }
+    }
+    
+    var drawEulerEdge: some View {
+        ZStack {
+            if edge.isSelected {
+                edge.draw()
+                    .stroke(.green, lineWidth: edgeThickness)
+                    .shadow(color: .green, radius: 8)
+            } else {
+                edge.draw()
+                    .stroke(.white, lineWidth: edgeThickness)
+            }
+        }
+    }
+    
     var drawWeightTextField: some View {
         ZStack {
             Form {
@@ -480,74 +557,75 @@ struct EdgeView: View {
     }
     
     var body: some View {
-        
-        ZStack {
-            switch model.algorithm {
-            case .kruskal:
-                drawKruskalEdge
-            case .prim:
-                drawPrimEdge
-            case .chinesePostman:
-                drawChinesePostmanEdge
-            case .tsp:
-                drawTSPEdge
-            case .euler:
-                drawEulerEdge
-            default:
-                drawEdge
-            }
-            
-            if weightSelected && !model.weightChangeLocked {
-                drawWeightTextField
-            } else {
-                drawWeights
-            }
-            
-            if edge.directed == .forward {
-                edge.arrowPath()
-                    .transform(edge.arrowTransform())
-                    .stroke(.white, lineWidth: 4)
-                    .background(edge.arrowPath()
+        if model.edges.contains(edge) {
+            ZStack {
+                switch model.algorithm {
+                case .kruskal:
+                    drawKruskalEdge
+                case .prim:
+                    drawPrimEdge
+                case .chinesePostman:
+                    drawChinesePostmanEdge
+                case .tsp:
+                    drawTSPEdge
+                case .euler:
+                    drawEulerEdge
+                default:
+                    drawEdge
+                }
+                                
+                if weightSelected && !model.weightChangeLocked {
+                    drawWeightTextField
+                } else {
+                    drawWeights
+                }
+                
+                if edge.directed == .forward {
+                    edge.arrowPath()
                         .transform(edge.arrowTransform())
-                        .fill(.cyan)
-                    )
-            } else if edge.directed == .reversed {
-                edge.arrowPath()
-                    .transform(edge.arrowTransformReversed())
-                    .stroke(.white, lineWidth: 4)
-                    .background(edge.arrowPath()
+                        .stroke(.white, lineWidth: 4)
+                        .background(edge.arrowPath()
+                            .transform(edge.arrowTransform())
+                            .fill(.cyan)
+                        )
+                } else if edge.directed == .reversed {
+                    edge.arrowPath()
                         .transform(edge.arrowTransformReversed())
-                        .fill(.cyan))
-            } else if edge.directed == .bidirectional {
-                edge.arrowPath()
-                    .transform(edge.arrowTransform())
-                    .stroke(.white, lineWidth: 4)
-                    .background(edge.arrowPath()
+                        .stroke(.white, lineWidth: 4)
+                        .background(edge.arrowPath()
+                            .transform(edge.arrowTransformReversed())
+                            .fill(.cyan))
+                } else if edge.directed == .bidirectional {
+                    edge.arrowPath()
                         .transform(edge.arrowTransform())
-                        .fill(.cyan))
-                edge.arrowPath()
-                    .transform(edge.arrowTransform2())
-                    .stroke(.white, lineWidth: 4)
-                    .background(edge.arrowPath()
+                        .stroke(.white, lineWidth: 4)
+                        .background(edge.arrowPath()
+                            .transform(edge.arrowTransform())
+                            .fill(.cyan))
+                    edge.arrowPath()
                         .transform(edge.arrowTransform2())
-                        .fill(.cyan))
+                        .stroke(.white, lineWidth: 4)
+                        .background(edge.arrowPath()
+                            .transform(edge.arrowTransform2())
+                            .fill(.cyan))
+                }
             }
         }
     }
 }
 
 struct Edge_Previews: PreviewProvider {
+    
+    static let firstVertex = Vertex(position: CGPoint(x: CGFloat(100), y: CGFloat(100)))
+    static let secondVertex = Vertex(position: CGPoint(x: CGFloat(250), y: CGFloat(250)))
+    static var edge = Edge(firstVertex, secondVertex)
+    static let model = ModelData(edges: [edge], vertices: [firstVertex, secondVertex])
        
     static var previews: some View {
-        let firstVertex = Vertex(position: CGPoint(x: CGFloat(100), y: CGFloat(100)))
-        let secondVertex = Vertex(position: CGPoint(x: CGFloat(250), y: CGFloat(250)))
-        let edge = Edge(firstVertex, secondVertex)
-
         ZStack{
-            EdgeView(edge: edge, showWeights: .constant(false), model: ModelData())
-            VertexView(vertex: firstVertex, model: ModelData())
-            VertexView(vertex: secondVertex, model: ModelData())
+            EdgeView(edge: edge, showWeights: .constant(false), model: model)
+            VertexView(vertex: firstVertex, model: model)
+            VertexView(vertex: secondVertex, model: model)
         }
-        
     }
 }

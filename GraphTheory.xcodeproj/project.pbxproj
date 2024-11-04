@@ -20,7 +20,6 @@
 		27F67C38295477F10070DB24 /* NumbersOnly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C37295477F10070DB24 /* NumbersOnly.swift */; };
 		27F67C3A295478100070DB24 /* TrailingIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C39295478100070DB24 /* TrailingIcon.swift */; };
 		27F67C3D295478450070DB24 /* ChinesePostman.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C3C295478450070DB24 /* ChinesePostman.swift */; };
-		27F67C3F295478760070DB24 /* EdgeViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C3E295478760070DB24 /* EdgeViewExtension.swift */; };
 		27F67C41295478990070DB24 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C40295478990070DB24 /* Graph.swift */; };
 		27F67C43295478AD0070DB24 /* GraphAlgorithm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */; };
 		27F67C45295478C40070DB24 /* Kruskal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C44295478C40070DB24 /* Kruskal.swift */; };
@@ -89,7 +88,6 @@
 		27F67C37295477F10070DB24 /* NumbersOnly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumbersOnly.swift; sourceTree = "<group>"; };
 		27F67C39295478100070DB24 /* TrailingIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailingIcon.swift; sourceTree = "<group>"; };
 		27F67C3C295478450070DB24 /* ChinesePostman.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePostman.swift; sourceTree = "<group>"; };
-		27F67C3E295478760070DB24 /* EdgeViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeViewExtension.swift; sourceTree = "<group>"; };
 		27F67C40295478990070DB24 /* Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphAlgorithm.swift; sourceTree = "<group>"; };
 		27F67C44295478C40070DB24 /* Kruskal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kruskal.swift; sourceTree = "<group>"; };
@@ -227,7 +225,6 @@
 			isa = PBXGroup;
 			children = (
 				27F67C3C295478450070DB24 /* ChinesePostman.swift */,
-				27F67C3E295478760070DB24 /* EdgeViewExtension.swift */,
 				27F67C40295478990070DB24 /* Graph.swift */,
 				27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */,
 				27F67C44295478C40070DB24 /* Kruskal.swift */,
@@ -584,7 +581,6 @@
 				27F67C77295480E10070DB24 /* Definition.swift in Sources */,
 				27F67C41295478990070DB24 /* Graph.swift in Sources */,
 				27F67C38295477F10070DB24 /* NumbersOnly.swift in Sources */,
-				27F67C3F295478760070DB24 /* EdgeViewExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

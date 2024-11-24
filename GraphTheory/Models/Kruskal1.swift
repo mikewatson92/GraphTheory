@@ -8,7 +8,7 @@
 import SwiftUI
 
 class Kruskal1Model: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph: Graph = Graph()
     var width: CGFloat
     var height: CGFloat
     var vertexA: Vertex
@@ -72,23 +72,23 @@ class Kruskal1Model: ObservableObject {
         edgeDE.weight = 45
         edgeDF.weight = 45
         edgeFG.weight = 20
-        self.model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF, vertexG])
-        self.model.edges.append(contentsOf: [edgeAB, edgeAF, edgeAG, edgeBC, edgeBD, edgeBF, edgeDE, edgeDF, edgeFG])
+        self.graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF, vertexG])
+        self.graph.edges.append(contentsOf: [edgeAB, edgeAF, edgeAG, edgeBC, edgeBD, edgeBF, edgeDE, edgeDF, edgeFG])
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        self.model.isMoving = true
-        self.model.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
-        self.model.vertices[1].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[2].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[3].position = CGPoint(x: (2.75 / 5) * width, y: (2 / 5) * height)
-        self.model.vertices[4].position = CGPoint(x: (4 / 5) * width, y: (2 / 5) * height)
-        self.model.vertices[5].position = CGPoint(x: (2 / 5) * width, y: (3 / 5) * height)
-        self.model.vertices[6].position = CGPoint(x: (1.25 / 5) * width, y: (4 / 5) * height)
-        for edge in model.edges {
+        self.graph.isMoving = true
+        self.graph.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
+        self.graph.vertices[1].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[2].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[3].position = CGPoint(x: (2.75 / 5) * width, y: (2 / 5) * height)
+        self.graph.vertices[4].position = CGPoint(x: (4 / 5) * width, y: (2 / 5) * height)
+        self.graph.vertices[5].position = CGPoint(x: (2 / 5) * width, y: (3 / 5) * height)
+        self.graph.vertices[6].position = CGPoint(x: (1.25 / 5) * width, y: (4 / 5) * height)
+        for edge in graph.edges {
             edge.textPosition = edge.textStartPosition
         }
-        self.model.isMoving = false
+        self.graph.isMoving = false
         
     }
 }
@@ -101,7 +101,7 @@ struct Kruskal1: View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height
-            KruskalView(model: kruskal1Model.model)
+            KruskalView(graph: kruskal1Model.graph)
                 .onAppear {
                     kruskal1Model.resize(width: width, height: height)
                 }

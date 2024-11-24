@@ -8,7 +8,7 @@
 import SwiftUI
 
 class PracticeA3Model: ObservableObject {
-    @Published var model = ModelData()
+    @Published var graph = Graph()
     var vertexA: Vertex
     var vertexB: Vertex
     var vertexC: Vertex
@@ -41,17 +41,17 @@ class PracticeA3Model: ObservableObject {
         edgeCE = Edge(vertexC, vertexE)
         edgeDF = Edge(vertexD, vertexF)
         edgeEF = Edge(vertexE, vertexF)
-        model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF])
-        model.edges.append(contentsOf: [edgeAB, edgeAC, edgeAF, edgeBD, edgeBE, edgeBF, edgeCE, edgeDF, edgeEF])
+        graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF])
+        graph.edges.append(contentsOf: [edgeAB, edgeAC, edgeAF, edgeBD, edgeBE, edgeBF, edgeCE, edgeDF, edgeEF])
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        model.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
-        model.vertices[1].position = CGPoint(x: (2.75 / 5) * width, y: (0.75 / 5) * height)
-        model.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
-        model.vertices[3].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
-        model.vertices[4].position = CGPoint(x: (3 / 5) * width, y: (4 / 5) * height)
-        model.vertices[5].position = CGPoint(x: (1.25 / 5) * width, y: (3 / 5) * height)
+        graph.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
+        graph.vertices[1].position = CGPoint(x: (2.75 / 5) * width, y: (0.75 / 5) * height)
+        graph.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
+        graph.vertices[3].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
+        graph.vertices[4].position = CGPoint(x: (3 / 5) * width, y: (4 / 5) * height)
+        graph.vertices[5].position = CGPoint(x: (1.25 / 5) * width, y: (3 / 5) * height)
     }
 }
 
@@ -63,11 +63,11 @@ struct PracticeA3: View {
             let width = geometry.size.width
             let height = geometry.size.height
             ZStack {
-                ForEach(practiceA3Model.model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(false), model: practiceA3Model.model)
+                ForEach(practiceA3Model.graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(false), graph: practiceA3Model.graph)
                 }
-                ForEach(practiceA3Model.model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: practiceA3Model.model)
+                ForEach(practiceA3Model.graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: practiceA3Model.graph)
                 }
             }
             .onAppear {

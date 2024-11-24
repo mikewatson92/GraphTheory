@@ -8,7 +8,7 @@
 import SwiftUI
 
 class KonigsbergModel: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph = Graph()
     @Published var currentVertex: Vertex?
     var start: Bool = true
     var width: CGFloat
@@ -55,58 +55,58 @@ class KonigsbergModel: ObservableObject {
         vertexBID = vertexB.id
         vertexCID = vertexC.id
         vertexDID = vertexD.id
-        model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD])
-        model.edges.append(contentsOf: [edgeAB1, edgeAB2, edgeAC1, edgeAC2, edgeAD, edgeBD, edgeCD])
-        model.changesLocked = true
-        model.algorithm = .euler
+        graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD])
+        graph.edges.append(contentsOf: [edgeAB1, edgeAB2, edgeAC1, edgeAC2, edgeAD, edgeBD, edgeCD])
+        graph.changesLocked = true
+        graph.algorithm = Graph.Algorithm.euler
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        self.model.isMoving = true
+        self.graph.isMoving = true
         self.width = width
         self.height = height
         // Optional checking for vertex indices in case an edge or vertex has been deleted.
-        let a: Int? = model.vertices.firstIndex(where: { $0.id == vertexAID })
-        let b: Int? = model.vertices.firstIndex(where: { $0.id == vertexBID })
-        let c: Int? = model.vertices.firstIndex(where: { $0.id == vertexCID })
-        let d: Int? = model.vertices.firstIndex(where: { $0.id == vertexDID })
-        let w: Int? = model.edges.firstIndex(where: { $0.id == edgeAB1.id })
-        let x: Int? = model.edges.firstIndex(where: { $0.id == edgeAB2.id })
-        let y: Int? = model.edges.firstIndex(where: { $0.id == edgeAC1.id })
-        let z: Int? = model.edges.firstIndex(where: { $0.id == edgeAC2.id })
+        let a: Int? = graph.vertices.firstIndex(where: { $0.id == vertexAID })
+        let b: Int? = graph.vertices.firstIndex(where: { $0.id == vertexBID })
+        let c: Int? = graph.vertices.firstIndex(where: { $0.id == vertexCID })
+        let d: Int? = graph.vertices.firstIndex(where: { $0.id == vertexDID })
+        let w: Int? = graph.edges.firstIndex(where: { $0.id == edgeAB1.id })
+        let x: Int? = graph.edges.firstIndex(where: { $0.id == edgeAB2.id })
+        let y: Int? = graph.edges.firstIndex(where: { $0.id == edgeAC1.id })
+        let z: Int? = graph.edges.firstIndex(where: { $0.id == edgeAC2.id })
         if a != nil {
-            model.vertices[a!].position = CGPoint(x: (1 / 5) * width, y: (1 / 2) * height)
+            graph.vertices[a!].position = CGPoint(x: (1 / 5) * width, y: (1 / 2) * height)
         }
         if b != nil {
-            model.vertices[b!].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
+            graph.vertices[b!].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
         }
         if c != nil {
-            model.vertices[c!].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
+            graph.vertices[c!].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
         }
         if d != nil {
-            model.vertices[d!].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
+            graph.vertices[d!].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
         }
         if w != nil {
-            model.edges[w!].controlPoint = CGPoint(x: (1 / 5) * width, y: (3 / 10) * height)
+            graph.edges[w!].controlPoint = CGPoint(x: (1 / 5) * width, y: (3 / 10) * height)
         }
         if x != nil {
-            model.edges[x!].controlPoint = CGPoint(x: (2 / 5) * width, y: (4 / 10) * height)
+            graph.edges[x!].controlPoint = CGPoint(x: (2 / 5) * width, y: (4 / 10) * height)
         }
         if y != nil {
-            model.edges[y!].controlPoint = CGPoint(x: (1 / 5) * width, y: (7 / 10) * height)
+            graph.edges[y!].controlPoint = CGPoint(x: (1 / 5) * width, y: (7 / 10) * height)
         }
         if z != nil {
-            model.edges[z!].controlPoint = CGPoint(x: (2 / 5) * width, y: (6 / 10) * height)
+            graph.edges[z!].controlPoint = CGPoint(x: (2 / 5) * width, y: (6 / 10) * height)
         }
-        model.isMoving = false
+        graph.isMoving = false
     }
     
     func reset(width: CGFloat, height: CGFloat) {
         start = true
         currentVertex = nil
-        model.highlightedVertex = nil
-        model.edges.removeAll()
-        model.vertices.removeAll()
+        graph.highlightedVertex = nil
+        graph.edges.removeAll()
+        graph.vertices.removeAll()
         vertexA = Vertex(position: CGPoint(x: (1 / 5) * width, y: (1 / 2) * height))
         vertexB = Vertex(position: CGPoint(x: (2 / 5) * width, y: (1 / 5) * height))
         vertexC = Vertex(position: CGPoint(x: (2 / 5) * width, y: (4 / 5) * height))
@@ -130,10 +130,10 @@ class KonigsbergModel: ObservableObject {
         vertexBID = vertexB.id
         vertexCID = vertexC.id
         vertexDID = vertexD.id
-        model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD])
-        model.edges.append(contentsOf: [edgeAB1, edgeAB2, edgeAC1, edgeAC2, edgeAD, edgeBD, edgeCD])
-        model.changesLocked = true
-        model.algorithm = .euler
+        graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD])
+        graph.edges.append(contentsOf: [edgeAB1, edgeAB2, edgeAC1, edgeAC2, edgeAD, edgeBD, edgeCD])
+        graph.changesLocked = true
+        graph.algorithm = .euler
     }
 
 }
@@ -155,8 +155,8 @@ struct Konigsberg: View {
                     .padding()
                 }
                 
-                ForEach(konigsbergModel.model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(false), model: konigsbergModel.model)
+                ForEach(konigsbergModel.graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(false), graph: konigsbergModel.graph)
                         .onTapGesture(count: 1) {
                             if !konigsbergModel.start {
                                 if konigsbergModel.currentVertex!.edgeIsConnected(edge: edge) {
@@ -165,16 +165,16 @@ struct Konigsberg: View {
                                     }
                                     edge.isSelected.toggle()
                                     konigsbergModel.currentVertex = edge.endVertex
-                                    konigsbergModel.model.highlightedVertex = edge.endVertex
+                                    konigsbergModel.graph.highlightedVertex = edge.endVertex
                                 }
                             }
                         }
                 }
-                ForEach(konigsbergModel.model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: konigsbergModel.model)
+                ForEach(konigsbergModel.graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: konigsbergModel.graph)
                         .onTapGesture(count: 1) {
                             if konigsbergModel.start {
-                                konigsbergModel.model.highlightedVertex = vertex
+                                konigsbergModel.graph.highlightedVertex = vertex
                                 konigsbergModel.currentVertex = vertex
                                 konigsbergModel.start = false
                             }

@@ -52,23 +52,23 @@ class Vertex: Identifiable, ObservableObject, Equatable {
 
 struct VertexView: View {
     @StateObject var vertex: Vertex
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     @State var labelSelected = false
     let borderWidth: CGFloat = 4
 
     
-    init(vertex: Vertex, model: ModelData) {
-        self.model = model
+    init(vertex: Vertex, graph: Graph) {
+        self.graph = graph
         _vertex = .init(wrappedValue: vertex)
     }
     
     public var moveGesture: some Gesture {
         DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
             .onChanged({ drag in
-                if !model.changesLocked {
+                if !graph.changesLocked {
                     vertex.offset = drag.translation
-                    model.isMoving = true
-                    for edge in model.edges {
+                    graph.isMoving = true
+                    for edge in graph.edges {
                         if vertex.edgeIsConnected(edge: edge) {
                             let halfSizeWidth = drag.translation.width / 2.0
                             let halfSizeHeight = drag.translation.height / 2.0
@@ -79,12 +79,12 @@ struct VertexView: View {
                 }
             })
             .onEnded({ _ in
-                if !model.changesLocked {
+                if !graph.changesLocked {
                     let tempOffset = vertex.offset
                     vertex.position.x += tempOffset.width
                     vertex.position.y += tempOffset.height
                     vertex.offset = .zero
-                    for edge in model.edges {
+                    for edge in graph.edges {
                         let tempTextOffset = edge.textOffset
                         if vertex.edgeIsConnected(edge: edge) {
                             edge.textPosition.x += tempTextOffset.width
@@ -92,7 +92,7 @@ struct VertexView: View {
                             edge.textOffset = .zero
                         }
                     }
-                    model.isMoving = false
+                    graph.isMoving = false
                 }
             })
     }
@@ -102,18 +102,18 @@ struct VertexView: View {
     public var deleteGesture: some Gesture {
         TapGesture(count: 2)
             .onEnded {
-                if !model.changesLocked {
-                    for edge in model.edges {
+                if !graph.changesLocked {
+                    for edge in graph.edges {
                         if edge.startVertex.id == vertex.id || edge.endVertex.id == vertex.id {
-                            model.edges.remove(at: model.edges.firstIndex(where: {$0.id == edge.id})!)
+                            graph.edges.remove(at: graph.edges.firstIndex(where: {$0.id == edge.id})!)
                         }
                     }
-                    if model.highlightedVertex == vertex {
-                        model.highlightedVertex = nil
+                    if graph.highlightedVertex == vertex {
+                        graph.highlightedVertex = nil
                     }
                     vertex.status = .deleted
-                    model.labels.append(vertex.label)
-                    model.vertices.removeAll(where: { $0.id == vertex.id })
+                    graph.labels.append(vertex.label)
+                    graph.vertices.removeAll(where: { $0.id == vertex.id })
                 }
             }
     }
@@ -121,7 +121,7 @@ struct VertexView: View {
     public var changeLabel: some Gesture {
         LongPressGesture(minimumDuration: 1, maximumDistance: 0)
             .onEnded { _ in
-                if !model.changesLocked {
+                if !graph.changesLocked {
                     labelSelected = true
                 }
             }
@@ -138,8 +138,8 @@ struct VertexView: View {
     
     var body: some View {
         
-        ZStack {
-            if vertex.id == model.highlightedVertex?.id {
+        Group {
+            if vertex.id == graph.highlightedVertex?.id {
                 Circle()
                     .strokeBorder(.green, lineWidth: borderWidth)
                     .background(Circle().foregroundStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .bottom, endPoint: .top)))
@@ -160,7 +160,7 @@ struct VertexView: View {
                     .gesture(moveGesture)
                     .gesture(deleteGesture)
                     .gesture(changeLabel)
-            } else if model.vertices.contains(vertex){
+            } else if graph.vertices.contains(vertex){
                 switch vertex.status {
                 case .none:
                     Circle()
@@ -225,7 +225,7 @@ struct Vertex_Previews: PreviewProvider {
             let y = CGFloat(100)
             let position = CGPoint(x: x, y: y)
             let vertex = Vertex(position: position)
-            VertexView(vertex: vertex, model: ModelData(vertices: [vertex]))
+            VertexView(vertex: vertex, graph: Graph(vertices: [vertex]))
         }
     }
 }

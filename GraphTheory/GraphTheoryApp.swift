@@ -55,11 +55,11 @@ extension Array {
 
 @main
 struct GraphTheoryApp: App {
-    @StateObject var model: ModelData = ModelData()
+    @StateObject var graph: Graph = Graph()
     
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView(graph: graph)
         }
     }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 class PracticeA1Model: ObservableObject {
-    @Published var model: ModelData
+    @Published var graph: Graph
     var vertexA: Vertex
     var vertexB: Vertex
     var vertexC: Vertex
@@ -24,8 +24,8 @@ class PracticeA1Model: ObservableObject {
     var edgeEF: Edge
     var edgeFF: Edge
     
-    init(model: ModelData, width: CGFloat, height: CGFloat) {
-        self.model = model
+    init(graph: Graph, width: CGFloat, height: CGFloat) {
+        self.graph = graph
         self.vertexA = Vertex(position: CGPoint(x: (1 / 5) * width, y: (2 / 5) * height), label: "A")
         self.vertexB = Vertex(position: CGPoint(x: (3 / 5) * width, y: (1 / 5) * height), label: "B")
         self.vertexC = Vertex(position: CGPoint(x: (4 / 5) * width, y: (1 / 2) * height), label: "C")
@@ -40,36 +40,36 @@ class PracticeA1Model: ObservableObject {
         self.edgeDF = Edge(vertexD, vertexF)
         self.edgeEF = Edge(vertexE, vertexF)
         self.edgeFF = Edge(vertexF, vertexF)
-        self.model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF])
-        self.model.edges.append(contentsOf: [edgeAB, edgeAE, edgeBD, edgeCE, edgeDE, edgeDF, edgeEF, edgeFF])
-        self.model.changesLocked = true
+        self.graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE, vertexF])
+        self.graph.edges.append(contentsOf: [edgeAB, edgeAE, edgeBD, edgeCE, edgeDE, edgeDF, edgeEF, edgeFF])
+        self.graph.changesLocked = true
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        model.isMoving = true
-        model.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
-        model.vertices[1].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
-        model.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
-        model.vertices[3].position = CGPoint(x: (3 / 5) * width, y: (4 / 5) * height)
-        model.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (3.5 / 5) * height)
-        model.vertices[5].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
-        model.isMoving = false
+        graph.isMoving = true
+        graph.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
+        graph.vertices[1].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
+        graph.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
+        graph.vertices[3].position = CGPoint(x: (3 / 5) * width, y: (4 / 5) * height)
+        graph.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (3.5 / 5) * height)
+        graph.vertices[5].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
+        graph.isMoving = false
     }
 }
 
 struct PracticeA1: View {
-    @StateObject var practiceA1Model = PracticeA1Model(model: ModelData(), width: 500.0, height: 500.0)
+    @StateObject var practiceA1Model = PracticeA1Model(graph: Graph(), width: 500.0, height: 500.0)
     
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
             let height = geometry.size.height
             ZStack {
-                ForEach(practiceA1Model.model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(false), model: practiceA1Model.model)
+                ForEach(practiceA1Model.graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(false), graph: practiceA1Model.graph)
                 }
-                ForEach(practiceA1Model.model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: practiceA1Model.model)
+                ForEach(practiceA1Model.graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: practiceA1Model.graph)
                 }
             }
             .onAppear {

@@ -8,7 +8,7 @@
 import SwiftUI
 
 class ChinesePostmanModel1: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph: Graph = Graph()
     var width: CGFloat
     var height: CGFloat
     var vertexA: Vertex
@@ -54,21 +54,21 @@ class ChinesePostmanModel1: ObservableObject {
         edgeCD.weight = 6
         edgeCE.weight = 3
         edgeDE.weight = 2
-        self.model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
-        self.model.edges.append(contentsOf: [edgeAB, edgeAD, edgeAE, edgeBC, edgeBE, edgeCD, edgeCE, edgeDE])
+        self.graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
+        self.graph.edges.append(contentsOf: [edgeAB, edgeAD, edgeAE, edgeBC, edgeBE, edgeCD, edgeCE, edgeDE])
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        self.model.isMoving = true
-        self.model.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
-        self.model.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (4 / 5) * height)
-        self.model.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[3].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
-        for edge in model.edges {
+        self.graph.isMoving = true
+        self.graph.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
+        self.graph.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (4 / 5) * height)
+        self.graph.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[3].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
+        for edge in graph.edges {
             edge.textPosition = edge.textStartPosition
         }
-        self.model.isMoving = false
+        self.graph.isMoving = false
     }
     
 }
@@ -76,13 +76,13 @@ class ChinesePostmanModel1: ObservableObject {
 struct ChinesePostman1View: View {
     
     @StateObject var chinesePostman1Model = ChinesePostmanModel1(width: 500, height: 500)
-    lazy var chinesePostman1ViewModel = ChinesePostman(model: chinesePostman1Model.model)
+    lazy var chinesePostman1ViewModel = ChinesePostman(graph: chinesePostman1Model.graph)
     
     var body: some View {
         GeometryReader{ geometry in
             let width = geometry.size.width
             let height = geometry.size.height
-            ChinesePostman(model: chinesePostman1Model.model)
+            ChinesePostman(graph: chinesePostman1Model.graph)
                 .onAppear {
                     chinesePostman1Model.resize(width: width, height: height)
 

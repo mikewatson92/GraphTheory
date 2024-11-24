@@ -8,7 +8,7 @@
 import SwiftUI
 
 class ChinesePostmanModel: ObservableObject {
-    var model: ModelData
+    var graph: Graph
     @Published var startingVertex: Vertex?
     @Published var currentVertex: Vertex?
     @Published var path: [Vertex] = []
@@ -20,7 +20,7 @@ class ChinesePostmanModel: ObservableObject {
     var visitedEdges: [Edge] = []
     public static var colors: [Color] = [.white, Color(#colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1)), Color(#colorLiteral(red: 0.2196078449, green: 0.007843137719, blue: 0.8549019694, alpha: 1)), Color(#colorLiteral(red: 0.3098039329, green: 0.01568627544, blue: 0.1294117719, alpha: 1))]
     var oddVertices: [Vertex] {
-        return model.vertices.filter { model.degree($0) % 2 == 1 }
+        return graph.vertices.filter { graph.degree($0) % 2 == 1 }
     }
     var oddVertexPairings: [[Vertex]] {
         if !oddVertices.isEmpty{
@@ -43,7 +43,7 @@ class ChinesePostmanModel: ObservableObject {
     }
     var leastWeight: Double {
         var weight: Double = 0
-        for edge in model.edges {
+        for edge in graph.edges {
             weight += edge.weight
         }
         weight += leastPathWeight(leastOddVertexPairing)
@@ -51,8 +51,8 @@ class ChinesePostmanModel: ObservableObject {
         return weight
     }
 
-    init(model: ModelData) {
-        self.model = model
+    init(graph: Graph) {
+        self.graph = graph
     }
     
     enum Status {
@@ -100,7 +100,7 @@ class ChinesePostmanModel: ObservableObject {
         
         let currentVertex: Vertex = currentPath.last?.endVertex ?? from
         
-        for edge in model.edges {
+        for edge in graph.edges {
             var tempPath = currentPath
             tempPath.append(edge)
             if !usedPaths.contains(tempPath) {
@@ -194,17 +194,17 @@ class ChinesePostmanModel: ObservableObject {
     }
     
     func reset() {
-        for edge in model.edges {
+        for edge in graph.edges {
             edge.timesSelectedCPP = 0
         }
-        model.highlightedVertex = nil
+        graph.highlightedVertex = nil
         weight = 0
         status = .inProgress
         isStart = true
     }
     
     func allEdgesUsed() -> Bool {
-        for edge in model.edges {
+        for edge in graph.edges {
             if !usedEdges.contains(edge) {
                 return false
             }
@@ -226,7 +226,7 @@ class ChinesePostmanModel: ObservableObject {
 
 struct ChinesePostman: View {
     @StateObject var chinesePostmanModel: ChinesePostmanModel
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     var style: LinearGradient {
         switch chinesePostmanModel.status {
         case .inProgress:
@@ -239,9 +239,9 @@ struct ChinesePostman: View {
     }
     
     
-    init(model: ModelData) {
-        self.model = model
-        _chinesePostmanModel = .init(wrappedValue: ChinesePostmanModel(model: model))
+    init(graph: Graph) {
+        self.graph = graph
+        _chinesePostmanModel = .init(wrappedValue: ChinesePostmanModel(graph: graph))
     }
     
     var body: some View {
@@ -258,12 +258,12 @@ struct ChinesePostman: View {
                 .padding()
             }
             
-            ForEach(model.edges) { edge in
-                EdgeView(edge: edge, showWeights: .constant(true), model: model)
+            ForEach(graph.edges) { edge in
+                EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                     .onAppear {
-                        model.algorithm = .chinesePostman
-                        model.changesLocked = true
-                        model.weightChangeLocked = true
+                        graph.algorithm = .chinesePostman
+                        graph.changesLocked = true
+                        graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
                         if chinesePostmanModel.status == .inProgress {
@@ -274,10 +274,10 @@ struct ChinesePostman: View {
                                     chinesePostmanModel.usedEdges.append(edge)
                                 }
                                 if chinesePostmanModel.currentVertex == edge.startVertex {
-                                    model.highlightedVertex = edge.endVertex
+                                    graph.highlightedVertex = edge.endVertex
                                     chinesePostmanModel.currentVertex = edge.endVertex
                                 } else {
-                                    model.highlightedVertex = edge.startVertex
+                                    graph.highlightedVertex = edge.startVertex
                                     chinesePostmanModel.currentVertex = edge.startVertex
                                 }
                                 chinesePostmanModel.checkStatus()
@@ -286,16 +286,16 @@ struct ChinesePostman: View {
                     }
             }
                 
-            ForEach(model.vertices) { vertex in
-                VertexView(vertex: vertex, model: model)
+            ForEach(graph.vertices) { vertex in
+                VertexView(vertex: vertex, graph: graph)
                     .onAppear{
-                        model.algorithm = .chinesePostman
-                        model.changesLocked = true
-                        model.weightChangeLocked = true
+                        graph.algorithm = .chinesePostman
+                        graph.changesLocked = true
+                        graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
                         if chinesePostmanModel.isStart {
-                            model.highlightedVertex = vertex
+                            graph.highlightedVertex = vertex
                             chinesePostmanModel.startingVertex = vertex
                             chinesePostmanModel.currentVertex = vertex
                             chinesePostmanModel.isStart = false
@@ -304,11 +304,11 @@ struct ChinesePostman: View {
             }
         }
         .onDisappear {
-            model.algorithm = .none
-            model.changesLocked = false
-            model.weightChangeLocked = false
-            model.highlightedVertex = nil
-            for edge in model.edges {
+            graph.algorithm = .none
+            graph.changesLocked = false
+            graph.weightChangeLocked = false
+            graph.highlightedVertex = nil
+            for edge in graph.edges {
                 edge.status = .none
                 edge.isSelected = false
             }
@@ -319,6 +319,6 @@ struct ChinesePostman: View {
 
 struct ChinesePostman_Previews: PreviewProvider {
     static var previews: some View {
-        ChinesePostman(model: ModelData())
+        ChinesePostman(graph: Graph())
     }
 }

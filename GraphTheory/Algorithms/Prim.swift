@@ -12,7 +12,7 @@ import SwiftUI
 class Prim: ObservableObject {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @Published var finished: Bool = false
-    var model: ModelData
+    var graph: Graph
     var numVertices: Int
     var numEdges: Int
     var availableEdges: [Edge]
@@ -26,11 +26,11 @@ class Prim: ObservableObject {
         case loop, notLowestWeight, notConnected, none
     }
     
-    init(model: ModelData) {
-        self.model = model
-        self.numVertices = model.vertices.count
-        self.numEdges = model.edges.count
-        self.availableEdges = model.edges.sorted(by: { $0.weight < $1.weight })
+    init(graph: Graph) {
+        self.graph = graph
+        self.numVertices = graph.vertices.count
+        self.numEdges = graph.edges.count
+        self.availableEdges = graph.edges.sorted(by: { $0.weight < $1.weight })
     }
     
     func setStartVertex(_ newVertex: Vertex) {
@@ -39,8 +39,10 @@ class Prim: ObservableObject {
     
     // Determines whether the graph consisting of the edges selected by the user, chosenEdges, contains a cycle.
     func containsCycle() -> Bool {
-        let graph = Graph(chosenEdges: chosenEdges, model: model)
-        let result = graph.hasCycle(availableEdges: chosenEdges)
+        let newGraph = Graph()
+        newGraph.vertices.append(contentsOf: graph.vertices)
+        newGraph.edges.append(contentsOf: chosenEdges)
+        let result = newGraph.hasCycle()
         if result == true {
             return true
         }
@@ -144,28 +146,28 @@ class Prim: ObservableObject {
     
     func reset() {
         chosenEdges = []
-        availableEdges = model.edges
+        availableEdges = graph.edges
         loopEdges = []
         error = .none
         finished = false
-        for edge in model.edges {
+        for edge in graph.edges {
             edge.isSelected = false
             edge.status = .none
         }
-        for vertex in model.vertices {
+        for vertex in graph.vertices {
             vertex.isSelected = false
         }
-        model.highlightedVertex = nil
+        graph.highlightedVertex = nil
     }
 }
 
 struct PrimView: View {
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     @StateObject var prim: Prim
     
-    init(model: ModelData) {
-        self.model = model
-        _prim = .init(wrappedValue: Prim(model: model))
+    init(graph: Graph) {
+        self.graph = graph
+        _prim = .init(wrappedValue: Prim(graph: graph))
     }
     
     var body: some View {
@@ -188,8 +190,8 @@ struct PrimView: View {
                 .padding()
             }
             
-            ForEach(model.edges) { edge in
-                let edgeView = EdgeView(edge: edge, showWeights: .constant(true), model: model)
+            ForEach(graph.edges) { edge in
+                let edgeView = EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                 edgeView
                     .onTapGesture(count: 1) {
                         if !prim.startPhase {
@@ -213,13 +215,13 @@ struct PrimView: View {
                     }
                 
                 
-                ForEach(model.vertices) { vertex in
-                    let vertexView = VertexView(vertex: vertex, model: model)
+                ForEach(graph.vertices) { vertex in
+                    let vertexView = VertexView(vertex: vertex, graph: graph)
                     vertexView
                         .onTapGesture(count: 1) {
                             if prim.startPhase {
                                 prim.startPhase = false
-                                model.highlightedVertex = vertex
+                                graph.highlightedVertex = vertex
                                 prim.startVertex = vertex
                             }
                         }
@@ -227,16 +229,16 @@ struct PrimView: View {
             }
         }
         .onAppear{
-            model.algorithm = .prim
-            model.changesLocked = true
-            model.weightChangeLocked = true
+            graph.algorithm = .prim
+            graph.changesLocked = true
+            graph.weightChangeLocked = true
         }
         .onDisappear {
-            model.algorithm = .none
-            model.changesLocked = false
-            model.weightChangeLocked = false
-            model.highlightedVertex = nil
-            for edge in model.edges {
+            graph.algorithm = .none
+            graph.changesLocked = false
+            graph.weightChangeLocked = false
+            graph.highlightedVertex = nil
+            for edge in graph.edges {
                 edge.status = .none
                 edge.isSelected = false
             }
@@ -247,6 +249,6 @@ struct PrimView: View {
 
 struct PrimView_Previews: PreviewProvider {
     static var previews: some View {
-        PrimView(model: ModelData())
+        PrimView(graph: Graph())
     }
 }

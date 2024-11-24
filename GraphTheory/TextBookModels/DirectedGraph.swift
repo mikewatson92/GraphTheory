@@ -8,7 +8,7 @@
 import SwiftUI
 
 class DirectedGraphModel: ObservableObject {
-    @Published var model = ModelData()
+    @Published var graph = Graph()
     var width: CGFloat
     var height: CGFloat
     var vertexA: Vertex
@@ -39,18 +39,18 @@ class DirectedGraphModel: ObservableObject {
         self.edgeDE = Edge(vertexD, vertexE, 0.5, .forward)
         self.edgeEA = Edge(vertexE, vertexA, 0.5, .forward)
         self.edgeEC = Edge(vertexE, vertexC, 0.5, .forward)
-        self.model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
-        self.model.edges.append(contentsOf: [edgeAB, edgeBC, edgeBE, edgeCD, edgeDE, edgeEA, edgeEC])
-        self.model.changesLocked = true
+        self.graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
+        self.graph.edges.append(contentsOf: [edgeAB, edgeBC, edgeBE, edgeCD, edgeDE, edgeEA, edgeEC])
+        self.graph.changesLocked = true
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        model.isMoving = true
-        model.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
-        model.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
-        model.vertices[2].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
-        model.vertices[3].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
-        model.vertices[4].position = CGPoint(x: (1.5 / 5) * width, y: (0.75 / 2) * height)
+        graph.isMoving = true
+        graph.vertices[0].position = CGPoint(x: (1 / 5) * width, y: (1 / 5) * height)
+        graph.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
+        graph.vertices[2].position = CGPoint(x: (1 / 2) * width, y: (1 / 2) * height)
+        graph.vertices[3].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
+        graph.vertices[4].position = CGPoint(x: (1.5 / 5) * width, y: (0.75 / 2) * height)
     }
 }
 
@@ -62,11 +62,11 @@ struct DirectedGraph: View {
             let width = geometry.size.width
             let height = geometry.size.height
             ZStack {
-                ForEach(directedGraphModel.model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(false), model: directedGraphModel.model)
+                ForEach(directedGraphModel.graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(false), graph: directedGraphModel.graph)
                 }
-                ForEach(directedGraphModel.model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: directedGraphModel.model)
+                ForEach(directedGraphModel.graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: directedGraphModel.graph)
                 }
             }
             .onAppear {

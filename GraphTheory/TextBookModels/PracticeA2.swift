@@ -8,7 +8,7 @@
 import SwiftUI
 
 class PracticeA2Model: ObservableObject {
-    @Published var model = ModelData()
+    @Published var graph = Graph()
     var vertexP: Vertex
     var vertexQ: Vertex
     var vertexR: Vertex
@@ -39,20 +39,20 @@ class PracticeA2Model: ObservableObject {
         self.edgeST = Edge(vertexS, vertexT, 0.5, .forward)
         self.edgeTP = Edge(vertexT, vertexP, 0.5, .forward)
         self.edgeTU = Edge(vertexT, vertexU, 0.5, .bidirectional)
-        self.model.vertices.append(contentsOf: [vertexP, vertexQ, vertexR, vertexS, vertexT, vertexU])
-        self.model.edges.append(contentsOf: [edgePQ, edgePU, edgeQR, edgeQS, edgeQT, edgeST, edgeTP, edgeTU])
-        self.model.changesLocked = true
+        self.graph.vertices.append(contentsOf: [vertexP, vertexQ, vertexR, vertexS, vertexT, vertexU])
+        self.graph.edges.append(contentsOf: [edgePQ, edgePU, edgeQR, edgeQS, edgeQT, edgeST, edgeTP, edgeTU])
+        self.graph.changesLocked = true
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        model.isMoving = true
-        model.vertices[0].position = CGPoint(x: (1.2 / 5) * width, y: (1.2 / 5) * height)
-        model.vertices[1].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
-        model.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
-        model.vertices[3].position = CGPoint(x: (3.5 / 5) * width, y: (4 / 5) * height)
-        model.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (3.5 / 5) * height)
-        model.vertices[5].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
-        model.isMoving = false
+        graph.isMoving = true
+        graph.vertices[0].position = CGPoint(x: (1.2 / 5) * width, y: (1.2 / 5) * height)
+        graph.vertices[1].position = CGPoint(x: (3 / 5) * width, y: (1 / 5) * height)
+        graph.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (1 / 2) * height)
+        graph.vertices[3].position = CGPoint(x: (3.5 / 5) * width, y: (4 / 5) * height)
+        graph.vertices[4].position = CGPoint(x: (1 / 2) * width, y: (3.5 / 5) * height)
+        graph.vertices[5].position = CGPoint(x: (1 / 5) * width, y: (4 / 5) * height)
+        graph.isMoving = false
     }
 }
 
@@ -64,11 +64,11 @@ struct PracticeA2: View {
             let width = geometry.size.width
             let height = geometry.size.height
             ZStack {
-                ForEach(practiceA2Model.model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(false), model: practiceA2Model.model)
+                ForEach(practiceA2Model.graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(false), graph: practiceA2Model.graph)
                 }
-                ForEach(practiceA2Model.model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: practiceA2Model.model)
+                ForEach(practiceA2Model.graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: practiceA2Model.graph)
                 }
             }
             .onAppear {

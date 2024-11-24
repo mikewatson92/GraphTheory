@@ -8,7 +8,7 @@
 import SwiftUI
 
 class TSPModel: ObservableObject {
-    var model: ModelData
+    var graph: Graph
     var startVertex: Vertex?
     var currentVertex: Vertex?
     var edgePath: [Edge] = []
@@ -20,26 +20,26 @@ class TSPModel: ObservableObject {
     var lowerBound: Double = 0
     @Published var status: Status = .startUpperBound
     var isCompleteGraph: Bool {
-        for vertex in model.vertices {
-            var otherVertices = model.vertices
+        for vertex in graph.vertices {
+            var otherVertices = graph.vertices
             otherVertices.removeAll(where: { $0 == vertex })
             for otherVertex in otherVertices {
-                if !model.verticesConnected(vertex, otherVertex) {
+                if !graph.verticesConnected(vertex, otherVertex) {
                     return false
                 }
             }
         }
         return true
     }
-    var lowerBoundModel: ModelData = ModelData()
+    var lowerBoundModel = Graph()
     var kruskal: Kruskal?
     
     var nearestNeighborFinished: Bool {
-        vertexPath.count == model.vertices.count + 1
+        vertexPath.count == graph.vertices.count + 1
     }
     
-    init(model: ModelData) {
-        self.model = model
+    init(graph: Graph) {
+        self.graph = graph
     }
     
     enum Status {
@@ -59,18 +59,18 @@ class TSPModel: ObservableObject {
             edge.swapVertices()
         }
         
-        for edge in model.edges {
+        for edge in graph.edges {
             if currentVertex!.edgeIsConnected(edge: edge) {
                 if edge.endVertex == currentVertex {
                     edge.swapVertices()
                 }
                 if lowestWeight == nil {
-                    if !vertexPath.contains(edge.endVertex) || (vertexPath.count == model.vertices.count && edge.endVertex == startVertex) {
+                    if !vertexPath.contains(edge.endVertex) || (vertexPath.count == graph.vertices.count && edge.endVertex == startVertex) {
                         lowestWeight = edge.weight
                     }
                 } else if edge.weight < lowestWeight! && !vertexPath.contains(edge.endVertex) {
                     lowestWeight = edge.weight
-                } else if edge.weight < lowestWeight! && vertexPath.count == model.vertices.count && edge.endVertex == startVertex {
+                } else if edge.weight < lowestWeight! && vertexPath.count == graph.vertices.count && edge.endVertex == startVertex {
                     /* If the weight of the edge is less than lowestWeight, and all vertices have already been visited except
                      for the return to the startVertex, and the edge's endVertex is equal to startVertex, thus completing the
                      Hamiltonian cycle, then set lowestWeight to the weight of the edge. */
@@ -78,7 +78,7 @@ class TSPModel: ObservableObject {
                 }
             }
         }
-        if vertexPath.contains(edge.endVertex) && edge.endVertex == startVertex && vertexPath.count == model.vertices.count {
+        if vertexPath.contains(edge.endVertex) && edge.endVertex == startVertex && vertexPath.count == graph.vertices.count {
             return edge.weight == lowestWeight!
         } else {
             return edge.weight == lowestWeight!
@@ -86,17 +86,17 @@ class TSPModel: ObservableObject {
     }
     
     func populateLowerBoundModel() {
-        for vertex in model.vertices {
+        for vertex in graph.vertices {
             if vertex != deletedVertex {
                 lowerBoundModel.vertices.append(vertex)
             }
         }
-        for edge in model.edges {
+        for edge in graph.edges {
             if !deletedEdges.contains(edge) {
                 lowerBoundModel.edges.append(edge)
             }
         }
-        kruskal = Kruskal(model: lowerBoundModel)
+        kruskal = Kruskal(graph: lowerBoundModel)
     }
     
     func computeUpperBound() {
@@ -115,11 +115,11 @@ class TSPModel: ObservableObject {
     }
     
     func reset() {
-        model.highlightedVertex = nil
-        for edge in model.edges {
+        graph.highlightedVertex = nil
+        for edge in graph.edges {
             edge.status = .none
         }
-        for vertex in model.vertices {
+        for vertex in graph.vertices {
             vertex.status = .none
         }
         
@@ -133,15 +133,15 @@ class TSPModel: ObservableObject {
         upperBound = 0
         lowerBound = 0
         status = .startUpperBound
-        lowerBoundModel = ModelData()
+        lowerBoundModel = Graph()
         kruskal = nil
     }
     
     func resetForLowerBound() {
-        for edge in model.edges {
+        for edge in graph.edges {
             edge.status = .none
         }
-        for vertex in model.vertices {
+        for vertex in graph.vertices {
             vertex.status = .none
         }
     }
@@ -150,7 +150,7 @@ class TSPModel: ObservableObject {
 
 struct TSP: View {
     @StateObject var tspModel: TSPModel
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     var message: String {
         switch tspModel.status {
         case .startUpperBound:
@@ -173,9 +173,9 @@ struct TSP: View {
         }
     }
     
-    init(model: ModelData) {
-        self.model = model
-        _tspModel = .init(wrappedValue: TSPModel(model: model))
+    init(graph: Graph) {
+        self.graph = graph
+        _tspModel = .init(wrappedValue: TSPModel(graph: graph))
     }
     
     var body: some View {
@@ -207,12 +207,12 @@ struct TSP: View {
                     .padding()
                 }
                 
-                ForEach(model.edges) { edge in
-                    EdgeView(edge: edge, showWeights: .constant(true), model: model)
+                ForEach(graph.edges) { edge in
+                    EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                         .onAppear {
-                            model.algorithm = .tsp
-                            model.changesLocked = true
-                            model.weightChangeLocked = true
+                            graph.algorithm = .tsp
+                            graph.changesLocked = true
+                            graph.weightChangeLocked = true
                         }
                         .onTapGesture(count: 1) {
                             if tspModel.status == .inProgressUpperBound {
@@ -222,14 +222,14 @@ struct TSP: View {
                                     tspModel.vertexPath.append(edge.endVertex)
                                     tspModel.currentVertex!.status = .visited
                                     tspModel.currentVertex = edge.endVertex
-                                    model.highlightedVertex = edge.endVertex
+                                    graph.highlightedVertex = edge.endVertex
                                 } else if edge.status == .none {
                                     edge.status = .error
                                 } else if edge.status == .error {
                                     edge.status = .none
                                 }
                                 if tspModel.nearestNeighborFinished {
-                                    model.highlightedVertex = nil
+                                    graph.highlightedVertex = nil
                                     tspModel.computeUpperBound()
                                     tspModel.status = .startLowerBound
                                 }
@@ -266,12 +266,12 @@ struct TSP: View {
                         }
                 }
                 
-                ForEach(model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: model)
+                ForEach(graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: graph)
                         .onAppear {
-                            model.algorithm = .tsp
-                            model.changesLocked = true
-                            model.weightChangeLocked = true
+                            graph.algorithm = .tsp
+                            graph.changesLocked = true
+                            graph.weightChangeLocked = true
                         }
                         .simultaneousGesture(SimultaneousGesture(TapGesture(count: 1), TapGesture(count: 2))
                             .onEnded{ gestures in
@@ -279,7 +279,7 @@ struct TSP: View {
                                     if tspModel.status == .startUpperBound {
                                         tspModel.startVertex = vertex
                                         tspModel.currentVertex = vertex
-                                        model.highlightedVertex = vertex
+                                        graph.highlightedVertex = vertex
                                         tspModel.status = .inProgressUpperBound
                                         tspModel.vertexPath.append(vertex)
                                     }
@@ -294,7 +294,7 @@ struct TSP: View {
                                         tspModel.resetForLowerBound()
                                         vertex.status = .deleted
                                         tspModel.deletedVertex = vertex
-                                        for edge in model.edges {
+                                        for edge in graph.edges {
                                             if vertex.edgeIsConnected(edge: edge) {
                                                 edge.status = .deleted
                                                 tspModel.deletedEdges.append(edge)
@@ -309,11 +309,11 @@ struct TSP: View {
                 }
             }
             .onDisappear {
-                model.algorithm = .none
-                model.changesLocked = false
-                model.weightChangeLocked = false
-                model.highlightedVertex = nil
-                for edge in model.edges {
+                graph.algorithm = .none
+                graph.changesLocked = false
+                graph.weightChangeLocked = false
+                graph.highlightedVertex = nil
+                for edge in graph.edges {
                     edge.status = .none
                     edge.isSelected = false
                 }
@@ -325,6 +325,6 @@ struct TSP: View {
 
 struct TSP_Previews: PreviewProvider {
     static var previews: some View {
-        TSP(model: ModelData())
+        TSP(graph: Graph())
     }
 }

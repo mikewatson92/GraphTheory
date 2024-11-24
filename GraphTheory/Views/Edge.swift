@@ -39,7 +39,7 @@ class Edge: Identifiable, ObservableObject, Equatable {
         
         return CGPoint(x: x, y: y)
     }
-
+    
     private init(_ start: Vertex, _ end: Vertex, _ directed: Directed = .none) {
         _startVertex = .init(wrappedValue: start)
         _endVertex = .init(wrappedValue: end)
@@ -60,7 +60,7 @@ class Edge: Identifiable, ObservableObject, Equatable {
         case reversed
         case bidirectional
     }
-
+    
     enum Status {
         case error
         case correct
@@ -76,6 +76,7 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return lhs.id == rhs.id
     }
     
+    // For creating arrow paths on directed graph edges
     func arrowPath() -> Path {
         // Doing it rightwards
         Path { path in
@@ -86,14 +87,19 @@ class Edge: Identifiable, ObservableObject, Equatable {
         }
     }
     
+    // Calculate the x-coordinate for an arrow
     var arrowX: CGFloat {
         startVertex.position.x + 0.75 * (endVertex.position.x - startVertex.position.x)
     }
     
+    // Calculate an additional x-coordinate for an arrow
+    // on bidirectional edges
     var arrowX2: CGFloat {
         startVertex.position.x + 0.25 * (endVertex.position.x - startVertex.position.x)
     }
     
+    // Function for correctly positioning an arrow on
+    // a directed edge
     func arrowTransform() -> CGAffineTransform {
         let translation = CGAffineTransform(translationX: arrowX, y: edgeYValue(x: arrowX) ?? (startVertex.position.y + endVertex.position.y) / 2.0 )
         let angle = atan2(endVertex.position.y-startVertex.position.y, endVertex.position.x-startVertex.position.x)
@@ -101,6 +107,8 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return rotation.concatenating(translation)
     }
     
+    // Function for correctly positioning the second arrow on
+    // a bidirectional edge
     func arrowTransform2() -> CGAffineTransform {
         let translation = CGAffineTransform(translationX: arrowX2, y: edgeYValue(x: arrowX2) ?? (startVertex.position.y + endVertex.position.y) / 2.0 )
         let angle = atan2(startVertex.position.y - endVertex.position.y, startVertex.position.x - endVertex.position.x)
@@ -108,6 +116,8 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return rotation.concatenating(translation)
     }
     
+    // Function for correctly positioning an arrow on
+    // an edge when edge.directed = Directed.reversed
     func arrowTransformReversed() -> CGAffineTransform {
         let translation = CGAffineTransform(translationX: arrowX, y: edgeYValue(x: arrowX) ?? (startVertex.position.y + endVertex.position.y) / 2.0 )
         let angle = atan2(startVertex.position.y - endVertex.position.y, startVertex.position.x - endVertex.position.y)
@@ -115,12 +125,14 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return rotation.concatenating(translation)
     }
     
+    // Change positions of the start and end vertices of an edge
     func swapVertices() {
         let tempStartVertex = startVertex
         self.startVertex = self.endVertex
         self.endVertex = tempStartVertex
     }
     
+    // Calculates the length of an edge as a CGFloat
     func length() -> CGFloat {
         let term1 = endVertex.position.x - startVertex.position.x
         let term2 = endVertex.position.y - startVertex.position.y
@@ -128,6 +140,8 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return d
     }
     
+    // Returns a CGPoint on an edge representing a point position
+    // units away from the starting vertex
     func pointOnEdge(_ position: Double) -> CGPoint {
         // position is a Double between 0 and 1, representing the position
         // on the edge from startVertex (position = 0) to
@@ -155,6 +169,8 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return CGPoint(x: x, y: y!)
     }
     
+    // Returns the y-intercept of the line perpendicular
+    // to the edge
     func perpendicularYIntercept(point: CGPoint) -> CGFloat? {
         if endVertex.position.y - startVertex.position.y == 0 {
             return nil
@@ -164,6 +180,9 @@ class Edge: Identifiable, ObservableObject, Equatable {
         return b
     }
     
+    // Returns an x-coordinate for a point on the line
+    // perpendicular to the edge.
+    // Used for findining the x-coordinate of the weight label
     func perpendicularX(point: CGPoint, distance: CGFloat) -> CGFloat {
         if edgeGradient() == nil {
             switch textDirection {
@@ -197,6 +216,9 @@ class Edge: Identifiable, ObservableObject, Equatable {
         }
     }
     
+    // Returns a y-coordinate for a point on the line
+    // perpendicular to the edge.
+    // Used for findining the x-coordinate of the weight label
     func perpendicularY(x: CGFloat, point: CGPoint) -> CGFloat {
         if perpendicularGradient() == nil {
             switch textDirection {
@@ -210,34 +232,39 @@ class Edge: Identifiable, ObservableObject, Equatable {
         }
     }
     
+    // Returns a CGPoint on a line perpendicular to the edge.
+    // Used for positioning weight labels.
     func perpendicularPoint(startPoint: CGPoint) -> CGPoint {
         let x: CGFloat = perpendicularX(point: startPoint, distance: textDistance)
         let y: CGFloat = perpendicularY(x: x, point: startPoint)
         
         if edgeGradient() == nil {
             return CGPoint(x: x + textDistance, y: y)
-        } else if edgeGradient()! <= 0 {
-            return CGPoint(x: x, y: y)
         } else {
             return CGPoint(x: x, y: y)
         }
     }
     
+    // Returns the gradient of the edge
     func edgeGradient() -> CGFloat? {
         if endVertex.position.x == startVertex.position.x { return nil }
         
         return (endVertex.position.y - startVertex.position.y) / (endVertex.position.x - startVertex.position.x)
     }
     
+    // Given an x-coordinate, return the corresponding
+    // y-coordinate for a point on the edge
     func edgeYValue(x: CGFloat) -> CGFloat? {
         if edgeGradient() == nil || edgeYIntercept() == nil {
             return nil
         } else {
             return edgeGradient()! * x + edgeYIntercept()!
-     
+            
         }
     }
     
+    // Returns the y-intercept of the equation of the line
+    // for the edge
     func edgeYIntercept() -> CGFloat? {
         if endVertex.position.x == startVertex.position.x {
             return nil
@@ -247,16 +274,21 @@ class Edge: Identifiable, ObservableObject, Equatable {
         
     }
     
+    // Get the gradient of the line perpendicular to the edge
     func perpendicularGradient() -> CGFloat? {
+        // If starting vertex and ending positions are the same,
+        // then there is no gradient to calculate
         if endVertex.position.y == startVertex.position.y { return nil }
         else {
             let gradient: CGFloat = -(endVertex.position.x - startVertex.position.x) / (endVertex.position.y - startVertex.position.y)
-
+            
             return gradient
         }
     }
     
+    // Returns the path used for drawing an edge
     func draw() -> Path {
+        // If the edge is not a loop
         if !isLoop {
             let path = Path { path in
                 path.move(to: CGPoint(x: startVertex.position.x + startVertex.offset.width, y: startVertex.position.y + startVertex.offset.height))
@@ -272,38 +304,38 @@ class Edge: Identifiable, ObservableObject, Equatable {
                 path.move(to: CGPoint(x: startVertex.position.x + startVertex.offset.width - Vertex.diameter / 4.0,
                                       y: startVertex.position.y + startVertex.offset.height))
                 path.addCurve(to: CGPoint(x: startVertex.position.x + startVertex.offset.width + Vertex.diameter / 4.0,
-                                              y: startVertex.position.y + startVertex.offset.height),
+                                          y: startVertex.position.y + startVertex.offset.height),
                               control1: CGPoint(x: startVertex.position.x + startVertex.offset.width - 2 * Vertex.diameter,
-                                                   y: startVertex.position.y + startVertex.offset.height + 2 * Vertex.diameter),
+                                                y: startVertex.position.y + startVertex.offset.height + 2 * Vertex.diameter),
                               control2: CGPoint(x: startVertex.position.x + startVertex.offset.width + 2 * Vertex.diameter,
-                                               y: startVertex.position.y + startVertex.offset.height + 2 * Vertex.diameter))
+                                                y: startVertex.position.y + startVertex.offset.height + 2 * Vertex.diameter))
             }
             return path
         }
-    }
-    
-    func print() {
-        let text = "(Start: \(startVertex.id), End: \(endVertex.id))"
-        Swift.print(text)
     }
 }
 
 
 struct EdgeView: View {
-    @Environment(\.colorScheme) var colorMode: ColorScheme
-    //@EnvironmentObject var model: ModelData
+    @Environment(\.colorScheme) static var colorMode: ColorScheme
     @StateObject var edge: Edge
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     @State private var weightSelected: Bool = false
     @State private var weight: Double
+    @State var edgeColor: Color?
     @Binding var showWeights: Bool
     let edgeThickness: CGFloat = 8
     
-    init(edge: Edge, showWeights: Binding<Bool>, model: ModelData) {
+    
+    init(edge: Edge, showWeights: Binding<Bool>, graph: Graph) {
         _edge = .init(wrappedValue: edge)
         _showWeights = showWeights
         _weight = State(initialValue: edge.weight)
-        self.model = model
+        self.graph = graph
+    }
+    
+    var edgeGesture: GraphGesture {
+        GraphGesture(edge: edge, graph: graph, weightSelected: $weightSelected)
     }
     
     var weightColor: Color {
@@ -314,7 +346,7 @@ struct EdgeView: View {
         }
     }
     
-    var defaultEdgeColor: Color {
+    static var defaultEdgeColor: Color {
         if colorMode == .dark {
             return Color.white
         } else {
@@ -322,171 +354,41 @@ struct EdgeView: View {
         }
     }
     
-    @State var edgeColor: Color?
-    
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         return formatter
     }()
     
-    public var curveGesture: some Gesture {
-        DragGesture(minimumDistance: 0, coordinateSpace: .local)
-            .onChanged{ drag in
-                if !model.changesLocked {
-                    edge.isCurved = true
-                    edge.controlPointOffset = drag.translation
-                    edge.textOffset = drag.translation
-                }
-            }
-            .onEnded({ _ in
-                if !model.changesLocked {
-                    let tempOffset = edge.controlPointOffset
-                    edge.controlPointOffset = .zero
-                    edge.textOffset = .zero
-                    let edgeX = edge.controlPoint.x + tempOffset.width
-                    let edgeY = edge.controlPoint.y + tempOffset.height
-                    let textX = edge.textPosition.x + tempOffset.width
-                    let textY = edge.textPosition.y + tempOffset.height
-                    edge.controlPoint = CGPoint(x: edgeX, y: edgeY)
-                    edge.textPosition = CGPoint(x: textX, y: textY)
-                }
-            })
-    }
-    
-    public var deleteGesture: some Gesture {
-        TapGesture(count: 2)
-            .onEnded {
-                if !model.changesLocked {
-                    //model.edges.remove(at: model.edges.firstIndex(where: {$0.id == edge.id})!)
-                    model.edges.removeAll(where: { $0.id == edge.id })
-                }
-            }
-    }
-    
-    public var highlightGesture: some Gesture {
-        TapGesture(count: 1)
-            .onEnded {
-                if !model.changesLocked {
-                    edge.isSelected = !edge.isSelected
-                }
-            }
-    }
-    
-    public var straightenGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .sequenced(before: TapGesture())
-            .onEnded({ _ in
-                if !model.changesLocked {
-                    edge.isCurved = false
-                    edge.controlPoint = edge.midpoint
-                }
-            })
-    }
-    
+    // Returns a view of the edge drawn when no algorithm
+    // is applied in the model
     var drawEdge: some View {
         // Draw the edge
-        ZStack{
+        Group{
             if (edge.isSelected || edge.status == .correct) {
                 edge.draw()
                     .stroke(.green, lineWidth: edgeThickness)
-                    .gesture(deleteGesture)
-                    .gesture(highlightGesture)
+                    .gesture(edgeGesture.deleteGesture)
+                    .gesture(edgeGesture.highlightGesture)
                     .shadow(color: .green, radius: 8)
-                    .gesture(straightenGesture)
-                    .gesture(curveGesture)
+                    .gesture(edgeGesture.straightenGesture)
+                    .gesture(edgeGesture.curveGesture)
             } else if weightSelected {
                 edge.draw()
                     .stroke(.blue, lineWidth: edgeThickness)
                     .shadow(color: .blue, radius: 8)
             } else {
                 edge.draw()
-                    .stroke(edgeColor ?? defaultEdgeColor, lineWidth: edgeThickness)
-                    .gesture(deleteGesture)
-                    .gesture(highlightGesture)
-                    .gesture(straightenGesture)
-                    .gesture(curveGesture)
+                    .stroke(edgeColor ?? EdgeView.defaultEdgeColor, lineWidth: edgeThickness)
+                    .gesture(edgeGesture.deleteGesture)
+                    .gesture(edgeGesture.highlightGesture)
+                    .gesture(edgeGesture.straightenGesture)
+                    .gesture(edgeGesture.curveGesture)
             }
         }
     }
     
-    var drawKruskalEdge: some View {
-        ZStack{
-            if (edge.isSelected && edge.status != .error) {
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-                    .shadow(color: .green, radius: 8)
-            } else if (edge.isSelected && edge.status == .error) {
-                edge.draw()
-                    .stroke(.red, lineWidth: edgeThickness)
-                    .shadow(color: .red, radius: 8)
-            } else if (edge.status == .correct) {
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-            } else {
-                edge.draw()
-                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
-            }
-        }
-    }
-    
-    var drawPrimEdge: some View {
-        ZStack{
-            if (edge.isSelected && edge.status != .error) {
-                edge.draw()
-                .stroke(.green, lineWidth: edgeThickness)
-                .shadow(color: .green, radius: 8)
-            } else if (edge.isSelected && edge.status == .error) {
-                edge.draw()
-                    .stroke(.red, lineWidth: edgeThickness)
-                    .shadow(color: .red, radius: 8)
-            } else{
-                edge.draw()
-                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
-            }
-        }
-    }
-    
-    var drawChinesePostmanEdge: some View {
-        ZStack{
-            edge.draw()
-                .stroke(ChinesePostmanModel.colors[edge.timesSelectedCPP % 4], lineWidth: edgeThickness)
-        }
-    }
-    
-    var drawTSPEdge: some View {
-        ZStack {
-            switch edge.status {
-            case .none:
-                edge.draw()
-                    .stroke(.white, lineWidth: edgeThickness)
-            case .error:
-                edge.draw()
-                    .stroke(.red, lineWidth: edgeThickness)
-            case .correct:
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-            case .deleted:
-                edge.draw()
-                    .stroke(.gray, style: StrokeStyle(lineWidth: edgeThickness / 2, dash: [10]))
-                    .opacity(0.33)
-            }
-        }
-    }
-    
-    var drawEulerEdge: some View {
-        ZStack {
-            if edge.isSelected {
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-                    .shadow(color: .green, radius: 8)
-            } else {
-                edge.draw()
-                    .stroke(.white, lineWidth: edgeThickness)
-            }
-        }
-    }
-    
+    // Returns a view showing the textfield for the edge weight
     var drawWeightTextField: some View {
         ZStack {
             Form {
@@ -496,20 +398,7 @@ struct EdgeView: View {
                     .position(x: edge.textPosition.x, y: edge.textPosition.y)
                     .offset(edge.textOffset)
                     .padding()
-                // Allow the user to drag and reposition the edge weight label.
-                    .gesture(DragGesture()
-                        .onChanged({ drag in
-                            edge.textOffset = drag.translation
-                        })
-                            .onEnded({ _ in
-                                
-                                let tempOffset = edge.textOffset
-                                edge.textPosition.x += tempOffset.width
-                                edge.textPosition.y += tempOffset.height
-                                edge.textOffset = .zero
-                                
-                            })
-                    )
+                    .gesture(edgeGesture.moveWeightGesture)
             }
             .onSubmit {
                 weightSelected = false
@@ -517,6 +406,7 @@ struct EdgeView: View {
         }
     }
     
+    // Returns a view showing the weights
     var drawWeights: some View {
         ZStack {
             // Display the weights of the edges near the
@@ -534,51 +424,36 @@ struct EdgeView: View {
                     }
                 // Display a form to change the edge weight when single clicking the weight label.
                     .onLongPressGesture(minimumDuration: 1, maximumDistance: 0){
-                        if !model.weightChangeLocked {
+                        if !graph.weightChangeLocked {
                             weightSelected = true
                         }
                     }
-                // Allow the user to drag and reposition the edge weight label.
-                    .gesture(DragGesture()
-                        .onChanged({ drag in
-                            edge.textOffset = drag.translation
-                        })
-                            .onEnded({ _ in
-                                
-                                let tempOffset = edge.textOffset
-                                edge.textPosition.x += tempOffset.width
-                                edge.textPosition.y += tempOffset.height
-                                edge.textOffset = .zero
-                                
-                            })
-                    )
+                    .gesture(edgeGesture.moveWeightGesture)
             }
         }
     }
     
     var body: some View {
-        if model.edges.contains(edge) {
-            ZStack {
-                switch model.algorithm {
+        if graph.edges.contains(edge) {
+            Group {
+                switch graph.algorithm {
                 case .kruskal:
-                    drawKruskalEdge
+                    KruskalEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
                 case .prim:
-                    drawPrimEdge
+                    PrimEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
                 case .chinesePostman:
-                    drawChinesePostmanEdge
+                    ChinesePostmanEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
                 case .tsp:
-                    drawTSPEdge
+                    TSPEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
                 case .euler:
-                    drawEulerEdge
+                    EulerEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
                 default:
                     drawEdge
                 }
-                                
-                if weightSelected && !model.weightChangeLocked {
+                
+                if weightSelected && !graph.weightChangeLocked {
                     drawWeightTextField
-                } else {
-                    drawWeights
-                }
+                } else { drawWeights }
                 
                 if edge.directed == .forward {
                     edge.arrowPath()
@@ -619,13 +494,13 @@ struct Edge_Previews: PreviewProvider {
     static let firstVertex = Vertex(position: CGPoint(x: CGFloat(100), y: CGFloat(100)))
     static let secondVertex = Vertex(position: CGPoint(x: CGFloat(250), y: CGFloat(250)))
     static var edge = Edge(firstVertex, secondVertex)
-    static let model = ModelData(edges: [edge], vertices: [firstVertex, secondVertex])
-       
+    static let graph = Graph(edges: [edge], vertices: [firstVertex, secondVertex])
+    
     static var previews: some View {
         ZStack{
-            EdgeView(edge: edge, showWeights: .constant(false), model: model)
-            VertexView(vertex: firstVertex, model: model)
-            VertexView(vertex: secondVertex, model: model)
+            EdgeView(edge: edge, showWeights: .constant(false), graph: graph)
+            VertexView(vertex: firstVertex, graph: graph)
+            VertexView(vertex: secondVertex, graph: graph)
         }
     }
 }

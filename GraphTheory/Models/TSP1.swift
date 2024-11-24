@@ -8,7 +8,7 @@
 import SwiftUI
 
 class TSP1Model: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph: Graph = Graph()
     var width: CGFloat
     var height: CGFloat
     var vertexA: Vertex
@@ -68,21 +68,21 @@ class TSP1Model: ObservableObject {
         edgeCE.textDirection = .negative
         edgeDE.textDirection = .negative
         edgeDE.textDistance = 40
-        model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
-        model.edges.append(contentsOf: [edgeAB, edgeAC, edgeAD, edgeAE, edgeBC, edgeBD, edgeBE, edgeCD, edgeCE, edgeDE])
+        graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
+        graph.edges.append(contentsOf: [edgeAB, edgeAC, edgeAD, edgeAE, edgeBC, edgeBD, edgeBE, edgeCD, edgeCE, edgeDE])
     }
     
     func resize(width: CGFloat, height: CGFloat) {
-        self.model.isMoving = true
-        self.model.vertices[0].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
-        self.model.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (4 / 5) * height)
-        self.model.vertices[3].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
-        self.model.vertices[4].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
-        for edge in model.edges {
+        self.graph.isMoving = true
+        self.graph.vertices[0].position = CGPoint(x: (2 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[1].position = CGPoint(x: (4 / 5) * width, y: (1 / 5) * height)
+        self.graph.vertices[2].position = CGPoint(x: (4 / 5) * width, y: (4 / 5) * height)
+        self.graph.vertices[3].position = CGPoint(x: (2 / 5) * width, y: (4 / 5) * height)
+        self.graph.vertices[4].position = CGPoint(x: (1 / 5) * width, y: (2 / 5) * height)
+        for edge in graph.edges {
             edge.textPosition = edge.textStartPosition
         }
-        self.model.isMoving = false
+        self.graph.isMoving = false
     }
 }
 
@@ -93,7 +93,7 @@ struct TSP1: View {
         GeometryReader{ geometry in
             let width = geometry.size.width
             let height = geometry.size.height
-            TSP(model: tsp1Model.model)
+            TSP(graph: tsp1Model.graph)
                 .onAppear {
                     tsp1Model.resize(width: width, height: height)
 

@@ -20,8 +20,6 @@
 		27F67C38295477F10070DB24 /* NumbersOnly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C37295477F10070DB24 /* NumbersOnly.swift */; };
 		27F67C3A295478100070DB24 /* TrailingIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C39295478100070DB24 /* TrailingIcon.swift */; };
 		27F67C3D295478450070DB24 /* ChinesePostman.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C3C295478450070DB24 /* ChinesePostman.swift */; };
-		27F67C41295478990070DB24 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C40295478990070DB24 /* Graph.swift */; };
-		27F67C43295478AD0070DB24 /* GraphAlgorithm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */; };
 		27F67C45295478C40070DB24 /* Kruskal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C44295478C40070DB24 /* Kruskal.swift */; };
 		27F67C47295478DE0070DB24 /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C46295478DD0070DB24 /* Matrix.swift */; };
 		27F67C49295478F40070DB24 /* Permutation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C48295478F40070DB24 /* Permutation.swift */; };
@@ -34,7 +32,7 @@
 		27F67C5929547F330070DB24 /* ChinesePostmanModel1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C5829547F330070DB24 /* ChinesePostmanModel1.swift */; };
 		27F67C5B29547F570070DB24 /* Kruskal1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C5A29547F570070DB24 /* Kruskal1.swift */; };
 		27F67C5D29547F690070DB24 /* Loops.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C5C29547F690070DB24 /* Loops.swift */; };
-		27F67C5F29547F7C0070DB24 /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C5E29547F7C0070DB24 /* ModelData.swift */; };
+		27F67C5F29547F7C0070DB24 /* Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C5E29547F7C0070DB24 /* Graph.swift */; };
 		27F67C6129547F920070DB24 /* PrimTableModel1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C6029547F920070DB24 /* PrimTableModel1.swift */; };
 		27F67C6329547FB50070DB24 /* TSP1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C6229547FB50070DB24 /* TSP1.swift */; };
 		27F67C6629547FF50070DB24 /* DefinitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C6529547FF50070DB24 /* DefinitionView.swift */; };
@@ -48,6 +46,13 @@
 		27F67C77295480E10070DB24 /* Definition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C76295480E10070DB24 /* Definition.swift */; };
 		27F67C79295480FF0070DB24 /* Edge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C78295480FF0070DB24 /* Edge.swift */; };
 		27F67C7B295481940070DB24 /* Vertex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F67C7A295481940070DB24 /* Vertex.swift */; };
+		BD39621C2CF39D1C005FB1A0 /* Toolbars.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD39621B2CF39D1C005FB1A0 /* Toolbars.swift */; };
+		BD3962202CF3B103005FB1A0 /* KruskalEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD39621F2CF3B103005FB1A0 /* KruskalEdgeView.swift */; };
+		BD3962222CF3BD91005FB1A0 /* PrimEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962212CF3BD91005FB1A0 /* PrimEdgeView.swift */; };
+		BD3962242CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */; };
+		BD3962262CF3BFBC005FB1A0 /* TSPEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */; };
+		BD3962282CF3C02E005FB1A0 /* EulerEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */; };
+		BD3C85272CF3C643007312D6 /* GraphGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3C85262CF3C643007312D6 /* GraphGesture.swift */; };
 		C988A5CE61EFB5541BB9C3D4 /* Pods_GraphTheory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97C4ED15545457457F643D1C /* Pods_GraphTheory.framework */; };
 		D7D0670F4FFB7735E3C6C05C /* Pods_GraphTheory_GraphTheoryUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51FE4122193167D395C2540B /* Pods_GraphTheory_GraphTheoryUITests.framework */; };
 /* End PBXBuildFile section */
@@ -88,8 +93,6 @@
 		27F67C37295477F10070DB24 /* NumbersOnly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumbersOnly.swift; sourceTree = "<group>"; };
 		27F67C39295478100070DB24 /* TrailingIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailingIcon.swift; sourceTree = "<group>"; };
 		27F67C3C295478450070DB24 /* ChinesePostman.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePostman.swift; sourceTree = "<group>"; };
-		27F67C40295478990070DB24 /* Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
-		27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphAlgorithm.swift; sourceTree = "<group>"; };
 		27F67C44295478C40070DB24 /* Kruskal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kruskal.swift; sourceTree = "<group>"; };
 		27F67C46295478DD0070DB24 /* Matrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
 		27F67C48295478F40070DB24 /* Permutation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permutation.swift; sourceTree = "<group>"; };
@@ -102,7 +105,7 @@
 		27F67C5829547F330070DB24 /* ChinesePostmanModel1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePostmanModel1.swift; sourceTree = "<group>"; };
 		27F67C5A29547F570070DB24 /* Kruskal1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kruskal1.swift; sourceTree = "<group>"; };
 		27F67C5C29547F690070DB24 /* Loops.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loops.swift; sourceTree = "<group>"; };
-		27F67C5E29547F7C0070DB24 /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
+		27F67C5E29547F7C0070DB24 /* Graph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Graph.swift; sourceTree = "<group>"; };
 		27F67C6029547F920070DB24 /* PrimTableModel1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimTableModel1.swift; sourceTree = "<group>"; };
 		27F67C6229547FB50070DB24 /* TSP1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSP1.swift; sourceTree = "<group>"; };
 		27F67C6529547FF50070DB24 /* DefinitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefinitionView.swift; sourceTree = "<group>"; };
@@ -122,6 +125,13 @@
 		7C8D52D9A755A6732BF1E49F /* Pods-GraphTheory-GraphTheoryUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GraphTheory-GraphTheoryUITests.debug.xcconfig"; path = "Target Support Files/Pods-GraphTheory-GraphTheoryUITests/Pods-GraphTheory-GraphTheoryUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		97C4ED15545457457F643D1C /* Pods_GraphTheory.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GraphTheory.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F45B85EF1607DD4A543819 /* Pods-GraphTheory.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GraphTheory.debug.xcconfig"; path = "Target Support Files/Pods-GraphTheory/Pods-GraphTheory.debug.xcconfig"; sourceTree = "<group>"; };
+		BD39621B2CF39D1C005FB1A0 /* Toolbars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toolbars.swift; sourceTree = "<group>"; };
+		BD39621F2CF3B103005FB1A0 /* KruskalEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KruskalEdgeView.swift; sourceTree = "<group>"; };
+		BD3962212CF3BD91005FB1A0 /* PrimEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimEdgeView.swift; sourceTree = "<group>"; };
+		BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePostmanEdgeView.swift; sourceTree = "<group>"; };
+		BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSPEdgeView.swift; sourceTree = "<group>"; };
+		BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EulerEdgeView.swift; sourceTree = "<group>"; };
+		BD3C85262CF3C643007312D6 /* GraphGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphGesture.swift; sourceTree = "<group>"; };
 		FCF82B03D7FC68368BA8E317 /* Pods_GraphTheoryTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GraphTheoryTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -225,8 +235,6 @@
 			isa = PBXGroup;
 			children = (
 				27F67C3C295478450070DB24 /* ChinesePostman.swift */,
-				27F67C40295478990070DB24 /* Graph.swift */,
-				27F67C42295478AD0070DB24 /* GraphAlgorithm.swift */,
 				27F67C44295478C40070DB24 /* Kruskal.swift */,
 				27F67C46295478DD0070DB24 /* Matrix.swift */,
 				27F67C48295478F40070DB24 /* Permutation.swift */,
@@ -253,7 +261,7 @@
 				27F67C5829547F330070DB24 /* ChinesePostmanModel1.swift */,
 				27F67C5A29547F570070DB24 /* Kruskal1.swift */,
 				27F67C5C29547F690070DB24 /* Loops.swift */,
-				27F67C5E29547F7C0070DB24 /* ModelData.swift */,
+				27F67C5E29547F7C0070DB24 /* Graph.swift */,
 				27F67C6029547F920070DB24 /* PrimTableModel1.swift */,
 				27F67C6229547FB50070DB24 /* TSP1.swift */,
 			);
@@ -280,7 +288,14 @@
 				27F67C74295480C80070DB24 /* Canvas.swift */,
 				27F67C76295480E10070DB24 /* Definition.swift */,
 				27F67C78295480FF0070DB24 /* Edge.swift */,
+				BD3C85262CF3C643007312D6 /* GraphGesture.swift */,
+				BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */,
+				BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */,
+				BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */,
+				BD3962212CF3BD91005FB1A0 /* PrimEdgeView.swift */,
+				BD39621F2CF3B103005FB1A0 /* KruskalEdgeView.swift */,
 				27F67C7A295481940070DB24 /* Vertex.swift */,
+				BD39621B2CF39D1C005FB1A0 /* Toolbars.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -548,16 +563,18 @@
 			files = (
 				27F67C0B295475DB0070DB24 /* ContentView.swift in Sources */,
 				27F67C09295475DB0070DB24 /* GraphTheoryApp.swift in Sources */,
-				27F67C43295478AD0070DB24 /* GraphAlgorithm.swift in Sources */,
+				BD39621C2CF39D1C005FB1A0 /* Toolbars.swift in Sources */,
 				27F67C49295478F40070DB24 /* Permutation.swift in Sources */,
-				27F67C5F29547F7C0070DB24 /* ModelData.swift in Sources */,
+				27F67C5F29547F7C0070DB24 /* Graph.swift in Sources */,
 				27F67C4D2954792C0070DB24 /* PrimTable.swift in Sources */,
 				27F67C702954808B0070DB24 /* PracticeA2.swift in Sources */,
 				27F67C34295476BB0070DB24 /* Gradients.swift in Sources */,
 				27F67C5229547E160070DB24 /* Graphs.swift in Sources */,
 				27F67C6329547FB50070DB24 /* TSP1.swift in Sources */,
+				BD3962242CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift in Sources */,
 				27F67C722954809F0070DB24 /* PracticeA3.swift in Sources */,
 				27F67C6C2954805E0070DB24 /* Konigsberg2.swift in Sources */,
+				BD3962202CF3B103005FB1A0 /* KruskalEdgeView.swift in Sources */,
 				27F67C45295478C40070DB24 /* Kruskal.swift in Sources */,
 				27F67C6A295480490070DB24 /* Konigsberg.swift in Sources */,
 				27F67C5929547F330070DB24 /* ChinesePostmanModel1.swift in Sources */,
@@ -565,21 +582,24 @@
 				27F67C3D295478450070DB24 /* ChinesePostman.swift in Sources */,
 				27F67C5629547F000070DB24 /* PracticeA.swift in Sources */,
 				27F67C5D29547F690070DB24 /* Loops.swift in Sources */,
+				BD3962222CF3BD91005FB1A0 /* PrimEdgeView.swift in Sources */,
 				27F67C68295480310070DB24 /* DirectedGraph.swift in Sources */,
 				27F67C5B29547F570070DB24 /* Kruskal1.swift in Sources */,
 				27F67C36295476DF0070DB24 /* Math.swift in Sources */,
+				BD3962282CF3C02E005FB1A0 /* EulerEdgeView.swift in Sources */,
 				27F67C5429547ECE0070DB24 /* GraphTheoryIntro.swift in Sources */,
 				27F67C79295480FF0070DB24 /* Edge.swift in Sources */,
 				27F67C75295480C80070DB24 /* Canvas.swift in Sources */,
+				BD3C85272CF3C643007312D6 /* GraphGesture.swift in Sources */,
 				27F67C3A295478100070DB24 /* TrailingIcon.swift in Sources */,
 				27F67C4B295479100070DB24 /* Prim.swift in Sources */,
 				27F67C4F295479530070DB24 /* TSP.swift in Sources */,
 				27F67C6E295480760070DB24 /* PracticeA1.swift in Sources */,
 				27F67C7B295481940070DB24 /* Vertex.swift in Sources */,
 				27F67C6629547FF50070DB24 /* DefinitionView.swift in Sources */,
+				BD3962262CF3BFBC005FB1A0 /* TSPEdgeView.swift in Sources */,
 				27F67C47295478DE0070DB24 /* Matrix.swift in Sources */,
 				27F67C77295480E10070DB24 /* Definition.swift in Sources */,
-				27F67C41295478990070DB24 /* Graph.swift in Sources */,
 				27F67C38295477F10070DB24 /* NumbersOnly.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

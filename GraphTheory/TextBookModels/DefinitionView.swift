@@ -8,7 +8,7 @@
 import SwiftUI
 
 class DefinitionViewModel: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph = Graph()
     var vertexA: Vertex
     var vertexB: Vertex
     var vertexC: Vertex
@@ -35,9 +35,9 @@ class DefinitionViewModel: ObservableObject {
         edgeCD = Edge(vertexC, vertexD)
         edgeDE = Edge(vertexD, vertexE)
         edgeEE = Edge(vertexE, vertexE)
-        model.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
-        model.edges.append(contentsOf: [edgeAB, edgeAD, edgeAE, edgeBC, edgeCD, edgeDE, edgeEE])
-        model.changesLocked = true
+        graph.vertices.append(contentsOf: [vertexA, vertexB, vertexC, vertexD, vertexE])
+        graph.edges.append(contentsOf: [edgeAB, edgeAD, edgeAE, edgeBC, edgeCD, edgeDE, edgeEE])
+        graph.changesLocked = true
     }
 }
 
@@ -46,11 +46,11 @@ struct DefinitionView: View {
     
     var body: some View {
         ZStack {
-            ForEach(definitionModel.model.edges) { edge in
-                EdgeView(edge: edge, showWeights: .constant(false), model: definitionModel.model)
+            ForEach(definitionModel.graph.edges) { edge in
+                EdgeView(edge: edge, showWeights: .constant(false), graph: definitionModel.graph)
             }
-            ForEach(definitionModel.model.vertices) { vertex in
-                VertexView(vertex: vertex, model: definitionModel.model)
+            ForEach(definitionModel.graph.vertices) { vertex in
+                VertexView(vertex: vertex, graph: definitionModel.graph)
             }
             Text("Loop")
                 .position(x: 200.0, y: 475)

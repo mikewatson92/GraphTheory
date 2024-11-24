@@ -39,11 +39,11 @@ struct Konigsberg2: View {
                 .padding()
             }
             
-            ForEach(konigsbergModel.model.edges) { edge in
-                EdgeView(edge: edge, showWeights: .constant(false), model: konigsbergModel.model)
+            ForEach(konigsbergModel.graph.edges) { edge in
+                EdgeView(edge: edge, showWeights: .constant(false), graph: konigsbergModel.graph)
                     .onTapGesture(count: 2) {
                         if status == .deleteEdge {
-                            konigsbergModel.model.edges.removeAll(where: { $0.id == edge.id })
+                            konigsbergModel.graph.edges.removeAll(where: { $0.id == edge.id })
                             status = .startVertex
                         }
                     }
@@ -55,7 +55,7 @@ struct Konigsberg2: View {
                                 }
                                 visitedEdges.append(edge)
                                 edge.isSelected = true
-                                if visitedEdges.count == konigsbergModel.model.edges.count {
+                                if visitedEdges.count == konigsbergModel.graph.edges.count {
                                     status = .solved
                                 }
                             } else {
@@ -63,16 +63,16 @@ struct Konigsberg2: View {
                                 edge.isSelected = false
                             }
                             currentVertex = edge.endVertex
-                            konigsbergModel.model.highlightedVertex = edge.endVertex
+                            konigsbergModel.graph.highlightedVertex = edge.endVertex
                         }
                     }
             }
-            ForEach(konigsbergModel.model.vertices) { vertex in
-                VertexView(vertex: vertex, model: konigsbergModel.model)
+            ForEach(konigsbergModel.graph.vertices) { vertex in
+                VertexView(vertex: vertex, graph: konigsbergModel.graph)
                     .onTapGesture(count: 1) {
                         if status == .startVertex {
                             currentVertex = vertex
-                            konigsbergModel.model.highlightedVertex = vertex
+                            konigsbergModel.graph.highlightedVertex = vertex
                             status = .inProgress
                         }
                     }

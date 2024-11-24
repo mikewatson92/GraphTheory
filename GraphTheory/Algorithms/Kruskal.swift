@@ -11,15 +11,15 @@ class Kruskal: ObservableObject {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @Published var finished: Bool = false
     @Published var error: KruskalError = .none
-    var model: ModelData
-    lazy var numVertices: Int = model.vertices.count
-    lazy var numEdges: Int = model.edges.count
-    lazy var availableEdges: [Edge] = model.edges.sorted(by: { $0.weight < $1.weight })
+    var graph: Graph
+    lazy var numVertices: Int = graph.vertices.count
+    lazy var numEdges: Int = graph.edges.count
+    lazy var availableEdges: [Edge] = graph.edges.sorted(by: { $0.weight < $1.weight })
     var chosenEdges: [Edge] = []
     var loopEdges: [Edge] = []
     
-    init(model: ModelData) {
-        self.model = model
+    init(graph: Graph) {
+        self.graph = graph
     }
     
     enum KruskalError: Error {
@@ -28,8 +28,10 @@ class Kruskal: ObservableObject {
     
     // Determines whether the graph consisting of the edges selected by the user, chosenEdges, contains a cycle.
     func containsCycle() -> Bool {
-        let graph = Graph(chosenEdges: chosenEdges, model: model)
-        let result = graph.hasCycle(availableEdges: chosenEdges)
+        let newGraph = Graph()
+        newGraph.vertices.append(contentsOf: graph.vertices)
+        newGraph.edges.append(contentsOf: chosenEdges)
+        let result = newGraph.hasCycle()
         if result == true {
             return true
         }
@@ -93,30 +95,30 @@ class Kruskal: ObservableObject {
     }
     
     func reset() {
-        availableEdges = model.edges
+        availableEdges = graph.edges
         chosenEdges = []
         loopEdges = []
         error = .none
         finished = false
-        for edge in model.edges {
+        for edge in graph.edges {
             edge.isSelected = false
             edge.status = .none
         }
-        for vertex in model.vertices {
+        for vertex in graph.vertices {
             vertex.isSelected = false
         }
-        model.highlightedVertex = nil
+        graph.highlightedVertex = nil
     }
 }
 
 
 struct KruskalView: View {
     @StateObject var kruskal: Kruskal
-    @ObservedObject var model: ModelData
+    @ObservedObject var graph: Graph
     
-    init(model: ModelData) {
-        self.model = model
-        _kruskal = .init(wrappedValue: Kruskal(model: model))
+    init(graph: Graph) {
+        self.graph = graph
+        _kruskal = .init(wrappedValue: Kruskal(graph: graph))
     }
     
     var loopError: some View {
@@ -167,12 +169,12 @@ struct KruskalView: View {
                 weightError
             }
             
-            ForEach(model.edges) { edge in
-                EdgeView(edge: edge, showWeights: .constant(true), model: model)
+            ForEach(graph.edges) { edge in
+                EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                     .onAppear{
-                        model.algorithm = .kruskal
-                        model.changesLocked = true
-                        model.weightChangeLocked = true
+                        graph.algorithm = .kruskal
+                        graph.changesLocked = true
+                        graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
                         if kruskal.error != .none {
@@ -194,22 +196,22 @@ struct KruskalView: View {
                     }
                 
                 
-                ForEach(model.vertices) { vertex in
-                    VertexView(vertex: vertex, model: model)
+                ForEach(graph.vertices) { vertex in
+                    VertexView(vertex: vertex, graph: graph)
                         .onAppear{
-                            model.algorithm = .kruskal
-                            model.changesLocked = true
-                            model.weightChangeLocked = true
+                            graph.algorithm = .kruskal
+                            graph.changesLocked = true
+                            graph.weightChangeLocked = true
                         }
                 }
             }
         }
         .onDisappear {
-            model.algorithm = .none
-            model.changesLocked = false
-            model.weightChangeLocked = false
-            model.highlightedVertex = nil
-            for edge in model.edges {
+            graph.algorithm = .none
+            graph.changesLocked = false
+            graph.weightChangeLocked = false
+            graph.highlightedVertex = nil
+            for edge in graph.edges {
                 edge.status = .none
                 edge.isSelected = false
             }
@@ -221,6 +223,6 @@ struct KruskalView: View {
 
 struct KruskalView_Previews: PreviewProvider {
     static var previews: some View {
-        KruskalView(model: ModelData())
+        KruskalView(graph: Graph())
     }
 }

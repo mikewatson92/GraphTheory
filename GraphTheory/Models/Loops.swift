@@ -8,14 +8,14 @@
 import SwiftUI
 
 class LoopModel: ObservableObject {
-    @Published var model: ModelData = ModelData()
+    @Published var graph: Graph = Graph()
     var vertex = Vertex(position: CGPoint(x: 250, y: 250))
     var edge: Edge
     
     init() {
         edge = Edge(vertex, vertex)
-        model.vertices.append(vertex)
-        model.edges.append(edge)
+        graph.vertices.append(vertex)
+        graph.edges.append(edge)
     }
 }
 
@@ -25,8 +25,8 @@ struct Loop: View {
     
     var body: some View {
         ZStack{
-            EdgeView(edge: loopModel.edge, showWeights: .constant(false), model: loopModel.model)
-            VertexView(vertex: loopModel.vertex, model: loopModel.model)
+            EdgeView(edge: loopModel.edge, showWeights: .constant(false), graph: loopModel.graph)
+            VertexView(vertex: loopModel.vertex, graph: loopModel.graph)
         }
     }
 }

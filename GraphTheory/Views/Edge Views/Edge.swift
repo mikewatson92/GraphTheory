@@ -439,25 +439,44 @@ struct EdgeView: View {
                 switch graph.algorithm {
                 case .kruskal:
                     KruskalEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
-
+                        
                 case .prim:
                     PrimEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
-
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                        }
                 case .chinesePostman:
                     ChinesePostmanEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
-
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                        }
                 case .tsp:
                     TSPEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
-
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                            
+                        }
                 case .euler:
                     EulerEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
-  
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                            
+                        }
                 default:
                     drawEdge
                         .onTapGesture(count: 1) {
                             if !graph.changesLocked {
                                 edge.isSelected = !edge.isSelected
                             }
+                            
                         }
                 }
                 

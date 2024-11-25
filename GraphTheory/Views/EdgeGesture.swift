@@ -47,7 +47,6 @@ class EdgeGesture: ObservableObject {
         TapGesture(count: 2)
             .onEnded {
                 if !self.graph.changesLocked {
-                    //graph.edges.remove(at: graph.edges.firstIndex(where: {$0.id == edge.id})!)
                     self.graph.edges.removeAll(where: { $0.id == self.edge.id })
                 }
             }

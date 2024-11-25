@@ -8,7 +8,7 @@
 import SwiftUI
 
 class ChinesePostmanModel: ObservableObject {
-    var graph: Graph
+    @Published var graph: Graph
     @Published var startingVertex: Vertex?
     @Published var currentVertex: Vertex?
     @Published var path: [Vertex] = []
@@ -266,6 +266,9 @@ struct ChinesePostman: View {
                         graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
+                        if !graph.changesLocked {
+                            edge.isSelected = !edge.isSelected
+                        }
                         if chinesePostmanModel.status == .inProgress {
                             if !chinesePostmanModel.isStart && chinesePostmanModel.isConnected(edge) {
                                 edge.timesSelectedCPP += 1

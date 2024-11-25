@@ -38,20 +38,16 @@ struct KruskalEdgeView: View {
                 edge.draw()
                     .stroke(.green, lineWidth: edgeThickness)
                     .shadow(color: .green, radius: 8)
-
             } else if (edge.isSelected && edge.status == .error) {
                 edge.draw()
                     .stroke(.red, lineWidth: edgeThickness)
                     .shadow(color: .red, radius: 8)
-
             } else if (edge.status == .correct) {
                 edge.draw()
                     .stroke(.green, lineWidth: edgeThickness)
-
             } else {
                 edge.draw()
                     .stroke(defaultEdgeColor, lineWidth: edgeThickness)
-
             }
     }
 }

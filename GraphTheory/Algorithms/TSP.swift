@@ -8,7 +8,7 @@
 import SwiftUI
 
 class TSPModel: ObservableObject {
-    var graph: Graph
+    @Published var graph: Graph
     var startVertex: Vertex?
     var currentVertex: Vertex?
     var edgePath: [Edge] = []
@@ -215,6 +215,9 @@ struct TSP: View {
                             graph.weightChangeLocked = true
                         }
                         .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
                             if tspModel.status == .inProgressUpperBound {
                                 if tspModel.isNearestNeighbor(edge) {
                                     edge.status = .correct

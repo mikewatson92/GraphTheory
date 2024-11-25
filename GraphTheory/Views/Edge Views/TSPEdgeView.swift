@@ -1,5 +1,5 @@
 //
-//  KruskalEdgeView.swift
+//  TSPEdgeView.swift
 //  GraphTheory
 //
 //  Created by Mike Watson on 11/24/24.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct KruskalEdgeView: View {
+struct TSPEdgeView: View {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @StateObject var edge: Edge
     @ObservedObject var graph: Graph
@@ -34,28 +34,24 @@ struct KruskalEdgeView: View {
     }
     
     var body: some View {
-            if (edge.isSelected && edge.status != .error) {
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-                    .shadow(color: .green, radius: 8)
-
-            } else if (edge.isSelected && edge.status == .error) {
-                edge.draw()
-                    .stroke(.red, lineWidth: edgeThickness)
-                    .shadow(color: .red, radius: 8)
-
-            } else if (edge.status == .correct) {
-                edge.draw()
-                    .stroke(.green, lineWidth: edgeThickness)
-
-            } else {
-                edge.draw()
-                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
-
-            }
+        switch edge.status {
+        case .none:
+            edge.draw()
+                .stroke(defaultEdgeColor, lineWidth: edgeThickness)
+        case .error:
+            edge.draw()
+                .stroke(.red, lineWidth: edgeThickness)
+        case .correct:
+            edge.draw()
+                .stroke(.green, lineWidth: edgeThickness)
+        case .deleted:
+            edge.draw()
+                .stroke(.gray, style: StrokeStyle(lineWidth: edgeThickness / 2, dash: [10]))
+                .opacity(0.33)
+        }
     }
 }
 
 #Preview {
-    //KruskalEdgeView()
+    //TSPEdgeView()
 }

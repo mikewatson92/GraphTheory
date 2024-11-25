@@ -11,7 +11,7 @@ class Kruskal: ObservableObject {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @Published var finished: Bool = false
     @Published var error: KruskalError = .none
-    var graph: Graph
+    @Published var graph: Graph
     lazy var numVertices: Int = graph.vertices.count
     lazy var numEdges: Int = graph.edges.count
     lazy var availableEdges: [Edge] = graph.edges.sorted(by: { $0.weight < $1.weight })
@@ -177,6 +177,9 @@ struct KruskalView: View {
                         graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
+                        if !graph.changesLocked {
+                            edge.isSelected = !edge.isSelected
+                        }
                         if kruskal.error != .none {
                             if edge.status == .error {
                                 edge.status = .none

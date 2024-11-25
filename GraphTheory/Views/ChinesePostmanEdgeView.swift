@@ -25,6 +25,14 @@ struct ChinesePostmanEdgeView: View {
         self.edgeThickness = edgeThickness
     }
     
+    var defaultEdgeColor: Color {
+        if colorMode == .dark {
+            return Color.white
+        } else {
+            return Color.black
+        }
+    }
+    
     var body: some View {
         edge.draw()
             .stroke(ChinesePostmanModel.colors[edge.timesSelectedCPP % 4], lineWidth: edgeThickness)

@@ -25,6 +25,14 @@ struct EulerEdgeView: View {
         self.edgeThickness = edgeThickness
     }
     
+    var defaultEdgeColor: Color {
+        if colorMode == .dark {
+            return Color.white
+        } else {
+            return Color.black
+        }
+    }
+    
     var body: some View {
         if edge.isSelected {
             edge.draw()
@@ -32,7 +40,7 @@ struct EulerEdgeView: View {
                 .shadow(color: .green, radius: 8)
         } else {
             edge.draw()
-                .stroke(.white, lineWidth: edgeThickness)
+                .stroke(defaultEdgeColor, lineWidth: edgeThickness)
         }
     }
 }

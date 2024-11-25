@@ -25,11 +25,19 @@ struct TSPEdgeView: View {
         self.edgeThickness = edgeThickness
     }
     
+    var defaultEdgeColor: Color {
+        if colorMode == .dark {
+            return Color.white
+        } else {
+            return Color.black
+        }
+    }
+    
     var body: some View {
         switch edge.status {
         case .none:
             edge.draw()
-                .stroke(.white, lineWidth: edgeThickness)
+                .stroke(defaultEdgeColor, lineWidth: edgeThickness)
         case .error:
             edge.draw()
                 .stroke(.red, lineWidth: edgeThickness)

@@ -9,7 +9,7 @@ import SwiftUI
 
 class EdgeGesture: ObservableObject {
 
-    @StateObject var edge: Edge
+    @ObservedObject var edge: Edge
     @ObservedObject var graph: Graph
     @Binding var weightSelected: Bool
     

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class GraphGesture: ObservableObject {
+class EdgeGesture: ObservableObject {
 
     @StateObject var edge: Edge
     @ObservedObject var graph: Graph

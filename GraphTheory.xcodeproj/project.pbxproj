@@ -52,7 +52,8 @@
 		BD3962242CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */; };
 		BD3962262CF3BFBC005FB1A0 /* TSPEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */; };
 		BD3962282CF3C02E005FB1A0 /* EulerEdgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */; };
-		BD3C85272CF3C643007312D6 /* GraphGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3C85262CF3C643007312D6 /* GraphGesture.swift */; };
+		BD3C85272CF3C643007312D6 /* EdgeGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3C85262CF3C643007312D6 /* EdgeGesture.swift */; };
+		BD5239512CF42D380067D26C /* VertexGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5239502CF42D380067D26C /* VertexGesture.swift */; };
 		C988A5CE61EFB5541BB9C3D4 /* Pods_GraphTheory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97C4ED15545457457F643D1C /* Pods_GraphTheory.framework */; };
 		D7D0670F4FFB7735E3C6C05C /* Pods_GraphTheory_GraphTheoryUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51FE4122193167D395C2540B /* Pods_GraphTheory_GraphTheoryUITests.framework */; };
 /* End PBXBuildFile section */
@@ -131,7 +132,8 @@
 		BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChinesePostmanEdgeView.swift; sourceTree = "<group>"; };
 		BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSPEdgeView.swift; sourceTree = "<group>"; };
 		BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EulerEdgeView.swift; sourceTree = "<group>"; };
-		BD3C85262CF3C643007312D6 /* GraphGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphGesture.swift; sourceTree = "<group>"; };
+		BD3C85262CF3C643007312D6 /* EdgeGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EdgeGesture.swift; sourceTree = "<group>"; };
+		BD5239502CF42D380067D26C /* VertexGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VertexGesture.swift; sourceTree = "<group>"; };
 		FCF82B03D7FC68368BA8E317 /* Pods_GraphTheoryTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GraphTheoryTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -286,9 +288,10 @@
 			isa = PBXGroup;
 			children = (
 				27F67C74295480C80070DB24 /* Canvas.swift */,
+				BD5239502CF42D380067D26C /* VertexGesture.swift */,
 				27F67C76295480E10070DB24 /* Definition.swift */,
 				27F67C78295480FF0070DB24 /* Edge.swift */,
-				BD3C85262CF3C643007312D6 /* GraphGesture.swift */,
+				BD3C85262CF3C643007312D6 /* EdgeGesture.swift */,
 				BD3962272CF3C02E005FB1A0 /* EulerEdgeView.swift */,
 				BD3962252CF3BFBC005FB1A0 /* TSPEdgeView.swift */,
 				BD3962232CF3BF5E005FB1A0 /* ChinesePostmanEdgeView.swift */,
@@ -562,6 +565,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27F67C0B295475DB0070DB24 /* ContentView.swift in Sources */,
+				BD5239512CF42D380067D26C /* VertexGesture.swift in Sources */,
 				27F67C09295475DB0070DB24 /* GraphTheoryApp.swift in Sources */,
 				BD39621C2CF39D1C005FB1A0 /* Toolbars.swift in Sources */,
 				27F67C49295478F40070DB24 /* Permutation.swift in Sources */,
@@ -590,7 +594,7 @@
 				27F67C5429547ECE0070DB24 /* GraphTheoryIntro.swift in Sources */,
 				27F67C79295480FF0070DB24 /* Edge.swift in Sources */,
 				27F67C75295480C80070DB24 /* Canvas.swift in Sources */,
-				BD3C85272CF3C643007312D6 /* GraphGesture.swift in Sources */,
+				BD3C85272CF3C643007312D6 /* EdgeGesture.swift in Sources */,
 				27F67C3A295478100070DB24 /* TrailingIcon.swift in Sources */,
 				27F67C4B295479100070DB24 /* Prim.swift in Sources */,
 				27F67C4F295479530070DB24 /* TSP.swift in Sources */,
@@ -674,7 +678,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -736,7 +740,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

@@ -16,7 +16,7 @@ struct Canvas: View {
     @State private var weight: Double?
     @State private var pickerAlgorithm: Graph.Algorithm = .none
     @State private var action: Int? = 0
-    @State private var algorithms: [Graph.Algorithm] = [.none, .kruskal, .prim, .primTable, .tsp, .chinesePostman]
+    @State private var algorithms: [Graph.Algorithm] = Graph.Algorithm.allCases
     
     init(graph: Graph) {
         self.graph = graph
@@ -64,33 +64,8 @@ struct Canvas: View {
             ForEach(graph.vertices) { vertex in
                 VertexView(vertex: vertex, graph: graph)
                     .onTapGesture (count: 1){
-                        //Add an edge after tapping two vertices.
-                        //Keep track if which vertices have been selected.
-                        if !graph.changesLocked {
-                            if startVertex == nil && vertex.status != .deleted {
-                                startVertex = vertex
-                                graph.highlightedVertex = vertex
-                                
-                            } else if endVertex == nil && vertex.id != startVertex?.id {
-                                if startVertex!.status == .deleted {
-                                    startVertex = vertex
-                                    graph.highlightedVertex = vertex
-                                } else {
-                                    endVertex = vertex
-                                }
-                                
-                            } else if endVertex == nil && vertex.id == startVertex?.id {
-                                startVertex = nil
-                                graph.highlightedVertex = nil
-                            }
-                            if startVertex != nil && endVertex != nil {
-                                let newEdge = Edge( startVertex!,  endVertex!)
-                                graph.edges.append(newEdge)
-                                startVertex = nil
-                                endVertex = nil
-                                graph.highlightedVertex = nil
-                            }
-                        }
+                        let vertexGesture = VertexGesture(startVertex: $startVertex, endVertex: $endVertex, graph: graph, vertex: vertex)
+                        vertexGesture.addEdgeGesture()
                     }
             }
         }

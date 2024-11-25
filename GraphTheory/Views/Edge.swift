@@ -334,8 +334,8 @@ struct EdgeView: View {
         self.graph = graph
     }
     
-    var edgeGesture: GraphGesture {
-        GraphGesture(edge: edge, graph: graph, weightSelected: $weightSelected)
+    var edgeGesture: EdgeGesture {
+        EdgeGesture(edge: edge, graph: graph, weightSelected: $weightSelected)
     }
     
     var weightColor: Color {

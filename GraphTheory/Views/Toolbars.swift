@@ -20,7 +20,6 @@ struct Toolbars: ToolbarContent {
                 Menu {
                     NavigationLink("Kruskal's Algorithm", destination: KruskalView(graph: graph))
                     NavigationLink("Prim's Algorithm", destination: PrimView(graph: graph))
-                    //NavigationLink("Prim's Table", destination: PrimTable())
                     NavigationLink("Chinese Postman", destination: ChinesePostman(graph: graph))
                     NavigationLink("Traveling Salesman", destination: TSP(graph: graph))
                 } label: {

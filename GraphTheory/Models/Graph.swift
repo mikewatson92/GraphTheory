@@ -40,31 +40,31 @@ class Graph: ObservableObject {
         var id: Self { self }
     }
     
-    func cycleFromVertex(path pathInput: [UUID], availableEdges available: [Edge]) -> Bool {
-        var path = pathInput
-        var availableEdges = available
-        for edge in availableEdges {
-            if edge.startVertex.id == path.last {
-                if path.contains(edge.endVertex.id) { return true }
-                path.append(edge.endVertex.id)
-                availableEdges.removeAll(where: {$0.id == edge.id} )
-                return cycleFromVertex(path: path, availableEdges: availableEdges)
-            } else if edge.endVertex.id == path.last {
-                if path.contains(edge.startVertex.id) { return true }
-                path.append(edge.startVertex.id)
-                availableEdges.removeAll(where: {$0.id == edge.id} )
+    func hasCycle() -> Bool {
+        func cycleFromVertex(path pathInput: [UUID], availableEdges available: [Edge]) -> Bool {
+            var path = pathInput
+            var availableEdges = available
+            for edge in availableEdges {
+                if edge.startVertex.id == path.last {
+                    if path.contains(edge.endVertex.id) { return true }
+                    path.append(edge.endVertex.id)
+                    availableEdges.removeAll(where: {$0.id == edge.id} )
+                    return cycleFromVertex(path: path, availableEdges: availableEdges)
+                } else if edge.endVertex.id == path.last {
+                    if path.contains(edge.startVertex.id) { return true }
+                    path.append(edge.startVertex.id)
+                    availableEdges.removeAll(where: {$0.id == edge.id} )
+                    return cycleFromVertex(path: path, availableEdges: availableEdges)
+                }
+            }
+            
+            if path.count > 1 {
+                path.removeLast()
                 return cycleFromVertex(path: path, availableEdges: availableEdges)
             }
-        }
+            return false
+        } // End of func cycleFromVertex
         
-        if path.count > 1 {
-            path.removeLast()
-            return cycleFromVertex(path: path, availableEdges: availableEdges)
-        }
-        return false
-    }
-    
-    func hasCycle() -> Bool {
         for vertex in vertices {
             let result = cycleFromVertex(path: [vertex.id], availableEdges: edges)
             if result == true {

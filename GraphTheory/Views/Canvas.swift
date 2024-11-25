@@ -52,12 +52,6 @@ struct Canvas: View {
             ForEach(graph.edges) { edge in
                 EdgeView(edge: edge, showWeights: $showWeights, graph: graph)
                     .shadow(color: edge.isSelected ? Color.green : .clear, radius: 8)
-                    .onTapGesture(count: 1) {
-                        if !graph.changesLocked {
-                            edge.isSelected = !edge.isSelected
-                        }
-                        
-                    }
             }
             
             // Draws all the vertices in the ModelData

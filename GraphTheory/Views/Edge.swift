@@ -423,7 +423,7 @@ struct EdgeView: View {
                         edge.textPosition = edge.textStartPosition
                     }
                 // Display a form to change the edge weight when single clicking the weight label.
-                    .onLongPressGesture(minimumDuration: 1, maximumDistance: 0){
+                    .onTapGesture(count: 1){
                         if !graph.weightChangeLocked {
                             weightSelected = true
                         }
@@ -439,17 +439,52 @@ struct EdgeView: View {
                 switch graph.algorithm {
                 case .kruskal:
                     KruskalEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                        }
                 case .prim:
                     PrimEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                        }
                 case .chinesePostman:
                     ChinesePostmanEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                        }
                 case .tsp:
                     TSPEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                            
+                        }
                 case .euler:
                     EulerEdgeView(edge: edge, graph: graph, showWeights: $showWeights, edgeThickness: edgeThickness)
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                            
+                        }
                 default:
                     drawEdge
+                        .onTapGesture(count: 1) {
+                            if !graph.changesLocked {
+                                edge.isSelected = !edge.isSelected
+                            }
+                            
+                        }
                 }
+                
+                
                 
                 if weightSelected && !graph.weightChangeLocked {
                     drawWeightTextField

@@ -317,7 +317,7 @@ class Edge: Identifiable, ObservableObject, Equatable {
 
 
 struct EdgeView: View {
-    @Environment(\.colorScheme) static var colorMode: ColorScheme
+    @Environment(\.colorScheme) var colorMode: ColorScheme
     @StateObject var edge: Edge
     @ObservedObject var graph: Graph
     @State private var weightSelected: Bool = false
@@ -346,7 +346,7 @@ struct EdgeView: View {
         }
     }
     
-    static var defaultEdgeColor: Color {
+    var defaultEdgeColor: Color {
         if colorMode == .dark {
             return Color.white
         } else {
@@ -379,7 +379,7 @@ struct EdgeView: View {
                     .shadow(color: .blue, radius: 8)
             } else {
                 edge.draw()
-                    .stroke(edgeColor ?? EdgeView.defaultEdgeColor, lineWidth: edgeThickness)
+                    .stroke(edgeColor ?? self.defaultEdgeColor, lineWidth: edgeThickness)
                     .gesture(edgeGesture.deleteGesture)
                     .gesture(edgeGesture.highlightGesture)
                     .gesture(edgeGesture.straightenGesture)

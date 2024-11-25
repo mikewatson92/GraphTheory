@@ -25,6 +25,14 @@ struct KruskalEdgeView: View {
         self.edgeThickness = edgeThickness
     }
     
+    var defaultEdgeColor: Color {
+        if colorMode == .dark {
+            return Color.white
+        } else {
+            return Color.black
+        }
+    }
+    
     var body: some View {
             if (edge.isSelected && edge.status != .error) {
                 edge.draw()
@@ -39,7 +47,7 @@ struct KruskalEdgeView: View {
                     .stroke(.green, lineWidth: edgeThickness)
             } else {
                 edge.draw()
-                    .stroke(EdgeView.defaultEdgeColor, lineWidth: edgeThickness)
+                    .stroke(defaultEdgeColor, lineWidth: edgeThickness)
             }
     }
 }

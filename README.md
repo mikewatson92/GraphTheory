@@ -42,5 +42,18 @@ This feature will be added back in the near future.
      with one important difference. The first move is to select a starting vertex. Then,
      select the lowest weight edge connected to that vertex. Continuing choosing
      lowest weight edges among those currently adjacent to your subgraph.
-   - 
+   - Chinese Postman Problem - Start by selecting the starting vertex. Then select edges
+     in the correct order according to the algorithm. The edges will change color
+     based on how many times they have been selected. An edge chosen once will appear
+     green, twice will appear blue, and three times will appear dark magenta.
+     The background will change to blue when the algorithm is completed successfully.
+   - The Traveling Salesman Problem - There are several stages to this algorithm. Start by
+     selecting your starting verte. Then apply the nearest neighbor algorithm by selecting
+     edges in the correct order. The vertices will change color to keep track of
+     where you have traveled. When finished, you'll need to apply the deleted vertex
+     algorithm. Double click any vertex to delete it. Then, apply Kruskal's algorithm
+     by selecting edges in the correct order. When finished, click again on the
+     vertex that you deleted to restore it. Finally, add back the two edges
+     with the smallest weights. Calculations for the lower and upper bounds will
+     be displayed upon successful completion.
      

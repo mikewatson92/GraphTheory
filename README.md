@@ -23,6 +23,7 @@ This feature will be added back in the near future.
      Then click on an ending vertex. An edge will be constructed between those two vertices.
    - Delete a vertex or edge by double-clicking on it.
    - Change an edge's shape: Click and drag on any edge to add a curve to its shape.
+   - Straighten a curved edge: Long-press on the edge, then release. The edge will straighten again.
    - Add weights: Click the checkbox at the top of the canvas to show weights. Default weights of 0 will
      be applied to all edges.
    - Change weights: Changing a weight is as simple as clicking on the number, inputting the

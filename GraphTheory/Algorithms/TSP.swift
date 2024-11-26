@@ -213,6 +213,7 @@ struct TSP: View {
                 ForEach(graph.edges) { edge in
                     EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                         .onTapGesture(count: 1) {
+                            print("Tapped an edge")
                             if tspModel.status == .inProgressUpperBound {
                                 if tspModel.isNearestNeighbor(edge) {
                                     edge.status = .correct
@@ -221,15 +222,19 @@ struct TSP: View {
                                     tspModel.currentVertex!.status = .visited
                                     tspModel.currentVertex = edge.endVertex
                                     graph.highlightedVertex = edge.endVertex
+                                    print("Add edge for nearest neighbor algorithm")
                                 } else if edge.status == .none {
                                     edge.status = .error
+                                    print("Error")
                                 } else if edge.status == .error {
                                     edge.status = .none
+                                    print("Fix error")
                                 }
                                 if tspModel.nearestNeighborFinished {
                                     graph.highlightedVertex = nil
                                     tspModel.computeUpperBound()
                                     tspModel.status = .startLowerBound
+                                    print("Nearest neighbor algorithm finished")
                                 }
                             } else if tspModel.status == .inProgressLowerBound {
                                 if tspModel.kruskal!.error != .none {
@@ -237,6 +242,7 @@ struct TSP: View {
                                         edge.status = .none
                                         tspModel.kruskal!.error = .none
                                         edge.isSelected = !edge.isSelected
+                                        print("Add edge for deleted vertex algorithm")
                                     }
                                 } else if edge.status != .correct && edge.status != .deleted && !tspModel.kruskal!.finished {
                                     let edgeError = !tspModel.kruskal!.nextEdge(edge: edge)
@@ -246,11 +252,14 @@ struct TSP: View {
                                         edge.status = .correct
                                     }
                                     edge.isSelected = !edge.isSelected
+                                    print("There was an error")
                                 }
                                 if tspModel.kruskal!.finished {
                                     tspModel.status = .addBackVertex
+                                    print("Kruskal's algorithm finished")
                                 }
                             } else if tspModel.status == .addBackEdges {
+                                print("adding back an edge")
                                 if edge.status == .deleted && edge.weight == tspModel.deletedEdges.sorted(by: { $0.weight < $1.weight })[0].weight {
                                     tspModel.addBackEdges.append(edge)
                                     tspModel.deletedEdges.removeAll(where: { $0.id == edge.id })
@@ -258,8 +267,11 @@ struct TSP: View {
                                     if tspModel.addBackEdges.count == 2 {
                                         tspModel.computeLowerBound()
                                         tspModel.status = .finished
+                                        print("Finished!")
                                     }
                                 }
+                            } else {
+                                print("How did we end up here?")
                             }
                         }
                 }

@@ -15,10 +15,30 @@ class Prim: ObservableObject {
     var numEdges: Int
     var availableEdges: [Edge] // The edges not chosen yet
     var chosenEdges: [Edge] = [] // Edges selected by user
+    var connectedEdges: [Edge] = [] // All un-selected edges
+    // that could be connected to our current subgraph
+    var cycleEdges: [Edge] = [] // All edges that, if
+    // added to the graph, would create a cycle
     var connectedVertices: [Vertex] = [] // An array of the
     // vertices connected by the subgraph
     var startPhase: Bool = true
     var error: PrimError = .none
+    var allAvailableValidEdges: [Edge] {
+        updateConnectedEdges()
+        updateCycleEdges()
+        var returnEdges: [Edge] = []
+        // If an edge is connected to the subgraph, and
+        // it doesn't create a cycle, and it is available,
+        // add it to returnEdges.
+        for edge in connectedEdges {
+            if !cycleEdges.contains(edge) {
+                if availableEdges.contains(edge) {
+                    returnEdges.append(edge)
+                }
+            }
+        }
+        return returnEdges
+    }
     
     enum PrimError: Error {
         case cycle, notLowestWeight, notConnected, none
@@ -36,7 +56,7 @@ class Prim: ObservableObject {
     
     // Determine if a newEdge's weight has the lowest weight of all available edges. There may be multiple edges with the lowest weight.
     func lowestWeight(newEdge: Edge) -> Bool {
-        return newEdge.weight == availableEdges.sorted(by: { $0.weight < $1.weight })[0].weight
+        return newEdge.weight == allAvailableValidEdges.sorted(by: { $0.weight < $1.weight })[0].weight
         
     }
     
@@ -54,6 +74,14 @@ class Prim: ObservableObject {
         return false
     }
     
+    func updateConnectedEdges() {
+        for edge in availableEdges {
+            if isConnected(newEdge: edge) {
+                connectedEdges.append(edge)
+            }
+        }
+    }
+    
     func formsCycle(newEdge: Edge) -> Bool {
         let newGraph = Graph()
         newGraph.vertices = graph.vertices
@@ -62,17 +90,30 @@ class Prim: ObservableObject {
         return newGraph.hasCycle()
     }
     
+    func updateCycleEdges() {
+        for edge in availableEdges {
+            if formsCycle(newEdge: edge) {
+                cycleEdges.append(edge)
+                availableEdges.removeAll(where: { $0.id == edge.id })
+            }
+            
+        }
+    }
+    
     func edgeIsValid(newEdge: Edge) -> Bool {
         if !lowestWeight(newEdge: newEdge) {
             error = .notLowestWeight
+            print("Not the lowest weight.")
             return false
         }
         if !isConnected(newEdge: newEdge) {
             error = .notConnected
+            print("Not connected")
             return false
         }
         if formsCycle(newEdge: newEdge) {
             error = .cycle
+            print("Forms a cycle")
             return false
         }
         // Return true if newEdge is the lowest weight,
@@ -160,6 +201,8 @@ struct PrimView: View {
                             edge.isSelected = true
                             prim.chosenEdges.append(edge)
                             prim.addVertex(forEdge: edge)
+                            prim.availableEdges.removeAll(where:
+                                                            { $0.id == edge.id })
                             prim.checkIfFinished()
                         } else if edge.status != .none {
                             edge.status = .none

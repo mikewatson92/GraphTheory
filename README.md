@@ -1,3 +1,5 @@
+Master all graph theory concepts for IBDP HL Math!
+
 **Important Updates**
 Currently, the textbook features have been disabled due to an issue with Cocoapods.
 This feature will be added back in the near future.
@@ -21,6 +23,7 @@ This feature will be added back in the near future.
      Then click on an ending vertex. An edge will be constructed between those two vertices.
    - Delete a vertex or edge by double-clicking on it.
    - Change an edge's shape: Click and drag on any edge to add a curve to its shape.
+   - Straighten a curved edge: Long-press on the edge, then release. The edge will straighten again.
    - Add weights: Click the checkbox at the top of the canvas to show weights. Default weights of 0 will
      be applied to all edges.
    - Change weights: Changing a weight is as simple as clicking on the number, inputting the
@@ -42,5 +45,25 @@ This feature will be added back in the near future.
      with one important difference. The first move is to select a starting vertex. Then,
      select the lowest weight edge connected to that vertex. Continuing choosing
      lowest weight edges among those currently adjacent to your subgraph.
-   - 
+   - Chinese Postman Problem - Start by selecting the starting vertex. Then select edges
+     in the correct order according to the algorithm. The edges will change color
+     based on how many times they have been selected. An edge chosen once will appear
+     green, twice will appear blue, and three times will appear dark magenta.
+     The background will change to blue when the algorithm is completed successfully.
+   - The Traveling Salesman Problem - There are several stages to this algorithm. Start by
+     selecting your starting verte. Then apply the nearest neighbor algorithm by selecting
+     edges in the correct order. The vertices will change color to keep track of
+     where you have traveled. When finished, you'll need to apply the deleted vertex
+     algorithm. Double click any vertex to delete it. Then, apply Kruskal's algorithm
+     by selecting edges in the correct order. When finished, click again on the
+     vertex that you deleted to restore it. Finally, add back the two edges
+     with the smallest weights. Calculations for the lower and upper bounds will
+     be displayed upon successful completion.
+7. Upcoming Features
+   - Future updates will introduce new features, and add depth to the program's
+     current capabilities. These include:
+     - A complete and interactive textbook that will teach all graph theory
+       topics in the IBDP HL math curriculum.
+     - Additional textbook practice problems for all related graph theory algorithms.
+     - Practice IBDP exam questions
      

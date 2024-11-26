@@ -266,9 +266,6 @@ struct ChinesePostman: View {
                         graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
-                        if !graph.changesLocked {
-                            edge.isSelected = !edge.isSelected
-                        }
                         if chinesePostmanModel.status == .inProgress {
                             if !chinesePostmanModel.isStart && chinesePostmanModel.isConnected(edge) {
                                 edge.timesSelectedCPP += 1

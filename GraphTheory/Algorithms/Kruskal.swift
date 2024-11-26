@@ -177,9 +177,6 @@ struct KruskalView: View {
                         graph.weightChangeLocked = true
                     }
                     .onTapGesture(count: 1) {
-                        if !graph.changesLocked {
-                            edge.isSelected = !edge.isSelected
-                        }
                         if kruskal.error != .none {
                             if edge.status == .error {
                                 edge.status = .none

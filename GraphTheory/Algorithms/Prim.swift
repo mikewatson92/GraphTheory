@@ -192,9 +192,6 @@ struct PrimView: View {
                 let edgeView = EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                 edgeView
                     .onTapGesture(count: 1) {
-                        if !graph.changesLocked {
-                            edge.isSelected = !edge.isSelected
-                        }
                         if !prim.startPhase {
                             if prim.error != .none {
                                 if edge.status == .error {

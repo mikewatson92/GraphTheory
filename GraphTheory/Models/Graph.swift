@@ -12,9 +12,9 @@ class Graph: ObservableObject {
     @Published var vertices: [Vertex]
     @Published var highlightedVertex: Vertex?
     @Published var isMoving: Bool
-    @Published var algorithm: Graph.Algorithm
-    @Published var changesLocked: Bool
-    @Published var weightChangeLocked: Bool
+    var algorithm: Graph.Algorithm
+    var changesLocked: Bool
+    var weightChangeLocked: Bool
     @Published var labels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
                              "T", "U", "V", "W", "X", "Y", "Z"]
     
@@ -82,6 +82,7 @@ class Graph: ObservableObject {
         return counter
     }
     
+    // Returns true if two vertices are connected directly by a single edge
     func verticesConnected(_ vertex1: Vertex, _ vertex2: Vertex) -> Bool {
         for edge in edges {
             if vertex1.edgeIsConnected(edge: edge) && vertex2.edgeIsConnected(edge: edge) {

@@ -8,7 +8,7 @@
 import SwiftUI
 
 class TSPModel: ObservableObject {
-    @Published var graph: Graph
+    var graph: Graph
     var startVertex: Vertex?
     var currentVertex: Vertex?
     var edgePath: [Edge] = []
@@ -34,12 +34,15 @@ class TSPModel: ObservableObject {
     var lowerBoundModel = Graph()
     var kruskal: Kruskal?
     
-    var nearestNeighborFinished: Bool {
-        vertexPath.count == graph.vertices.count + 1
-    }
-    
     init(graph: Graph) {
         self.graph = graph
+        self.graph.algorithm = .tsp
+        self.graph.changesLocked = true
+        self.graph.weightChangeLocked = true
+    }
+    
+    var nearestNeighborFinished: Bool {
+        vertexPath.count == graph.vertices.count + 1
     }
     
     enum Status {
@@ -209,11 +212,6 @@ struct TSP: View {
                 
                 ForEach(graph.edges) { edge in
                     EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
-                        .onAppear {
-                            graph.algorithm = .tsp
-                            graph.changesLocked = true
-                            graph.weightChangeLocked = true
-                        }
                         .onTapGesture(count: 1) {
                             if tspModel.status == .inProgressUpperBound {
                                 if tspModel.isNearestNeighbor(edge) {
@@ -268,11 +266,6 @@ struct TSP: View {
                 
                 ForEach(graph.vertices) { vertex in
                     VertexView(vertex: vertex, graph: graph)
-                        .onAppear {
-                            graph.algorithm = .tsp
-                            graph.changesLocked = true
-                            graph.weightChangeLocked = true
-                        }
                         .simultaneousGesture(SimultaneousGesture(TapGesture(count: 1), TapGesture(count: 2))
                             .onEnded{ gestures in
                                 if gestures.second == nil { // Single tap gesture
@@ -309,14 +302,10 @@ struct TSP: View {
                 }
             }
             .onDisappear {
+                tspModel.reset()
                 graph.algorithm = .none
                 graph.changesLocked = false
                 graph.weightChangeLocked = false
-                graph.highlightedVertex = nil
-                for edge in graph.edges {
-                    edge.status = .none
-                    edge.isSelected = false
-                }
             }
             .navigationTitle("Traveling Salesman Problem")
         }

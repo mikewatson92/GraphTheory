@@ -54,12 +54,10 @@ extension Array {
 }
 
 @main
-struct GraphTheoryApp: App {
-    @StateObject var graph: Graph = Graph()
-    
+struct GraphTheoryApp: App {    
     var body: some Scene {
         WindowGroup {
-            ContentView(graph: graph)
+            ContentView()
         }
     }
 }

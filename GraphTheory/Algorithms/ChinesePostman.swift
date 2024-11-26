@@ -19,6 +19,14 @@ class ChinesePostmanModel: ObservableObject {
     @Published var status: Status = .inProgress
     var visitedEdges: [Edge] = []
     public static var colors: [Color] = [.white, Color(#colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1)), Color(#colorLiteral(red: 0.2196078449, green: 0.007843137719, blue: 0.8549019694, alpha: 1)), Color(#colorLiteral(red: 0.3098039329, green: 0.01568627544, blue: 0.1294117719, alpha: 1))]
+    
+    init(graph: Graph) {
+        self.graph = graph
+        graph.algorithm = .chinesePostman
+        graph.changesLocked = true
+        graph.weightChangeLocked = true
+    }
+    
     var oddVertices: [Vertex] {
         return graph.vertices.filter { graph.degree($0) % 2 == 1 }
     }
@@ -49,10 +57,6 @@ class ChinesePostmanModel: ObservableObject {
         weight += leastPathWeight(leastOddVertexPairing)
         
         return weight
-    }
-
-    init(graph: Graph) {
-        self.graph = graph
     }
     
     enum Status {
@@ -260,11 +264,6 @@ struct ChinesePostman: View {
             
             ForEach(graph.edges) { edge in
                 EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
-                    .onAppear {
-                        graph.algorithm = .chinesePostman
-                        graph.changesLocked = true
-                        graph.weightChangeLocked = true
-                    }
                     .onTapGesture(count: 1) {
                         if chinesePostmanModel.status == .inProgress {
                             if !chinesePostmanModel.isStart && chinesePostmanModel.isConnected(edge) {
@@ -288,11 +287,6 @@ struct ChinesePostman: View {
                 
             ForEach(graph.vertices) { vertex in
                 VertexView(vertex: vertex, graph: graph)
-                    .onAppear{
-                        graph.algorithm = .chinesePostman
-                        graph.changesLocked = true
-                        graph.weightChangeLocked = true
-                    }
                     .onTapGesture(count: 1) {
                         if chinesePostmanModel.isStart {
                             graph.highlightedVertex = vertex
@@ -304,14 +298,10 @@ struct ChinesePostman: View {
             }
         }
         .onDisappear {
+            chinesePostmanModel.reset()
             graph.algorithm = .none
             graph.changesLocked = false
             graph.weightChangeLocked = false
-            graph.highlightedVertex = nil
-            for edge in graph.edges {
-                edge.status = .none
-                edge.isSelected = false
-            }
         }
         .navigationTitle("Chinese Postman Problem")
     }

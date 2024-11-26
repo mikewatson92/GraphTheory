@@ -239,7 +239,6 @@ struct PrimTable: View {
         _prim = .init(wrappedValue: PrimTableModel(matrix: matrix, status: .started))
         self.matrix = matrix
         self.rows = matrix.rows
-        
     }
     
     var body: some View {

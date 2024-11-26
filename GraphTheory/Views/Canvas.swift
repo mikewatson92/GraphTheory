@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Canvas: View {
     @Environment(\.colorScheme) var colorMode: ColorScheme
-    @ObservedObject var graph: Graph
+    @StateObject var graph = Graph()
     @State private var showWeights: Bool = false
     @State private var startVertex: Vertex?
     @State private var endVertex: Vertex?
@@ -17,10 +17,6 @@ struct Canvas: View {
     @State private var pickerAlgorithm: Graph.Algorithm = .none
     @State private var action: Int? = 0
     @State private var algorithms: [Graph.Algorithm] = Graph.Algorithm.allCases
-    
-    init(graph: Graph) {
-        self.graph = graph
-    }
     
     // Creates a vertex at the location the user clicks on the canvas
     public var placeVertexGesture: some Gesture {
@@ -88,6 +84,7 @@ struct Canvas: View {
         }
         .preferredColorScheme(.dark)
         .onAppear {
+            /*
             graph.algorithm = .none
             graph.highlightedVertex = nil
             graph.changesLocked = false
@@ -99,6 +96,7 @@ struct Canvas: View {
             for vertex in graph.vertices {
                 vertex.isSelected = false
             }
+             */
         }
         .navigationTitle("Canvas")
         .toolbar { Toolbars(graph: graph) }

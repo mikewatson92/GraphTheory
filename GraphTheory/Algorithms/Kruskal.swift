@@ -11,7 +11,7 @@ class Kruskal: ObservableObject {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @Published var finished: Bool = false
     @Published var error: KruskalError = .none
-    @Published var graph: Graph
+    var graph: Graph
     lazy var numVertices: Int = graph.vertices.count
     lazy var numEdges: Int = graph.edges.count
     lazy var availableEdges: [Edge] = graph.edges.sorted(by: { $0.weight < $1.weight })
@@ -20,10 +20,13 @@ class Kruskal: ObservableObject {
     
     init(graph: Graph) {
         self.graph = graph
+        self.graph.algorithm = .kruskal
+        self.graph.changesLocked = true
+        self.graph.weightChangeLocked = true
     }
     
     enum KruskalError: Error {
-        case loop, notLowestWeight, none
+        case cycle, notLowestWeight, none
     }
     
     // Determines whether the graph consisting of the edges selected by the user, chosenEdges, contains a cycle.
@@ -70,7 +73,7 @@ class Kruskal: ObservableObject {
         if containsCycle() {
             print("Invalid selection. A loop is generated")
             chosenEdges.removeAll(where: { $0.id == edge.id })
-            error = .loop
+            error = .cycle
             return false
             
             // Return false if the user selects a non cycle forming edge that is not of minimum weight.
@@ -94,6 +97,7 @@ class Kruskal: ObservableObject {
         return true
     }
     
+    // For resetting the algorithm to the beginning
     func reset() {
         availableEdges = graph.edges
         chosenEdges = []
@@ -121,9 +125,9 @@ struct KruskalView: View {
         _kruskal = .init(wrappedValue: Kruskal(graph: graph))
     }
     
-    var loopError: some View {
+    var cycleError: some View {
         ZStack {
-            Text("This edge forms a loop.")
+            Text("This edge forms a cycle.")
                 .font(.headline.bold())
                 .foregroundColor(.red)
                 .padding()
@@ -161,8 +165,8 @@ struct KruskalView: View {
                 .padding()
             }
             
-            if (kruskal.error == .loop) {
-                loopError
+            if (kruskal.error == .cycle) {
+                cycleError
             }
             
             if (kruskal.error == .notLowestWeight) {
@@ -171,11 +175,6 @@ struct KruskalView: View {
             
             ForEach(graph.edges) { edge in
                 EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
-                    .onAppear{
-                        graph.algorithm = .kruskal
-                        graph.changesLocked = true
-                        graph.weightChangeLocked = true
-                    }
                     .onTapGesture(count: 1) {
                         if kruskal.error != .none {
                             if edge.status == .error {
@@ -198,23 +197,14 @@ struct KruskalView: View {
                 
                 ForEach(graph.vertices) { vertex in
                     VertexView(vertex: vertex, graph: graph)
-                        .onAppear{
-                            graph.algorithm = .kruskal
-                            graph.changesLocked = true
-                            graph.weightChangeLocked = true
-                        }
                 }
             }
         }
         .onDisappear {
+            kruskal.reset()
             graph.algorithm = .none
             graph.changesLocked = false
             graph.weightChangeLocked = false
-            graph.highlightedVertex = nil
-            for edge in graph.edges {
-                edge.status = .none
-                edge.isSelected = false
-            }
         }
         .navigationTitle("Kruskal's Algorithm")
     }

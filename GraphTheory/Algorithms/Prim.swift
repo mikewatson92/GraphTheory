@@ -10,18 +10,18 @@ import SwiftUI
 class Prim: ObservableObject {
     @Environment(\.colorScheme) var colorMode: ColorScheme
     @Published var finished: Bool = false
-    @Published var graph: Graph
+    var graph: Graph
     var numVertices: Int
     var numEdges: Int
-    var availableEdges: [Edge]
-    var chosenEdges: [Edge] = []
-    var loopEdges: [Edge] = []
+    var availableEdges: [Edge] // The edges not chosen yet
+    var chosenEdges: [Edge] = [] // Edges selected by user
+    var connectedVertices: [Vertex] = [] // An array of the
+    // vertices connected by the subgraph
     var startPhase: Bool = true
-    var startVertex: Vertex?
     var error: PrimError = .none
     
     enum PrimError: Error {
-        case loop, notLowestWeight, notConnected, none
+        case cycle, notLowestWeight, notConnected, none
     }
     
     init(graph: Graph) {
@@ -29,125 +29,88 @@ class Prim: ObservableObject {
         self.numVertices = graph.vertices.count
         self.numEdges = graph.edges.count
         self.availableEdges = graph.edges.sorted(by: { $0.weight < $1.weight })
-    }
-    
-    func setStartVertex(_ newVertex: Vertex) {
-        self.startVertex = newVertex
-    }
-    
-    // Determines whether the graph consisting of the edges selected by the user, chosenEdges, contains a cycle.
-    func containsCycle() -> Bool {
-        let newGraph = Graph()
-        newGraph.vertices.append(contentsOf: graph.vertices)
-        newGraph.edges.append(contentsOf: chosenEdges)
-        let result = newGraph.hasCycle()
-        if result == true {
-            return true
-        }
-        return false
-        
+        self.graph.algorithm = .prim
+        self.graph.changesLocked = true
+        self.graph.weightChangeLocked = true
     }
     
     // Determine if a newEdge's weight has the lowest weight of all available edges. There may be multiple edges with the lowest weight.
     func lowestWeight(newEdge: Edge) -> Bool {
-        guard availableEdges.count > 0 else { return true }
-        return (newEdge == availableEdges[0])
-    }
-    
-    // Based on the current edges selected by the user, determine if there any single additional edges which would form loops. If so, append them to the loopEdges array.
-    func removeEdgesFormingLoops() {
-        var deleteEdges: [Edge] = []
-        for edge in availableEdges {
-            chosenEdges.append(edge)
-            if containsCycle() {
-                deleteEdges.append(edge)
-            }
-            chosenEdges.removeAll(where: {$0.id == edge.id })
-        }
-        for edge in deleteEdges {
-            availableEdges.removeAll(where: { $0.id == edge.id })
-            loopEdges.append(edge)
-        }
+        return newEdge.weight == availableEdges.sorted(by: { $0.weight < $1.weight })[0].weight
+        
     }
     
     // Returns true if a new edge is connected to a vertex of an existing tree. Otherwise, returns false.
     func isConnected(newEdge: Edge) -> Bool {
-        chosenEdges.removeAll(where: { $0.id == newEdge.id })
-        if chosenEdges.count == 0 {
+        var connectedVertexIDs: [UUID] = []
+        for vertex in connectedVertices {
+            connectedVertexIDs.append(vertex.id)
+        }
+        if connectedVertexIDs.contains(newEdge.startVertex.id) {
             return true
-        } else {
-            for edge in chosenEdges {
-                if edge.startVertex.id == newEdge.startVertex.id || edge.startVertex.id == newEdge.endVertex.id || edge.endVertex.id == newEdge.startVertex.id || edge.endVertex.id == newEdge.endVertex.id {
-                    chosenEdges.append(newEdge)
-                    return true
-                }
-            }
+        } else if connectedVertexIDs.contains(newEdge.endVertex.id) {
+            return true
+        }
+        return false
+    }
+    
+    func formsCycle(newEdge: Edge) -> Bool {
+        let newGraph = Graph()
+        newGraph.vertices = graph.vertices
+        newGraph.edges = chosenEdges
+        newGraph.edges.append(newEdge)
+        return newGraph.hasCycle()
+    }
+    
+    func edgeIsValid(newEdge: Edge) -> Bool {
+        if !lowestWeight(newEdge: newEdge) {
+            error = .notLowestWeight
             return false
+        }
+        if !isConnected(newEdge: newEdge) {
+            error = .notConnected
+            return false
+        }
+        if formsCycle(newEdge: newEdge) {
+            error = .cycle
+            return false
+        }
+        // Return true if newEdge is the lowest weight,
+        // is connected to the subgraph, and doesn't
+        // form a cycle.
+        return true
+    }
+    
+    // Add a new vertex to the array connectedVertices
+    // based on a new vertex introduced by forEdge.
+    func addVertex(forEdge edge: Edge) {
+        // Add all connectedVertices vertex ID's to an array
+        var connectedVertexIDs: [UUID] = []
+        for vertex in connectedVertices {
+            connectedVertexIDs.append(vertex.id)
+        }
+        
+        // Add the new vertex to connectedVertices
+        if !connectedVertexIDs.contains(edge.startVertex.id) {
+            connectedVertices.append(edge.startVertex)
+        } else if !connectedVertexIDs.contains(edge.endVertex.id) {
+            connectedVertices.append(edge.endVertex)
         }
     }
     
-    // When the user clicks an edge, this function will be called to determine if it is a correct selection or not, and updates the edge status to correct if it is a correct selection.
-    func nextEdge(edge: Edge) -> Bool {
-        chosenEdges.append(edge)
-        availableEdges.removeAll(where: {$0.id == edge.id })
-        removeEdgesFormingLoops()
-        
-        //If the user has selected a starting vertex, make sure the first edge is connnected to it
-        if chosenEdges.count == 1 {
-            if edge.startVertex.id != startVertex?.id && edge.endVertex.id != startVertex?.id {
-                print("Starting edge is not connected to starting vertex")
-                error = .notConnected
-                chosenEdges.removeAll(where: {$0.id == edge.id })
-                return false
-            }
-        }
-        
-        // Return false if the selected edge is not connected to the current tree
-        else if !isConnected(newEdge: edge){
-            print("Invalid selection. Edge is not connected to current tree.")
-            error = .notConnected
-            chosenEdges.removeAll(where: { $0.id == edge.id })
-            return false
-        }
-        
-        // Return false if the user selected edge forms a cycle
-        else if containsCycle() {
-            print("Invalid selection. A loop is generated")
-            error = .loop
-            chosenEdges.removeAll(where: { $0.id == edge.id })
-            return false
-        } else if !isConnected(newEdge: edge) {
-            chosenEdges.removeAll(where: { $0.id == edge.id })
-            error = .notConnected
-            print("Edges not connected.")
-            return false
-        }
-        
-        // Return false if the user selects a connected edge that is not of minimal weight.
-        else if availableEdges.count > 0 {
-            var filteredEdges = availableEdges.filter({ isConnected(newEdge: $0) })
-            filteredEdges.sort(by: { $0.weight < $1.weight })
-            if edge.weight > filteredEdges[0].weight {
-                chosenEdges.removeAll(where: { $0.id == edge.id })
-                error = .notLowestWeight
-                print("Not the lowest weight. The weight is \(edge.weight)")
-                return false
-            }
-        }
-        edge.status = .correct
-        // Check if the algorithm is complete:
-        if chosenEdges.count == numVertices - 1 {
-            finished = true
-        }
-        return true
+    func checkIfFinished () {
+        let finished = chosenEdges.count == graph.vertices.count - 1
+        self.finished = finished
     }
     
     func reset() {
         chosenEdges = []
         availableEdges = graph.edges
-        loopEdges = []
         error = .none
         finished = false
+        graph.highlightedVertex = nil
+        connectedVertices = []
+        startPhase = true
         for edge in graph.edges {
             edge.isSelected = false
             edge.status = .none
@@ -155,7 +118,6 @@ class Prim: ObservableObject {
         for vertex in graph.vertices {
             vertex.isSelected = false
         }
-        graph.highlightedVertex = nil
     }
 }
 
@@ -189,57 +151,44 @@ struct PrimView: View {
             }
             
             ForEach(graph.edges) { edge in
-                let edgeView = EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
-                edgeView
+                EdgeView(edge: edge, showWeights: .constant(true), graph: graph)
                     .onTapGesture(count: 1) {
-                        if !prim.startPhase {
-                            if prim.error != .none {
-                                if edge.status == .error {
-                                    edge.status = .none
-                                    prim.error = .none
-                                    edge.isSelected = !edge.isSelected
-                                }
-                            }
-                            else if edge.status != .correct && !prim.finished {
-                                let edgeError = !prim.nextEdge(edge: edge)
-                                if edgeError {
-                                    edge.status = .error
-                                } else {
-                                    edge.status = .correct
-                                }
-                                edge.isSelected = !edge.isSelected
-                            }
+                        guard !prim.finished else { return }
+                        let validEdge = prim.edgeIsValid(newEdge: edge)
+                        if validEdge {
+                            edge.status = .correct
+                            edge.isSelected = true
+                            prim.chosenEdges.append(edge)
+                            prim.addVertex(forEdge: edge)
+                            prim.checkIfFinished()
+                        } else if edge.status != .none {
+                            edge.status = .none
+                            edge.isSelected = false
+                            prim.error = .none
+                        } else {
+                            edge.status = .error
+                            edge.isSelected = true
                         }
                     }
-                
-                
-                ForEach(graph.vertices) { vertex in
-                    let vertexView = VertexView(vertex: vertex, graph: graph)
-                    vertexView
-                        .onTapGesture(count: 1) {
-                            if prim.startPhase {
-                                prim.startPhase = false
-                                graph.highlightedVertex = vertex
-                                prim.startVertex = vertex
-                            }
+            }
+            
+            
+            ForEach(graph.vertices) { vertex in
+                VertexView(vertex: vertex, graph: graph)
+                    .onTapGesture(count: 1) {
+                        if prim.startPhase {
+                            prim.startPhase = false
+                            graph.highlightedVertex = vertex
+                            prim.connectedVertices.append(vertex)
                         }
-                }
+                    }
             }
         }
-        .onAppear{
-            graph.algorithm = .prim
-            graph.changesLocked = true
-            graph.weightChangeLocked = true
-        }
         .onDisappear {
+            prim.reset()
             graph.algorithm = .none
             graph.changesLocked = false
             graph.weightChangeLocked = false
-            graph.highlightedVertex = nil
-            for edge in graph.edges {
-                edge.status = .none
-                edge.isSelected = false
-            }
         }
         .navigationTitle("Prim's Algorithm")
     }

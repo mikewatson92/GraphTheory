@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var graph: Graph
     
     var body: some View {
         
@@ -25,7 +24,7 @@ struct ContentView: View {
                 }
                  */
                 Section(header: Text("Graph Algorithms")) {
-                    NavigationLink("Canvas", destination: Canvas(graph: graph))
+                    NavigationLink("Canvas", destination: Canvas())
                 }
                 Section(header: Text("Practice Problems")) {
                     NavigationLink("Prim Table 1", destination: PrimTableModel1())
@@ -36,7 +35,7 @@ struct ContentView: View {
             }
         } detail: {
             NavigationStack{
-                Canvas(graph: graph)
+                Canvas()
             }
         }
         .preferredColorScheme(.dark)
@@ -45,7 +44,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(graph: Graph())
-            .environmentObject(Graph())
+        ContentView()
     }
 }

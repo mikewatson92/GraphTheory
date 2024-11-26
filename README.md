@@ -45,6 +45,15 @@ This feature will be added back in the near future.
      with one important difference. The first move is to select a starting vertex. Then,
      select the lowest weight edge connected to that vertex. Continuing choosing
      lowest weight edges among those currently adjacent to your subgraph.
+   - Prim's Algorithm Applied to a Weighted Adjacency Table - Start by deleting any row
+     by clicking on the button in the left-most column labeled with a letter.
+     A line is drawn through this row, and a number is placed at the top of the
+     corresponding column. Of the buttons in this column, excluding the removed row,
+     choose the number representing the least weight edge. A circle will be placed around
+     this number, the row will be crossed out, and a new number will be placed above the
+     corresponding column. Continue this process by choosing, among any of the numbered
+     columns, the least weight that is not crossed out. When the algorithm is complete,
+     the background will change to blue.
    - Chinese Postman Problem - Start by selecting the starting vertex. Then select edges
      in the correct order according to the algorithm. The edges will change color
      based on how many times they have been selected. An edge chosen once will appear

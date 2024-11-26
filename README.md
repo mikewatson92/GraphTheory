@@ -1,3 +1,5 @@
+Master all graph theory concepts for IBDP HL Math!
+
 **Important Updates**
 Currently, the textbook features have been disabled due to an issue with Cocoapods.
 This feature will be added back in the near future.
@@ -56,4 +58,11 @@ This feature will be added back in the near future.
      vertex that you deleted to restore it. Finally, add back the two edges
      with the smallest weights. Calculations for the lower and upper bounds will
      be displayed upon successful completion.
+7. Upcoming Features
+   - Future updates will introduce new features, and add depth to the program's
+     current capabilities. These include:
+     - A complete and interactive textbook that will teach all graph theory
+       topics in the IBDP HL math curriculum.
+     - Additional textbook practice problems for all related graph theory algorithms.
+     - Practice IBDP exam questions
      

@@ -199,6 +199,7 @@ struct IcosianView: View {
                                     let subGraph = Graph(vertices: icosian.vertices, edges: newChosenEdges)
                                     if subGraph.isHamiltonianCycle() {
                                         icosian.setStep(.complete)
+                                        selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex!.id)!)
                                     } else if subGraph.hasCycle() {
                                         edgeError = edge
                                         icosian.setStep(.error)

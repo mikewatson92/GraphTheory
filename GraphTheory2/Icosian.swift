@@ -76,7 +76,7 @@ struct Icosian {
     var graph: Graph
     // Keep track of what stage of solving the puzzle we are on
     var step = Step.chooseVertex
-        
+    
     init() {
         // Initialize the vertex coordinates
         A1 = Vertex(position: CGPoint(x: 0.500, y: 1 - 0.900))
@@ -101,8 +101,8 @@ struct Icosian {
         E3 = Vertex(position: CGPoint(x: 0.385, y: 1 - 0.463))
         //
         vertices = [A1, B1, C1, D1, E1, A2, B2, C2, D2, E2,
-                     midpointAB, midpointAE, midpointBC, midpointCD, midpointDE,
-                     A3, B3, C3, D3, E3]
+                    midpointAB, midpointAE, midpointBC, midpointCD, midpointDE,
+                    A3, B3, C3, D3, E3]
         // The edges
         // Edges containing an outer vertex
         edgeA1_B1 = Edge(startVertexID: A1.id, endVertexID: B1.id)
@@ -150,7 +150,7 @@ struct Icosian {
     }
     
     enum Step {
-        case chooseVertex, selectingEdges, complete
+        case chooseVertex, selectingEdges, complete, error
     }
     
     mutating func setStep(_ step: Step) {
@@ -162,17 +162,19 @@ struct IcosianView: View {
     @State var icosian = Icosian()
     @State var graphViewModel: GraphViewModel = GraphViewModel(graph: Graph())
     @State private var selectedVertex: Vertex?
-    @State private var selectedEdge: Edge?
+    @State private var edgeError: Edge?
     @State var chosenEdges: [Edge] = []
     
     init() {
         graphViewModel = GraphViewModel(graph: icosian.graph)
         selectedVertex = nil
-        selectedEdge = nil
+        edgeError = nil
     }
     
     var body: some View {
         GeometryReader { geometry in
+            Rectangle()
+                .foregroundStyle(icosian.step == .complete ? .teal : .clear)
             ForEach(icosian.graph.edges) { edge in
                 let edgeViewModel = EdgeViewModel(
                     edge: edge,
@@ -201,6 +203,7 @@ struct IcosianView: View {
                             }
                         }
                     }
+                
             }
             ForEach(icosian.vertices) { vertex in
                 let vertexViewModel = VertexViewModel(
@@ -218,6 +221,15 @@ struct IcosianView: View {
                             icosian.setStep(.selectingEdges)
                         }
                     }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button("Clear") {
+                    edgeError = nil
+                    icosian.graph.restoreToOriginal()
+                    icosian.step = .chooseVertex
+                }
             }
         }
     }

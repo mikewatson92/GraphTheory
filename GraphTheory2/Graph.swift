@@ -162,8 +162,6 @@ struct Graph: Identifiable, Codable {
     // Returns true if there is a path from vertex1ID to vertex2ID
     // following the edges of the graph.
     func areVerticesConnected(_ vertex1ID: UUID, _ vertex2ID: UUID) -> Bool {
-        // Return true if the two compared vertices are the same
-        if vertex1ID == vertex2ID { return true }
         let connectedEdges = getConnectedEdges(to: vertex1ID)
         // If there are no edges connected to vertex1ID, then return false.
         guard connectedEdges.count > 0 else { return false }
@@ -188,62 +186,99 @@ struct Graph: Identifiable, Codable {
         return false
     }
     
-    // Returns true if every vertex is connected to every other vertex
-    // following the edges of the graph.
     func isConnected() -> Bool {
-        for vertexID1 in vertices.keys {
-            for vertexID2 in vertices.keys {
-                if !areVerticesConnected(vertexID1, vertexID2) {
-                    return false
+        guard let startVertexID = vertices.keys.first else { return true } // Empty graph is trivially connected.
+        
+        var visited = Set<UUID>()
+        var stack = [startVertexID]
+        
+        while let vertexID = stack.popLast() {
+            if !visited.contains(vertexID) {
+                visited.insert(vertexID)
+                let neighbors = getConnectedEdges(to: vertexID).compactMap { $0.traverse(from: vertexID) }
+                stack.append(contentsOf: neighbors)
+            }
+        }
+        
+        return visited.count == vertices.count // All vertices must be visited.
+    }
+    
+    func isCycle() -> Bool {
+        // A cycle requires a connected graph and at least 3 vertices
+        guard vertices.count >= 3, isConnected() else { return false }
+        
+        // Ensure all vertices have exactly two edges connected
+        for vertexID in vertices.keys {
+            if getConnectedEdges(to: vertexID).count != 2 {
+                return false
+            }
+        }
+        
+        // Perform a traversal to ensure all edges and vertices are part of a single cycle
+        guard let startVertexID = vertices.keys.first else { return false }
+        var visitedEdges = Set<UUID>()
+        var visitedVertices = Set<UUID>()
+        var currentVertexID = startVertexID
+        var previousVertexID: UUID? = nil
+        
+        repeat {
+            visitedVertices.insert(currentVertexID)
+            let edges = getConnectedEdges(to: currentVertexID)
+            let nextEdge = edges.first { edge in
+                edge.traverse(from: currentVertexID) != previousVertexID && !visitedEdges.contains(edge.id)
+            }
+            
+            guard let edge = nextEdge, let nextVertexID = edge.traverse(from: currentVertexID) else {
+                return false // No valid edge to continue the cycle
+            }
+            
+            visitedEdges.insert(edge.id)
+            previousVertexID = currentVertexID
+            currentVertexID = nextVertexID
+        } while currentVertexID != startVertexID
+        
+        // Ensure all vertices and edges are visited
+        return visitedVertices.count == vertices.count && visitedEdges.count == edges.count
+    }
+    
+    func isHamiltonianCycle() -> Bool {
+        guard isConnected() else { return false }
+        // Check if the graph is a cycle and includes all vertices (Hamiltonian condition)
+        return isCycle() && vertices.count == edges.count
+    }
+    
+    func hasCycle() -> Bool {
+        var visited = Set<UUID>()
+        var recursionStack = Set<UUID>()
+        
+        func dfs(vertexID: UUID, parentID: UUID?) -> Bool {
+            visited.insert(vertexID)
+            recursionStack.insert(vertexID)
+            
+            for edge in getConnectedEdges(to: vertexID) {
+                if let neighbor = edge.traverse(from: vertexID) {
+                    if !visited.contains(neighbor) {
+                        if dfs(vertexID: neighbor, parentID: vertexID) {
+                            return true
+                        }
+                    } else if recursionStack.contains(neighbor) && neighbor != parentID {
+                        return true
+                    }
+                }
+            }
+            
+            recursionStack.remove(vertexID)
+            return false
+        }
+        
+        for vertexID in vertices.keys {
+            if !visited.contains(vertexID) {
+                if dfs(vertexID: vertexID, parentID: nil) {
+                    return true
                 }
             }
         }
-        return true
-    }
-    
-    // Returns true if the edges of the graph define a cycle
-    func isCycle() -> Bool {
-        guard vertices.count > 1 else { return false }
-        if !isConnected() { return false }
-        // Choose a starting vertex
-        let startVertexID = vertices.randomElement()!.key
-        var currentVertexID: UUID
-        currentVertexID = startVertexID
-        var visitedVertices: [UUID] = []
-        visitedVertices.append(startVertexID)
-        var traversedEdges: [Edge] = []
-        repeat {
-            // Get edges connected to current vertex.
-            var connectedEdges = getConnectedEdges(to: currentVertexID)
-            // Remove the most recently traversed edge.
-            connectedEdges.removeAll { $0.id == traversedEdges.last!.id }
-            // There should only be one remaining edge
-            guard connectedEdges.count == 1 else { return false }
-            // Make sure we haven't traversed this edge yet.
-            guard !traversedEdges.contains(connectedEdges[0]) else { return false }
-            // Traverse the edge to get the next vertex.
-            let nextVertex = connectedEdges[0].traverse(from: currentVertexID)!
-            // Update the arrays of visited vertices and traversed edges.
-            // Also set currentVertexID to the new vertex.
-            visitedVertices.append(nextVertex)
-            traversedEdges.append(connectedEdges[0])
-            currentVertexID = nextVertex
-        } while currentVertexID != startVertexID;
-        return true
-    }
-    
-    // Return true if the edges define a Hamiltonian cycle on the vertices.
-    func isHamiltonianCycle() -> Bool {
-        return isConnected() && isCycle()
-    }
-    
-    // Returns true if the graph has a cycle
-    func hasCycle() -> Bool {
-        for vertexID in vertices.keys {
-            if areVerticesConnected(vertexID, vertexID) {
-                return true
-            }
-        }
+        
         return false
     }
     

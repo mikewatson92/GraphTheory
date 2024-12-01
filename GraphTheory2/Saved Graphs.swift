@@ -272,6 +272,7 @@ struct PetersonGraph {
         edgeC2E2 = Edge(startVertexID: C2.id, endVertexID: E2.id)
         // Initialize the graph
         graph = Graph(vertices: [A1, B1, C1, D1, E1, A2, B2, C2, D2, E2], edges: [edgeA1B1, edgeA1A2, edgeA1E1, edgeB1C1, edgeB1B2, edgeC1D1, edgeC1C2, edgeD1E1, edgeD1D2, edgeE1E2, edgeA2C2, edgeA2D2, edgeB2D2, edgeB2E2, edgeC2E2])
+        graph.resetMethod = .restoreToOriginal
     }
 }
 

@@ -229,6 +229,7 @@ struct IcosianView: View {
                     edgeError = nil
                     icosian.graph.restoreToOriginal()
                     icosian.step = .chooseVertex
+                    selectedVertex = nil
                 }
             }
         }

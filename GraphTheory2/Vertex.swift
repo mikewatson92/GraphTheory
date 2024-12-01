@@ -11,7 +11,7 @@ struct Vertex: Identifiable, Codable {
     let id: UUID
     var position: CGPoint = .zero
     var offset: CGSize = .zero
-    var color: Color = .white
+    var color: Color = Color.primary
     
     init() {
         self.id = UUID()

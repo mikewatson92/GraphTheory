@@ -6,7 +6,11 @@
 //
 
 import SwiftUI
+#if os(macOS)
 import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
 import CoreGraphics
 
 extension Color: Codable {
@@ -78,14 +82,18 @@ extension Color: Codable {
     }
     
     func toHex() -> String? {
-        let nsColor = NSColor(self)
-        guard let components = nsColor.cgColor.components, components.count >= 3 else {
+        #if os(macOS)
+        let colorToConvert = NSColor(self)
+        #elseif os(iOS)
+        let colorToConvert = UIColor(self)
+        #endif
+        guard let components = colorToConvert.cgColor.components, components.count >= 3 else {
             return nil
         }
         let r = components[0]
         let g = components[1]
         let b = components[2]
-        let a = nsColor.cgColor.alpha
+        let a = colorToConvert.cgColor.alpha
         return String(format: "#%02X%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255), Int(a * 255))
     }
 }

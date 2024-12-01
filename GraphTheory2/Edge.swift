@@ -18,7 +18,7 @@ struct Edge: Identifiable, Codable, Hashable {
         self.id = UUID()
         self.startVertexID = startVertexID
         self.endVertexID = endVertexID
-        self.color = .white
+        self.color = Color.primary
     }
     
     mutating func setColor(_ color: Color) {

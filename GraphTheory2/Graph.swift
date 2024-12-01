@@ -594,9 +594,13 @@ struct GraphView: View {
     }
     
     func convertToColor(from cgColor: CGColor) -> Color {
+        #if os(macOS)
         if let nsColor = NSColor(cgColor: cgColor) {
             return Color(nsColor)
         }
+        #elseif os(iOS)
+        return Color(UIColor(cgColor: cgColor))
+        #endif
         return Color.clear // Fallback for invalid `CGColor`
     }
     

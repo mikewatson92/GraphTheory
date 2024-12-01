@@ -9,18 +9,55 @@
 /* Begin PBXFileReference section */
 		BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GraphTheory macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDE741C62CFCA8DD00ED4A48 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
+		BDE7421D2CFCBB2100ED4A48 /* GraphTheory iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GraphTheory iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BDE7422F2CFCBB7F00ED4A48 /* Exceptions for "GraphTheory2" folder in "GraphTheory iOS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Canvas.swift,
+				Edge.swift,
+				Extensions.swift,
+				"Graph Theory App Logo.png",
+				Graph.swift,
+				GraphDocument.swift,
+				Icosian.swift,
+				Permutation.swift,
+				"Saved Graphs.swift",
+				testing.swift,
+				Vertex.swift,
+				VertexColorPicker.swift,
+			);
+			target = BDE7421C2CFCBB2100ED4A48 /* GraphTheory iOS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BDC2F0CF2CF80D6D008B8132 /* GraphTheory2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BDE7422F2CFCBB7F00ED4A48 /* Exceptions for "GraphTheory2" folder in "GraphTheory iOS" target */,
+			);
 			path = GraphTheory2;
+			sourceTree = "<group>";
+		};
+		BDE7421E2CFCBB2100ED4A48 /* GraphTheory iOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "GraphTheory iOS";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		BDC2F0CA2CF80D6D008B8132 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BDE7421A2CFCBB2100ED4A48 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -34,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				BDC2F0CF2CF80D6D008B8132 /* GraphTheory2 */,
+				BDE7421E2CFCBB2100ED4A48 /* GraphTheory iOS */,
 				BDE741C52CFCA8DD00ED4A48 /* Frameworks */,
 				BDC2F0CE2CF80D6D008B8132 /* Products */,
 			);
@@ -43,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */,
+				BDE7421D2CFCBB2100ED4A48 /* GraphTheory iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,6 +119,28 @@
 			productReference = BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BDE7421C2CFCBB2100ED4A48 /* GraphTheory iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BDE742282CFCBB2300ED4A48 /* Build configuration list for PBXNativeTarget "GraphTheory iOS" */;
+			buildPhases = (
+				BDE742192CFCBB2100ED4A48 /* Sources */,
+				BDE7421A2CFCBB2100ED4A48 /* Frameworks */,
+				BDE7421B2CFCBB2100ED4A48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BDE7421E2CFCBB2100ED4A48 /* GraphTheory iOS */,
+			);
+			name = "GraphTheory iOS";
+			packageProductDependencies = (
+			);
+			productName = "GraphTheory iOS";
+			productReference = BDE7421D2CFCBB2100ED4A48 /* GraphTheory iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -91,6 +152,9 @@
 				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					BDC2F0CC2CF80D6D008B8132 = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					BDE7421C2CFCBB2100ED4A48 = {
 						CreatedOnToolsVersion = 16.1;
 					};
 				};
@@ -110,6 +174,7 @@
 			projectRoot = "";
 			targets = (
 				BDC2F0CC2CF80D6D008B8132 /* GraphTheory macOS */,
+				BDE7421C2CFCBB2100ED4A48 /* GraphTheory iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -122,10 +187,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BDE7421B2CFCBB2100ED4A48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BDC2F0C92CF80D6D008B8132 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BDE742192CFCBB2100ED4A48 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -311,6 +390,73 @@
 			};
 			name = Release;
 		};
+		BDE742292CFCBB2300ED4A48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"GraphTheory iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = MWHJRMZPCP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Graph Theory";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "name.mikewatson.GraphTheory-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BDE7422A2CFCBB2300ED4A48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"GraphTheory iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = MWHJRMZPCP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Graph Theory";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "name.mikewatson.GraphTheory-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -328,6 +474,15 @@
 			buildConfigurations = (
 				BDC2F0DD2CF80D6F008B8132 /* Debug */,
 				BDC2F0DE2CF80D6F008B8132 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BDE742282CFCBB2300ED4A48 /* Build configuration list for PBXNativeTarget "GraphTheory iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BDE742292CFCBB2300ED4A48 /* Debug */,
+				BDE7422A2CFCBB2300ED4A48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

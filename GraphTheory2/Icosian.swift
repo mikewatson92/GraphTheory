@@ -175,6 +175,7 @@ struct IcosianView: View {
         GeometryReader { geometry in
             Rectangle()
                 .foregroundStyle(icosian.step == .complete ? .teal : .clear)
+                .opacity(0.5)
             ForEach(icosian.graph.edges) { edge in
                 let edgeViewModel = EdgeViewModel(
                     edge: edge,
@@ -230,6 +231,7 @@ struct IcosianView: View {
                     icosian.graph.restoreToOriginal()
                     icosian.step = .chooseVertex
                     selectedVertex = nil
+                    chosenEdges = []
                 }
             }
         }

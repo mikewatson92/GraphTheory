@@ -248,37 +248,20 @@ struct Graph: Identifiable, Codable {
     }
     
     func hasCycle() -> Bool {
-        var visited = Set<UUID>()
-        var recursionStack = Set<UUID>()
-        
-        func dfs(vertexID: UUID, parentID: UUID?) -> Bool {
-            visited.insert(vertexID)
-            recursionStack.insert(vertexID)
-            
+        for vertexID in vertices.keys {
+            var newVertices: [UUID] = []
+            newVertices.append(vertexID)
             for edge in getConnectedEdges(to: vertexID) {
-                if let neighbor = edge.traverse(from: vertexID) {
-                    if !visited.contains(neighbor) {
-                        if dfs(vertexID: neighbor, parentID: vertexID) {
-                            return true
-                        }
-                    } else if recursionStack.contains(neighbor) && neighbor != parentID {
+                if let nextVertexID = edge.traverse(from: vertexID){
+                    var newEdges = edges
+                    newEdges.removeAll { $0.id == edge.id }
+                    let subGraph = Graph(vertices: Array(vertices.values), edges: newEdges)
+                    if subGraph.areVerticesConnected(vertexID, nextVertexID) {
                         return true
                     }
                 }
             }
-            
-            recursionStack.remove(vertexID)
-            return false
         }
-        
-        for vertexID in vertices.keys {
-            if !visited.contains(vertexID) {
-                if dfs(vertexID: vertexID, parentID: nil) {
-                    return true
-                }
-            }
-        }
-        
         return false
     }
     

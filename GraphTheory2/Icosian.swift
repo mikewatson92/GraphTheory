@@ -185,7 +185,11 @@ struct IcosianView: View {
                     getEdgeControlPointOffsets: { edge in icosian.graph.getEdgeControlPointOffsets(for: edge)})
                 EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                     .onTapGesture(count: 1) {
-                        if icosian.step == .selectingEdges {
+                        if icosian.step == .error && edge.id == edgeError?.id {
+                            edgeError = nil
+                            icosian.setStep(.selectingEdges)
+                            icosian.graph.setEdgeColor(edgeID: edge.id, color: .white)
+                        } else if icosian.step == .selectingEdges {
                             // Make sure the edge is connected to the selectedVertex
                             if selectedVertex != nil {
                                 let connectedEdges = icosian.graph.getConnectedEdges(to: selectedVertex!.id)
@@ -194,8 +198,12 @@ struct IcosianView: View {
                                     newChosenEdges.append(edge)
                                     let subGraph = Graph(vertices: icosian.vertices, edges: newChosenEdges)
                                     if subGraph.isHamiltonianCycle() {
-                                        icosian.step = .complete
-                                    } else if !subGraph.isCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
+                                        icosian.setStep(.complete)
+                                    } else if subGraph.hasCycle() {
+                                        edgeError = edge
+                                        icosian.setStep(.error)
+                                        icosian.graph.setEdgeColor(edgeID: edge.id, color: .red)
+                                    } else if !subGraph.hasCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
                                         icosian.graph.setEdgeColor(edgeID: edge.id, color: .green)
                                         chosenEdges.append(edge)
                                         selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex!.id)!)

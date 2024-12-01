@@ -155,6 +155,14 @@ struct Icosian {
     
     mutating func setStep(_ step: Step) {
         self.step = step
+        if step == .complete {
+            for vertex in Array(graph.vertices.values) {
+                graph.setVertexColor(forID: vertex.id, color: .green)
+            }
+            for edge in graph.edges {
+                graph.setEdgeColor(edgeID: edge.id, color: .green)
+            }
+        }
     }
 }
 
@@ -173,9 +181,6 @@ struct IcosianView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            Rectangle()
-                .foregroundStyle(icosian.step == .complete ? .teal : .clear)
-                .opacity(0.5)
             ForEach(icosian.graph.edges) { edge in
                 let edgeViewModel = EdgeViewModel(
                     edge: edge,
@@ -215,7 +220,7 @@ struct IcosianView: View {
                     }
                 
             }
-            ForEach(icosian.vertices) { vertex in
+            ForEach(Array(icosian.graph.vertices.values)) { vertex in
                 let vertexViewModel = VertexViewModel(
                     vertex: vertex,
                     getVertexPosition: { id in icosian.graph.getVertexByID(id)?.position },
@@ -229,6 +234,7 @@ struct IcosianView: View {
                         if icosian.step == .chooseVertex {
                             selectedVertex = vertex
                             icosian.setStep(.selectingEdges)
+                            icosian.graph.setVertexColor(forID: vertex.id, color: .green)
                         }
                     }
             }

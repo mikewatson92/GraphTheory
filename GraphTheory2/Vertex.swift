@@ -96,6 +96,11 @@ class VertexViewModel: ObservableObject {
     func setOffset(size: CGSize) {
         setVertexOffset(vertex.id, size)
     }
+    
+    func setColor(vertexID: UUID, color: Color) {
+        self.color = color
+        setVertexColor(vertexID, color)
+    }
 }
 
 struct VertexView: View {

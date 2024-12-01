@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		BDC2F0CD2CF80D6D008B8132 /* GraphTheory2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GraphTheory2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GraphTheory macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BDE741C62CFCA8DD00ED4A48 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +34,7 @@
 			isa = PBXGroup;
 			children = (
 				BDC2F0CF2CF80D6D008B8132 /* GraphTheory2 */,
+				BDE741C52CFCA8DD00ED4A48 /* Frameworks */,
 				BDC2F0CE2CF80D6D008B8132 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,17 +42,25 @@
 		BDC2F0CE2CF80D6D008B8132 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BDC2F0CD2CF80D6D008B8132 /* GraphTheory2.app */,
+				BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BDE741C52CFCA8DD00ED4A48 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BDE741C62CFCA8DD00ED4A48 /* UniformTypeIdentifiers.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BDC2F0CC2CF80D6D008B8132 /* GraphTheory2 */ = {
+		BDC2F0CC2CF80D6D008B8132 /* GraphTheory macOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BDC2F0DC2CF80D6F008B8132 /* Build configuration list for PBXNativeTarget "GraphTheory2" */;
+			buildConfigurationList = BDC2F0DC2CF80D6F008B8132 /* Build configuration list for PBXNativeTarget "GraphTheory macOS" */;
 			buildPhases = (
 				BDC2F0C92CF80D6D008B8132 /* Sources */,
 				BDC2F0CA2CF80D6D008B8132 /* Frameworks */,
@@ -63,11 +73,11 @@
 			fileSystemSynchronizedGroups = (
 				BDC2F0CF2CF80D6D008B8132 /* GraphTheory2 */,
 			);
-			name = GraphTheory2;
+			name = "GraphTheory macOS";
 			packageProductDependencies = (
 			);
 			productName = GraphTheory2;
-			productReference = BDC2F0CD2CF80D6D008B8132 /* GraphTheory2.app */;
+			productReference = BDC2F0CD2CF80D6D008B8132 /* GraphTheory macOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +109,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BDC2F0CC2CF80D6D008B8132 /* GraphTheory2 */,
+				BDC2F0CC2CF80D6D008B8132 /* GraphTheory macOS */,
 			);
 		};
 /* End PBXProject section */
@@ -313,7 +323,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BDC2F0DC2CF80D6F008B8132 /* Build configuration list for PBXNativeTarget "GraphTheory2" */ = {
+		BDC2F0DC2CF80D6F008B8132 /* Build configuration list for PBXNativeTarget "GraphTheory macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BDC2F0DD2CF80D6F008B8132 /* Debug */,

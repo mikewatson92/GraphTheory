@@ -6,7 +6,11 @@
 //
 
 import SwiftUI
+#if os(macOS)
 import AppKit
+#elseif os(iOS)
+import UIKit
+#endif
 
 struct Graph: Identifiable, Codable {
     let id: UUID
@@ -735,7 +739,7 @@ struct GraphView: View {
                     setVertexPosition: { id, position in graphViewModel.setVertexPosition(vertex: vertex, position: position) },
                     getVertexOffset: { id in graphViewModel.getGraph().getVertexByID(id)?.offset},
                     setVertexOffset: { id, size in graphViewModel.setVertexOffset(vertex: vertex, size: size)},
-                    setVertexColor: { id, color in graphViewModel.setColor(vertex: vertex, color: color)})
+                    setVertexColor: { id, color in graphViewModel.setColor(vertex: graphViewModel.getGraph().getVertexByID(vertex.id)!, color: color)})
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                     .shadow(color: vertexViewModel.getVertexID() == selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
@@ -864,7 +868,7 @@ struct PreviewGraph {
     let edgeCF: Edge
     let edgeAD: Edge
     let edgeBE: Edge
-    let graph: Graph
+    var graph: Graph
     
     init() {
         a = Vertex(position: CGPoint(x: 0.35, y: 0.2))
@@ -885,6 +889,7 @@ struct PreviewGraph {
         let vertices: [Vertex] = [a, b, c, d, e, f]
         let edges: [Edge] = [edgeAB, edgeBC, edgeCD, edgeDE, edgeEF, edgeFA, edgeCF, edgeAD, edgeBE]
         graph = Graph(vertices: vertices, edges: edges)
+        graph.resetMethod = .restoreToOriginal
     }
 }
 

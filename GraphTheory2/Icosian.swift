@@ -210,6 +210,9 @@ struct IcosianView: View {
                                         icosian.setStep(.error)
                                         icosian.graph.setEdgeColor(edgeID: edge.id, color: .red)
                                     } else if !subGraph.hasCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
+                                        if let nextVertexID = edge.traverse(from: selectedVertex!.id) {
+                                            icosian.graph.setVertexColor(forID: nextVertexID, color: .green)
+                                        }
                                         icosian.graph.setEdgeColor(edgeID: edge.id, color: .green)
                                         chosenEdges.append(edge)
                                         selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex!.id)!)
@@ -234,7 +237,7 @@ struct IcosianView: View {
                         if icosian.step == .chooseVertex {
                             selectedVertex = vertex
                             icosian.setStep(.selectingEdges)
-                            icosian.graph.setVertexColor(forID: vertex.id, color: .green)
+                            icosian.graph.setVertexColor(forID: vertex.id, color: .teal)
                         }
                     }
             }

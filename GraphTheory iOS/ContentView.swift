@@ -12,6 +12,7 @@ struct ContentView: View {
     @StateObject var graphViewModel = GraphViewModel(graph: Graph())
     let clebschGraphView = GraphView(graphViewModel: GraphViewModel(graph: ClebschGraphCompleteColoring().graph))
     let petersonGraphView = GraphView(graphViewModel: GraphViewModel(graph: PetersonGraph().graph))
+    let complexPolygonView = GraphView(graphViewModel: GraphViewModel(graph: ComplexPolygon().graph))
     var body: some View {
         NavigationSplitView {
             List {
@@ -21,6 +22,7 @@ struct ContentView: View {
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: clebschGraphView)
                     NavigationLink("Peterson Graph", destination: petersonGraphView)
+                    NavigationLink("Complex Polygon", destination: complexPolygonView)
                 }
                 Section(header: Text("Games")) {
                     NavigationLink("Icosian Game", destination: IcosianView())

@@ -124,6 +124,10 @@ struct Graph: Identifiable, Codable {
         return vertices[id]
     }
     
+    func getEdgeByID(_ id: UUID) -> Edge? {
+        return edges.first { $0.id == id }
+    }
+    
     func getOffsetByID(_ id: UUID) -> CGSize? {
         return getVertexByID(id)?.offset
     }
@@ -450,6 +454,10 @@ class GraphViewModel: ObservableObject {
     
     func getVertexByID(_ id: UUID) -> Vertex? {
         return graph.getVertexByID(id)
+    }
+    
+    func getEdge(_ edge: Edge) -> Edge? {
+        return graph.getEdgeByID(edge.id)
     }
     
     func setVertexPosition(vertex: Vertex, position: CGPoint) {
@@ -815,12 +823,21 @@ struct GraphView: View {
                     "Vertex Color",
                     selection: Binding(
                         get: {
-                            selectedVertex?.color ?? Vertex().color
+                            if let selectedEdge = selectedEdge {
+                                return selectedEdge.color
+                            } else if let selectedVertex = selectedVertex {
+                                return selectedVertex.color
+                            } else {
+                                return Color.white
+                            }
                         },
                         set: { newColor in
                             if let selectedVertex = selectedVertex {
                                 graphViewModel.setColor(vertex: selectedVertex, color: newColor)
                                 self.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
+                            } else if let selectedEdge = selectedEdge {
+                                graphViewModel.setColorForEdge(edge: selectedEdge, color: newColor)
+                                self.selectedEdge = graphViewModel.getEdge(selectedEdge)
                             }
                         }
                     )

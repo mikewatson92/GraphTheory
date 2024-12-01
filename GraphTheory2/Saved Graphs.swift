@@ -276,6 +276,169 @@ struct PetersonGraph {
     }
 }
 
+struct ComplexPolygon {
+    // The vertices
+    // Outer vertices
+    var A1: Vertex
+    var B1: Vertex
+    var C1: Vertex
+    var D1: Vertex
+    var E1: Vertex
+    var F1: Vertex
+    var G1: Vertex
+    var H1: Vertex
+    // Inner vertices
+    var A2: Vertex
+    var B2: Vertex
+    var C2: Vertex
+    var D2: Vertex
+    var E2: Vertex
+    var F2: Vertex
+    var G2: Vertex
+    var H2: Vertex
+    // The edges
+    // Edges starting from an outer vertex
+    var edgeA1B1: Edge
+    var edgeA1B2: Edge
+    var edgeA1H2: Edge
+    var edgeA1H1: Edge
+    var edgeB1C1: Edge
+    var edgeB1C2: Edge
+    var edgeB1A2: Edge
+    var edgeC1D1: Edge
+    var edgeC1D2: Edge
+    var edgeC1B2: Edge
+    var edgeD1E1: Edge
+    var edgeD1E2: Edge
+    var edgeD1C2: Edge
+    var edgeE1F1: Edge
+    var edgeE1F2: Edge
+    var edgeE1D2: Edge
+    var edgeF1G1: Edge
+    var edgeF1G2: Edge
+    var edgeF1E2: Edge
+    var edgeG1H1: Edge
+    var edgeG1F2: Edge
+    var edgeG1H2: Edge
+    var edgeH1G2: Edge
+    // Remaining edges starting from an inner vertex
+    var edgeA2D2: Edge
+    var edgeA2F2: Edge
+    var edgeB2E2: Edge
+    var edgeB2G2: Edge
+    var edgeC2F2: Edge
+    var edgeC2H2: Edge
+    var edgeD2G2: Edge
+    var edgeE2H2: Edge
+    // The graph
+    var graph: Graph
+    
+    init() {
+        // Initialize the vertices
+        A1 = Vertex(position: CGPoint(x: 0.347, y: 1 - 0.870))
+        B1 = Vertex(position: CGPoint(x: 0.653, y: 1 - 0.870))
+        C1 = Vertex(position: CGPoint(x: 0.870, y: 1 - 0.653))
+        D1 = Vertex(position: CGPoint(x: 0.870, y: 1 - 0.347))
+        E1 = Vertex(position: CGPoint(x: 0.653, y: 1 - 0.130))
+        F1 = Vertex(position: CGPoint(x: 0.347, y: 1 - 0.130))
+        G1 = Vertex(position: CGPoint(x: 0.130, y: 1 - 0.347))
+        H1 = Vertex(position: CGPoint(x: 0.130, y: 1 - 0.653))
+        A2 = Vertex(position: CGPoint(x: 0.423, y: 1 - 0.685))
+        B2 = Vertex(position: CGPoint(x: 0.577, y: 1 - 0.685))
+        C2 = Vertex(position: CGPoint(x: 0.685, y: 1 - 0.577))
+        D2 = Vertex(position: CGPoint(x: 0.685, y: 1 - 0.423))
+        E2 = Vertex(position: CGPoint(x: 0.577, y: 1 - 0.315))
+        F2 = Vertex(position: CGPoint(x: 0.423, y: 1 - 0.315))
+        G2 = Vertex(position: CGPoint(x: 0.315, y: 1 - 0.423))
+        H2 = Vertex(position: CGPoint(x: 0.315, y: 1 - 0.577))
+        // Set the vertex colors
+        A1.color = .green
+        B1.color = .green
+        C1.color = .green
+        D1.color = .green
+        E1.color = .green
+        F1.color = .green
+        G1.color = .green
+        H1.color = .green
+        A2.color = .green
+        B2.color = .green
+        C2.color = .green
+        D2.color = .green
+        E2.color = .green
+        F2.color = .green
+        G2.color = .green
+        H2.color = .green
+        // Initialize the edges
+        edgeA1B1 = Edge(startVertexID: A1.id, endVertexID: B1.id)
+        edgeA1B2 = Edge(startVertexID: A1.id, endVertexID: B2.id)
+        edgeA1H2 = Edge(startVertexID: A1.id, endVertexID: H2.id)
+        edgeA1H1 = Edge(startVertexID: A1.id, endVertexID: H1.id)
+        edgeB1C1 = Edge(startVertexID: B1.id, endVertexID: C1.id)
+        edgeB1C2 = Edge(startVertexID: B1.id, endVertexID: C2.id)
+        edgeB1A2 = Edge(startVertexID: B1.id, endVertexID: A2.id)
+        edgeC1D1 = Edge(startVertexID: C1.id, endVertexID: D1.id)
+        edgeC1D2 = Edge(startVertexID: C1.id, endVertexID: D2.id)
+        edgeC1B2 = Edge(startVertexID: C1.id, endVertexID: B2.id)
+        edgeD1E1 = Edge(startVertexID: D1.id, endVertexID: E1.id)
+        edgeD1E2 = Edge(startVertexID: D1.id, endVertexID: E2.id)
+        edgeD1C2 = Edge(startVertexID: D1.id, endVertexID: C2.id)
+        edgeE1F1 = Edge(startVertexID: E1.id, endVertexID: F1.id)
+        edgeE1F2 = Edge(startVertexID: E1.id, endVertexID: F2.id)
+        edgeE1D2 = Edge(startVertexID: E1.id, endVertexID: D2.id)
+        edgeF1G1 = Edge(startVertexID: F1.id, endVertexID: G1.id)
+        edgeF1G2 = Edge(startVertexID: F1.id, endVertexID: G2.id)
+        edgeF1E2 = Edge(startVertexID: F1.id, endVertexID: E2.id)
+        edgeG1H1 = Edge(startVertexID: G1.id, endVertexID: H1.id)
+        edgeG1F2 = Edge(startVertexID: G1.id, endVertexID: F2.id)
+        edgeG1H2 = Edge(startVertexID: G1.id, endVertexID: H2.id)
+        edgeH1G2 = Edge(startVertexID: H1.id, endVertexID: G2.id)
+        // Initialize remaining edges starting from an inner vertex
+        edgeA2D2 = Edge(startVertexID: A2.id, endVertexID: D2.id)
+        edgeA2F2 = Edge(startVertexID: A2.id, endVertexID: F2.id)
+        edgeB2E2 = Edge(startVertexID: B2.id, endVertexID: E2.id)
+        edgeB2G2 = Edge(startVertexID: B2.id, endVertexID: G2.id)
+        edgeC2F2 = Edge(startVertexID: C2.id, endVertexID: F2.id)
+        edgeC2H2 = Edge(startVertexID: C2.id, endVertexID: H2.id)
+        edgeD2G2 = Edge(startVertexID: D2.id, endVertexID: G2.id)
+        edgeE2H2 = Edge(startVertexID: E2.id, endVertexID: H2.id)
+        // Set the edge colors
+        edgeA1B1.color = .blue
+        edgeA1B2.color = .red
+        edgeA1H2.color = .blue
+        edgeA1H1.color = .red
+        edgeB1C1.color = .red
+        edgeB1C2.color = .blue
+        edgeB1A2.color = .red
+        edgeC1D1.color = .blue
+        edgeC1D2.color = .red
+        edgeC1B2.color = .blue
+        edgeD1E1.color = .red
+        edgeD1E2.color = .blue
+        edgeD1C2.color = .red
+        edgeE1F1.color = .blue
+        edgeE1F2.color = .red
+        edgeE1D2.color = .blue
+        edgeF1G1.color = .red
+        edgeF1G2.color = .blue
+        edgeF1E2.color = .red
+        edgeG1H1.color = .blue
+        edgeG1F2.color = .blue
+        edgeG1H2.color = .red
+        edgeH1G2.color = .red
+        // Initialize remaining edges starting from an inner vertex
+        edgeA2D2.color = .red
+        edgeA2F2.color = .blue
+        edgeB2E2.color = .blue
+        edgeB2G2.color = .red
+        edgeC2F2.color = .red
+        edgeC2H2.color = .blue
+        edgeD2G2.color = .blue
+        edgeE2H2.color = .red
+        graph = Graph(vertices: [A1, B1, C1, D1, E1, F1, G1, H1, A2, B2, C2, D2, E2, F2, G2, H2], edges: [edgeA1B1, edgeA1B2, edgeA1H2, edgeA1H1, edgeB1C1, edgeB1C2, edgeB1A2, edgeC1D1, edgeC1D2, edgeC1B2, edgeD1E1, edgeD1E2, edgeD1C2, edgeE1F1, edgeE1F2, edgeE1D2, edgeF1G1, edgeF1G2, edgeF1E2, edgeG1H1, edgeG1F2, edgeG1H2, edgeH1G2, edgeA2D2, edgeA2F2, edgeB2E2, edgeB2G2, edgeC2F2, edgeC2H2, edgeD2G2, edgeE2H2])
+        graph.resetMethod = .restoreToOriginal
+    }
+}
+
 struct Saved_Graphs: View {
     var body: some View {
         GraphView(graphViewModel: GraphViewModel(graph: K33().graph))

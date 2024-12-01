@@ -12,6 +12,7 @@ struct Vertex: Identifiable, Codable {
     var position: CGPoint = .zero
     var offset: CGSize = .zero
     var color: Color = Color.primary
+    var strokeColor: Color = Color.secondary
     
     init() {
         self.id = UUID()
@@ -77,6 +78,10 @@ class VertexViewModel: ObservableObject {
         }
     }
     
+    var strokeColor: Color {
+        vertex.strokeColor
+    }
+    
     func getVertexID() -> UUID {
         return vertex.id
     }
@@ -118,6 +123,10 @@ struct VertexView: View {
                 .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
                 .frame(width: 20, height: 20)
                 .foregroundStyle(vertexViewModel.color)
+            Circle()
+                .stroke(vertexViewModel.strokeColor)
+                .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+                .frame(width: 20, height: 20)
         }
     }
 }

@@ -159,9 +159,6 @@ struct Icosian {
             for vertex in Array(graph.vertices.values) {
                 graph.setVertexColor(forID: vertex.id, color: .green)
             }
-            for edge in graph.edges {
-                graph.setEdgeColor(edgeID: edge.id, color: .green)
-            }
         }
     }
 }
@@ -206,6 +203,10 @@ struct IcosianView: View {
                                     if subGraph.isHamiltonianCycle() {
                                         icosian.setStep(.complete)
                                         self.selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex.id)!)!
+                                        icosian.graph.setVertexColor(forID: selectedVertex.id, color: .green)
+                                        for edge in newChosenEdges {
+                                            icosian.graph.setEdgeColor(edgeID: edge.id, color: .green)
+                                        }
                                     }
                                     // If the user makes a mistake
                                     else if subGraph.hasCycle() {
@@ -216,9 +217,9 @@ struct IcosianView: View {
                                     // If the subGraph formed by the sequences of edges is not a premature cycle, and it hasn't been chosen before
                                     else if !subGraph.hasCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
                                         if let nextVertexID = edge.traverse(from: selectedVertex.id) {
-                                            icosian.graph.setVertexColor(forID: nextVertexID, color: .green)
+                                            icosian.graph.setVertexColor(forID: nextVertexID, color: Color(#colorLiteral(red: 1, green: 0.07421732694, blue: 0.3936804831, alpha: 1)))
                                         }
-                                        icosian.graph.setEdgeColor(edgeID: edge.id, color: .green)
+                                        icosian.graph.setEdgeColor(edgeID: edge.id, color: Color(#colorLiteral(red: 1, green: 0.07421732694, blue: 0.3936804831, alpha: 1)))
                                         chosenEdges.append(edge)
                                         self.selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex.id)!)!
                                     }
@@ -254,10 +255,10 @@ struct IcosianView: View {
                         if icosian.step == .chooseVertex && visitedVertices.count == 0 {
                             selectedVertex = vertex
                             icosian.setStep(.selectingEdges)
-                            icosian.graph.setVertexColor(forID: vertex.id, color: .teal)
+                            icosian.graph.setVertexColor(forID: vertex.id, color: Color(#colorLiteral(red: 1, green: 0, blue: 0.909978807, alpha: 1)))
                         }
                         // If the user backtracks to the starting position, reset the game.
-                        else if icosian.step == .selectingEdges && chosenEdges.count == 0 {
+                        else if icosian.step == .selectingEdges && chosenEdges.count == 0 && vertex.id == selectedVertex?.id {
                             selectedVertex = nil
                             visitedVertices = []
                             icosian.step = .chooseVertex
@@ -274,6 +275,7 @@ struct IcosianView: View {
                     icosian.step = .chooseVertex
                     selectedVertex = nil
                     chosenEdges = []
+                    visitedVertices = []
                 }
             }
         }

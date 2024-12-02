@@ -217,9 +217,9 @@ struct IcosianView: View {
                                     // If the subGraph formed by the sequences of edges is not a premature cycle, and it hasn't been chosen before
                                     else if !subGraph.hasCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
                                         if let nextVertexID = edge.traverse(from: selectedVertex.id) {
-                                            icosian.graph.setVertexColor(forID: nextVertexID, color: Color(#colorLiteral(red: 1, green: 0.07421732694, blue: 0.3936804831, alpha: 1)))
+                                            icosian.graph.setVertexColor(forID: nextVertexID, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
                                         }
-                                        icosian.graph.setEdgeColor(edgeID: edge.id, color: Color(#colorLiteral(red: 1, green: 0.07421732694, blue: 0.3936804831, alpha: 1)))
+                                        icosian.graph.setEdgeColor(edgeID: edge.id, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
                                         chosenEdges.append(edge)
                                         self.selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex.id)!)!
                                     }

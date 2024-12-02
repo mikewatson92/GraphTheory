@@ -195,62 +195,40 @@ struct Graph: Identifiable, Codable {
     }
     
     func isConnected() -> Bool {
-        guard let startVertexID = vertices.keys.first else { return true } // Empty graph is trivially connected.
-        
-        var visited = Set<UUID>()
-        var stack = [startVertexID]
-        
-        while let vertexID = stack.popLast() {
-            if !visited.contains(vertexID) {
-                visited.insert(vertexID)
-                let neighbors = getConnectedEdges(to: vertexID).compactMap { $0.traverse(from: vertexID) }
-                stack.append(contentsOf: neighbors)
-            }
-        }
-        
-        return visited.count == vertices.count // All vertices must be visited.
-    }
-    
-    func isCycle() -> Bool {
-        // A cycle requires a connected graph and at least 3 vertices
-        guard vertices.count >= 3, isConnected() else { return false }
-        
-        // Ensure all vertices have exactly two edges connected
-        for vertexID in vertices.keys {
-            if getConnectedEdges(to: vertexID).count != 2 {
+        var permutations = Permutation.permute(Array(vertices.values), r: 2)!
+        for permutation in permutations {
+            if !areVerticesConnected(permutation[0].id, permutation[1].id) {
                 return false
             }
         }
-        
-        // Perform a traversal to ensure all edges and vertices are part of a single cycle
-        guard let startVertexID = vertices.keys.first else { return false }
-        var visitedEdges = Set<UUID>()
-        var visitedVertices = Set<UUID>()
-        var currentVertexID = startVertexID
-        var previousVertexID: UUID? = nil
-        
-        repeat {
-            visitedVertices.insert(currentVertexID)
-            let edges = getConnectedEdges(to: currentVertexID)
-            let nextEdge = edges.first { edge in
-                edge.traverse(from: currentVertexID) != previousVertexID && !visitedEdges.contains(edge.id)
-            }
-            
-            guard let edge = nextEdge, let nextVertexID = edge.traverse(from: currentVertexID) else {
-                return false // No valid edge to continue the cycle
-            }
-            
-            visitedEdges.insert(edge.id)
-            previousVertexID = currentVertexID
-            currentVertexID = nextVertexID
-        } while currentVertexID != startVertexID
-        
-        // Ensure all vertices and edges are visited
-        return visitedVertices.count == vertices.count && visitedEdges.count == edges.count
+        return true
+    }
+    
+    func isCycle() -> Bool {
+        // In a cycle, every vertex should appear on exactly 2 edges.
+        for vertex in Array(vertices.values) {
+            guard getConnectedEdges(to: vertex.id).count == 2 else { return false }
+        }
+        // Choose a starting vertex. Any random vertex will do.
+        let startVertex = vertices.randomElement()!.value
+        // Get all edges connected to this vertex.
+        let connectedEdges = getConnectedEdges(to: startVertex.id)
+        // In a cycle, there should be exactly 2 connected edges.
+        guard connectedEdges.count == 2 else { return false }
+        // Choose one of the 2 edges to travel along.
+        let firstEdge = connectedEdges[0]
+        // Get the ID of the connecting vertex.
+        let secondVertexID = firstEdge.traverse(from: startVertex.id)!
+        // Construct a subgraph consisting of all the same vertices,
+        // and all the same edges, minus firstEdge.
+        var remainingEdges = edges
+        remainingEdges.removeAll { $0.id == firstEdge.id }
+        let subGraph = Graph(vertices: Array(vertices.values), edges: remainingEdges)
+        // If the graph is a cycle
+        return subGraph.areVerticesConnected(startVertex.id, secondVertexID)
     }
     
     func isHamiltonianCycle() -> Bool {
-        guard isConnected() else { return false }
         // Check if the graph is a cycle and includes all vertices (Hamiltonian condition)
         return isCycle() && vertices.count == edges.count
     }

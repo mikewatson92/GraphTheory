@@ -179,11 +179,30 @@ struct IcosianView: View {
         GeometryReader { geometry in
             ForEach(icosian.graph.edges) { edge in
                 let edgeViewModel = EdgeViewModel(
-                    edge: edge,
+                    edge: edge, size: geometry.size,
                     getVertexPositionByID: { id in icosian.graph.getVertexByID(id)?.position },
+                    getShowingWeights: { id in
+                        false
+                    },
+                    setShowingWeights: { id, show in
+                        
+                    },
                     getOffset: { id in icosian.graph.getOffsetByID(id)},
                     getEdgeControlPoints: { edge in icosian.graph.getEdgeControlPoints(for: edge)},
-                    getEdgeControlPointOffsets: { edge in icosian.graph.getEdgeControlPointOffsets(for: edge)})
+                    getEdgeControlPointOffsets: { edge in icosian.graph.getEdgeControlPointOffsets(for: edge)},
+                    getWeightPosition: { edge in
+                        icosian.graph.getEdgeWeightPositionByID(edge.id)
+                    },
+                    setWeightPosition: { edge, position in
+                        icosian.graph.setEdgeWeightPositionByID(id: edge.id, position: position)
+                    },
+                    getWeightPositionOffset: { edge in
+                        icosian.graph.getEdgeWeightOffsetByID(edge.id)!
+                    },
+                    setWeightPositionOffset: { edge, offset in
+                        icosian.graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
+                    }
+                )
                 EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                     .onTapGesture(count: 1) {
                         if icosian.step == .error && edge.id == edgeError?.id {

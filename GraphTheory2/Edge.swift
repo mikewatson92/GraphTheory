@@ -13,6 +13,9 @@ struct Edge: Identifiable, Codable, Hashable {
     var endVertexID: UUID
     var curved = false
     var color: Color
+    var weight: Double = 0.0
+    var weightPosition: CGPoint?
+    var weightPositionOffset: CGSize = .zero
     
     init(startVertexID: UUID, endVertexID: UUID) {
         self.id = UUID()
@@ -36,19 +39,152 @@ struct Edge: Identifiable, Codable, Hashable {
 
 class EdgeViewModel: ObservableObject {
     @Published private var edge: Edge
+    var size: CGSize
+    var getShowingWeights: (UUID) -> Bool
+    var setShowingWeights: (UUID, Bool) -> Void
     private var getVertexPositionByID: (UUID) -> CGPoint?
     private var getOffsetForID: (UUID) -> CGSize? // the vertex offset
     private var getEdgeControlPoints: (Edge) -> (CGPoint, CGPoint)
     private var getEdgeControlPointOffsets: (Edge) -> (CGSize, CGSize)
+    private var getWeightPosition: (Edge) -> CGPoint?
+    private var setWeightPosition: (Edge, CGPoint) -> Void
+    private var getWeightPositionOffset: (Edge) -> CGSize
+    private var setWeightPositionOffset: (Edge, CGSize) -> Void
     
-    init(edge: Edge, getVertexPositionByID: @escaping (UUID) -> CGPoint?, getOffset: @escaping (UUID) -> CGSize?,
+    init(edge: Edge, size: CGSize,
+         getVertexPositionByID: @escaping (UUID) -> CGPoint?,
+         getShowingWeights: @escaping (UUID) -> Bool,
+         setShowingWeights: @escaping (UUID, Bool) -> Void,
+         getOffset: @escaping (UUID) -> CGSize?,
          getEdgeControlPoints: @escaping (Edge) -> (CGPoint, CGPoint),
-         getEdgeControlPointOffsets: @escaping (Edge) -> (CGSize, CGSize)) {
+         getEdgeControlPointOffsets: @escaping (Edge) -> (CGSize, CGSize),
+         getWeightPosition: @escaping (Edge) -> CGPoint?,
+         setWeightPosition: @escaping (Edge, CGPoint) -> Void,
+         getWeightPositionOffset: @escaping (Edge) -> CGSize,
+         setWeightPositionOffset: @escaping (Edge, CGSize) -> Void
+    ) {
         self.edge = edge
+        self.size = size
+        self.getShowingWeights = getShowingWeights
+        self.setShowingWeights = setShowingWeights
         self.getVertexPositionByID = getVertexPositionByID
         self.getOffsetForID = getOffset
         self.getEdgeControlPoints = getEdgeControlPoints
         self.getEdgeControlPointOffsets = getEdgeControlPointOffsets
+        self.getWeightPosition = getWeightPosition
+        self.setWeightPosition = setWeightPosition
+        self.getWeightPositionOffset = getWeightPositionOffset
+        self.setWeightPositionOffset = setWeightPositionOffset
+    }
+    
+    func makePath(size: CGSize) -> Path {
+        let start = getStartVertexPosition()!
+        let end = getEndVertexPosition()!
+        let startOffset = getStartOffset()!
+        let endOffset = getEndOffset()!
+        let (controlPoint1, controlPoint2) = getControlPoints()
+        let (controlPoint1Offset, controlPoint2Offset) = getControlPointOffsets()
+        let path = Path { path in
+            let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
+            let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
+            path.move(to: startPoint)
+            
+            if isCurved() {
+                let newControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
+                                               y: controlPoint1.y * size.height + controlPoint1Offset.height)
+                let newControlPoint2 = CGPoint(x: controlPoint2.x * size.width + controlPoint2Offset.width,
+                                               y: controlPoint2.y * size.height + controlPoint2Offset.height)
+                path.addCurve(to: endPoint, control1: newControlPoint1, control2: newControlPoint2)
+            } else {
+                path.addLine(to: endPoint)
+            }
+        }
+        return path
+    }
+    
+    func midpoint() -> CGPoint {
+        bezierMidpoint(p0: getStartVertexPosition()!, p1: getControlPoints().0, p2: getControlPoints().1, p3: getEndVertexPosition()!)
+    }
+    
+    func midpointGradient() -> CGFloat? {
+        bezierTangentGradient(p0: getStartVertexPosition()!, p1: getControlPoints().0, p2: getControlPoints().1, p3: getEndVertexPosition()!)
+    }
+    
+    func perpendicularGradient() -> CGFloat? {
+        if let midpointGradient = midpointGradient() {
+            if midpointGradient == 0 { return nil }
+            return 1 / midpointGradient
+        }
+        return 0
+    }
+    
+    func pointOnPerpendicular(midpoint: CGPoint, perpendicularGradient: CGFloat, distance: CGFloat) -> (CGPoint, CGPoint) {
+        // Normalize the direction vector
+        let magnitude = sqrt(1 + perpendicularGradient * perpendicularGradient)
+        let dx = distance / magnitude
+        let dy = (distance * perpendicularGradient) / magnitude
+        
+        // Calculate the two points
+        let point1 = CGPoint(x: midpoint.x + dx, y: midpoint.y - dy)
+        let point2 = CGPoint(x: midpoint.x - dx, y: midpoint.y + dy)
+        
+        return (point1, point2)
+    }
+    
+    func weightPosition() -> CGPoint {
+        let midPoint = midpoint()
+        let offset = getEdgeWeightOffset()
+        
+        if let perpendicularGradient = perpendicularGradient() {
+            let (pointOnPerpendicular, _) = pointOnPerpendicular(midpoint: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
+            return CGPoint(
+                x: pointOnPerpendicular.x,
+                y: pointOnPerpendicular.y
+            )
+        }
+        
+        return CGPoint(
+            x: midPoint.x * size.width + offset.width,
+            y: (midPoint.y + 0.05) * size.height + offset.height
+        )
+    }
+    
+    func bezierMidpoint(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGPoint {
+        let t: CGFloat = 0.5
+        let x = pow(1 - t, 3) * p0.x +
+        3 * pow(1 - t, 2) * t * p1.x +
+        3 * (1 - t) * pow(t, 2) * p2.x +
+        pow(t, 3) * p3.x
+        
+        let y = pow(1 - t, 3) * p0.y +
+        3 * pow(1 - t, 2) * t * p1.y +
+        3 * (1 - t) * pow(t, 2) * p2.y +
+        pow(t, 3) * p3.y
+        
+        return CGPoint(x: x, y: y)
+    }
+    
+    func bezierTangentGradient(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGFloat? {
+        let t: CGFloat = 0.5
+        
+        // Derivative components
+        let dx = 3 * (1 - t) * (1 - t) * (p1.x - p0.x)
+        + 6 * (1 - t) * t * (p2.x - p1.x)
+        + 3 * t * t * (p3.x - p2.x)
+        
+        let dy = 3 * (1 - t) * (1 - t) * (p1.y - p0.y)
+        + 6 * (1 - t) * t * (p2.y - p1.y)
+        + 3 * t * t * (p3.y - p2.y)
+        
+        // Avoid division by zero
+        guard dx != 0 else { return nil }
+        
+        // Gradient (dy/dx)
+        return dy / dx
+    }
+    
+    func getID() -> UUID {
+        return edge.id
     }
     
     func getColor() -> Color {
@@ -57,6 +193,14 @@ class EdgeViewModel: ObservableObject {
     
     func setColor(_ color: Color) {
         edge.color = color
+    }
+    
+    func getWeight() -> Double {
+        return edge.weight
+    }
+    
+    func setWeight(_ weight: Double) {
+        edge.weight = weight
     }
     
     func getStartVertexPosition() -> CGPoint? {
@@ -83,6 +227,22 @@ class EdgeViewModel: ObservableObject {
         return getEdgeControlPointOffsets(edge)
     }
     
+    func getEdgeWeightPosition() -> CGPoint? {
+        return getWeightPosition(edge)
+    }
+    
+    func setEdgeWeightPosition(position: CGPoint) {
+        setWeightPosition(edge, position)
+    }
+    
+    func getEdgeWeightOffset() -> CGSize {
+        return getWeightPositionOffset(edge)
+    }
+    
+    func setEdgeWeightOffset(_ size: CGSize) {
+        setWeightPositionOffset(edge, size)
+    }
+    
     func isCurved() -> Bool {
         return edge.curved
     }
@@ -90,47 +250,107 @@ class EdgeViewModel: ObservableObject {
 
 struct EdgeView: View {
     @ObservedObject var edgeViewModel: EdgeViewModel
-    let size: CGSize
+    @State private var edittingWeight = false
+    @State private var weight: Double = 0.0
+    @State private var tempWeightPosition: CGPoint
+    @State private var tempWeightPositionOffset: CGSize = .zero
+    var size: CGSize
     
-    init(edgeViewModel: EdgeViewModel, size: CGSize) {
+    init(edgeViewModel: EdgeViewModel, size: CGSize, showWeights: Bool = false) {
         self.edgeViewModel = edgeViewModel
         self.size = size
+        if edgeViewModel.getEdgeWeightPosition() == nil {
+            let newX = edgeViewModel.weightPosition().x
+            let newY = edgeViewModel.weightPosition().y
+            edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: newX, y: newY))
+            self.tempWeightPosition = CGPoint(x: newX, y: newY)
+        } else {
+            self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition()!
+        }
+        self.weight = edgeViewModel.getWeight() // Initialize weight
     }
     
     var body: some View {
-        if let start = edgeViewModel.getStartVertexPosition(),
-           let end = edgeViewModel.getEndVertexPosition(), let startOffset = edgeViewModel.getStartOffset(), let endOffset = edgeViewModel.getEndOffset() {
-            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
-            let (controlPoint1Offset, controlPoint2Offset) = edgeViewModel.getControlPointOffsets()
-            Path { path in
-                let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
-                let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
-                path.move(to: startPoint)
-
-                if edgeViewModel.isCurved() {
-                    let newControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
-                                                   y: controlPoint1.y * size.height + controlPoint1Offset.height)
-                    let newControlPoint2 = CGPoint(x: controlPoint2.x * size.width + controlPoint2Offset.width,
-                                                   y: controlPoint2.y * size.height + controlPoint2Offset.height)
-                    path.addCurve(to: endPoint, control1: newControlPoint1, control2: newControlPoint2)
-                } else {
-                    path.addLine(to: endPoint)
-                }
-            }
+        edgeViewModel.makePath(size: size)
             .stroke(edgeViewModel.getColor(), lineWidth: 5)
-        }
+            .onAppear {
+                print("Midpoint: (\(edgeViewModel.midpoint().x), \(edgeViewModel.midpoint().y))")
+                print("Temp weight position: (\(tempWeightPosition.x), \(tempWeightPosition.y))")
+            }
         
+        if edgeViewModel.getShowingWeights(edgeViewModel.getID()) {
+            // TextField for editing the weight
+            
+            if edittingWeight {
+                TextField("Enter weight", value: $weight, format: .number)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                //.keyboardType()
+                    .frame(width: 50)
+                    .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()?.x ?? tempWeightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()?.y ?? tempWeightPosition.y) * size.height + tempWeightPositionOffset.height))
+                    .frame(width: 10, height: 10)
+                    .onSubmit {
+                        edittingWeight = false
+                        edgeViewModel.setWeight(weight)
+                    }
+                    .gesture(
+                        DragGesture()
+                            .onChanged { drag in
+                                tempWeightPositionOffset = drag.translation
+                            }
+                            .onEnded { _ in
+                                tempWeightPosition = CGPoint(x: tempWeightPosition.x + tempWeightPositionOffset.width / size.width, y: tempWeightPosition.y + tempWeightPositionOffset.height / size.height)
+                                tempWeightPositionOffset = .zero
+                                edgeViewModel.setEdgeWeightPosition(position: tempWeightPosition)
+                                edgeViewModel.setEdgeWeightOffset(.zero)
+                            })
+            } else {
+                Text("\(weight.formatted())")
+                    .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()?.x ?? tempWeightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()?.y ?? tempWeightPosition.y) * size.height + tempWeightPositionOffset.height))
+                    .gesture(
+                        DragGesture()
+                            .onChanged { drag in
+                                tempWeightPositionOffset = drag.translation
+                            }
+                            .onEnded { _ in
+                                tempWeightPosition = CGPoint(x: tempWeightPosition.x + tempWeightPositionOffset.width / size.width, y: tempWeightPosition.y + tempWeightPositionOffset.height / size.height)
+                                tempWeightPositionOffset = .zero
+                                edgeViewModel.setEdgeWeightPosition(position: tempWeightPosition)
+                                edgeViewModel.setEdgeWeightOffset(.zero)
+                            })
+            }
+        }
     }
 }
 
 #Preview {
-    let vertex1 = Vertex(position: CGPoint(x: 0.2, y: 0.5))
-    let vertex2 = Vertex(position: CGPoint(x: 0.8, y: 0.5))
-    let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
-    let graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
-    let edgeViewModel = EdgeViewModel(edge: edge, getVertexPositionByID: {id in graph.getVertexByID(id)?.position}, getOffset: {id in graph.getOffsetByID(id)}, getEdgeControlPoints: {edge in graph.getEdgeControlPoints(for: edge)}, getEdgeControlPointOffsets: {edge in graph.getEdgeControlPointOffsets(for: edge)})
     GeometryReader { geometry in
+        let vertex1 = Vertex(position: CGPoint(x: 0.2, y: 0.5))
+        let vertex2 = Vertex(position: CGPoint(x: 0.8, y: 0.5))
+        let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
+        var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
+        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size,
+                                          getVertexPositionByID: {id in
+            graph.getVertexByID(id)?.position},
+                                          getShowingWeights: { id in
+            false },
+                                          setShowingWeights: { id, show in},
+                                          getOffset: {id in graph.getOffsetByID(id)},
+                                          getEdgeControlPoints: { edge in
+            graph.getEdgeControlPoints(for: edge)},
+                                          getEdgeControlPointOffsets: {edge in
+            graph.getEdgeControlPointOffsets(for: edge)},
+                                          getWeightPosition: { edge in
+            
+            graph.getEdgeWeightPositionByID(edge.id)!},
+                                          setWeightPosition: { edge, position in
+            
+            graph.setEdgeWeightPositionByID(id: edge.id, position: position)},
+                                          getWeightPositionOffset: { edge in
+            graph.getEdgeWeightOffsetByID(edge.id)!
+        },
+                                          setWeightPositionOffset: { edge, offset in
+            graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
+        })
         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
-
     }
 }

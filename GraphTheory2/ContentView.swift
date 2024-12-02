@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     let k33 = K33()
-    @StateObject var graphViewModel = GraphViewModel(graph: Graph())
     let clebschGraphView = GraphView(graphViewModel: GraphViewModel(graph: ClebschGraphCompleteColoring().graph))
     let petersonGraphView = GraphView(graphViewModel: GraphViewModel(graph: PetersonGraph().graph))
     let complexPolygonView = GraphView(graphViewModel: GraphViewModel(graph: ComplexPolygon().graph))
@@ -17,7 +16,7 @@ struct ContentView: View {
         NavigationSplitView {
             List {
                 Section(header: Text("Create")) {
-                    NavigationLink("Canvas", destination: Canvas(graphViewModel: graphViewModel))
+                    NavigationLink("Canvas", destination: Canvas())
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: clebschGraphView)
@@ -30,7 +29,7 @@ struct ContentView: View {
             }
         } detail: {
             NavigationStack {
-                Canvas(graphViewModel: graphViewModel)
+                Canvas()
             }
         }
     }

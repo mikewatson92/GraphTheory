@@ -9,7 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct Canvas: View {
-    @ObservedObject var graphViewModel: GraphViewModel
+    @StateObject var graphViewModel: GraphViewModel = GraphViewModel(graph: Graph(), showWeights: true)
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
     @State private var errorMessage: String? = nil
@@ -48,6 +48,10 @@ struct Canvas: View {
                 
                 Button("Load") {
                     isFileImporterPresented = true
+                }
+                
+                Button("Weights") {
+                    graphViewModel.showWeights = !graphViewModel.showWeights
                 }
             }
         }

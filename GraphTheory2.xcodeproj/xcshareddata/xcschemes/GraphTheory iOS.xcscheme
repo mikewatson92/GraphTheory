@@ -16,7 +16,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "BDE741D82CFCA95C00ED4A48"
+               BlueprintIdentifier = "BDE7421C2CFCBB2100ED4A48"
                BuildableName = "GraphTheory iOS.app"
                BlueprintName = "GraphTheory iOS"
                ReferencedContainer = "container:GraphTheory2.xcodeproj">
@@ -45,7 +45,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BDE741D82CFCA95C00ED4A48"
+            BlueprintIdentifier = "BDE7421C2CFCBB2100ED4A48"
             BuildableName = "GraphTheory iOS.app"
             BlueprintName = "GraphTheory iOS"
             ReferencedContainer = "container:GraphTheory2.xcodeproj">
@@ -63,7 +63,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BDE741D82CFCA95C00ED4A48"
+            BlueprintIdentifier = "BDE7421C2CFCBB2100ED4A48"
             BuildableName = "GraphTheory iOS.app"
             BlueprintName = "GraphTheory iOS"
             ReferencedContainer = "container:GraphTheory2.xcodeproj">

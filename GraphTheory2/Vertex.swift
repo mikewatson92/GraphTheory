@@ -126,12 +126,20 @@ struct VertexView: View {
             
             Circle()
                 .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+            #if os(macOS)
                 .frame(width: 20, height: 20)
+            #elseif os(iOS)
+                .frame(width: 40, height: 40)
+            #endif
                 .foregroundStyle(vertexViewModel.color)
             Circle()
                 .stroke(vertexViewModel.strokeColor)
                 .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+            #if os(macOS)
                 .frame(width: 20, height: 20)
+            #elseif os(iOS)
+                .frame(width: 40, height: 40)
+            #endif
         }
     }
 }

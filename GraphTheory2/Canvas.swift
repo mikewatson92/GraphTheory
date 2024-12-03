@@ -9,7 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct Canvas: View {
-    @StateObject var graphViewModel: GraphViewModel = GraphViewModel(graph: Graph(), showWeights: true)
+    @ObservedObject var graphViewModel: GraphViewModel
     @State private var isFileImporterPresented = false
     @State private var isFileExporterPresented = false
     @State private var errorMessage: String? = nil

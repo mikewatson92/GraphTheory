@@ -199,6 +199,13 @@ struct ClebschGraphCompleteColoring {
     }
 }
 
+struct ClebschGraphCompleteColoringView: View {
+    @StateObject private var clebschGraphViewModel = GraphViewModel(graph: ClebschGraphCompleteColoring().graph)
+    var body: some View {
+        GraphView(graphViewModel: clebschGraphViewModel)
+    }
+}
+
 struct PetersonGraph {
     // The vertices of the outer pentagon
     var A1: Vertex
@@ -273,6 +280,13 @@ struct PetersonGraph {
         // Initialize the graph
         graph = Graph(vertices: [A1, B1, C1, D1, E1, A2, B2, C2, D2, E2], edges: [edgeA1B1, edgeA1A2, edgeA1E1, edgeB1C1, edgeB1B2, edgeC1D1, edgeC1C2, edgeD1E1, edgeD1D2, edgeE1E2, edgeA2C2, edgeA2D2, edgeB2D2, edgeB2E2, edgeC2E2])
         graph.resetMethod = .restoreToOriginal
+    }
+}
+
+struct PetersonView: View {
+    @StateObject private var petersonGraphViewModel = GraphViewModel(graph: PetersonGraph().graph)
+    var body: some View {
+        GraphView(graphViewModel: petersonGraphViewModel)
     }
 }
 
@@ -436,6 +450,14 @@ struct ComplexPolygon {
         edgeE2H2.color = .red
         graph = Graph(vertices: [A1, B1, C1, D1, E1, F1, G1, H1, A2, B2, C2, D2, E2, F2, G2, H2], edges: [edgeA1B1, edgeA1B2, edgeA1H2, edgeA1H1, edgeB1C1, edgeB1C2, edgeB1A2, edgeC1D1, edgeC1D2, edgeC1B2, edgeD1E1, edgeD1E2, edgeD1C2, edgeE1F1, edgeE1F2, edgeE1D2, edgeF1G1, edgeF1G2, edgeF1E2, edgeG1H1, edgeG1F2, edgeG1H2, edgeH1G2, edgeA2D2, edgeA2F2, edgeB2E2, edgeB2G2, edgeC2F2, edgeC2H2, edgeD2G2, edgeE2H2])
         graph.resetMethod = .restoreToOriginal
+    }
+}
+
+struct ComplexPolygonView: View {
+    @StateObject private var complexPolygonGraphViewModel = GraphViewModel(graph: ComplexPolygon().graph)
+    
+    var body: some View {
+        GraphView(graphViewModel: complexPolygonGraphViewModel)
     }
 }
 

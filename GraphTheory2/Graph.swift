@@ -625,6 +625,10 @@ struct GraphView: View {
         graphViewModel.clear()
     }
     
+    func edgePath(edgeViewModel: EdgeViewModel) -> EdgePath {
+        EdgePath(startVertexPosition: edgeViewModel.getStartVertexPosition()!, endVertexPosition: edgeViewModel.getEndVertexPosition()!, startOffset: edgeViewModel.getStartOffset()!, endOffset: edgeViewModel.getEndOffset()!, controlPoint1: edgeViewModel.getControlPoints().0, controlPoint2: edgeViewModel.getControlPoints().1, controlPoint1Offset: edgeViewModel.getControlPointOffsets().0, controlPoint2Offset: edgeViewModel.getControlPointOffsets().1, isCurved: edgeViewModel.isCurved())
+    }
+    
     func convertToColor(from cgColor: CGColor) -> Color {
 #if os(macOS)
         if let nsColor = NSColor(cgColor: cgColor) {
@@ -710,21 +714,21 @@ struct GraphView: View {
                     getWeightPositionOffset: { edge in graphViewModel.getGraph().getEdgeWeightOffsetByID(edge.id) ?? .zero },
                     setWeightPositionOffset: { edge, offset in graphViewModel.setWeightPositionOffset(for: edge, offset: offset)}
                 )
-                EdgeView(edgeViewModel: edgeViewModel, size: geometry.size, showWeights: graphViewModel.showWeights)
-                    .onTapGesture(count: 2) {
-                        handleEdgeDoubleClickGesture(for: edge)
-                    }
-                    .onTapGesture(count: 1) {
-                        handleEdgeSingleClickGesture(for: edge)
-                    }
-                    .onLongPressGesture {
-                        handleEdgeLongPressGesture(for: edge)
-                    }
-                    .onAppear {
-                        if edgeViewModel.getEdgeWeightPosition() == nil {
-                            edgeViewModel.setEdgeWeightPosition(position: edgeViewModel.weightPosition())
+                    EdgeView(edgeViewModel: edgeViewModel, size: geometry.size, showWeights: graphViewModel.showWeights)
+                        .onTapGesture(count: 2) {
+                            handleEdgeDoubleClickGesture(for: edge)
                         }
-                    }
+                        .onTapGesture(count: 1) {
+                            handleEdgeSingleClickGesture(for: edge)
+                        }
+                        .onLongPressGesture {
+                            handleEdgeLongPressGesture(for: edge)
+                        }
+                        .onAppear {
+                            if edgeViewModel.getEdgeWeightPosition() == nil {
+                                edgeViewModel.setEdgeWeightPosition(position: edgeViewModel.weightPosition())
+                            }
+                        }
             }
             
             // Control points for selected edge
@@ -759,6 +763,25 @@ struct GraphView: View {
                             graphViewModel.setControlPoint1(for: selectedEdge, at: newPoint)
                             graphViewModel.setControlPoint1Offset(for: selectedEdge, translation: .zero)
                         })
+                    #if os(iOS)
+                    Color.clear
+                        .contentShape(Circle())
+                        .position(adjustedControlPoint1)
+                        .frame(width: 50, height: 50)
+                        .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
+                            .onChanged({ drag in
+                                graphViewModel.setControlPoint1Offset(for: selectedEdge, translation: drag.translation)
+                                graphViewModel.curveEdge(selectedEdge)
+                            }).onEnded { _ in
+                                let (point, _) = graphViewModel.getControlPoints(for: selectedEdge)
+                                let (offset, _) = graphViewModel.getControlPointOffsets(for: selectedEdge)
+                                let newX = point.x + offset.width / geometry.size.width
+                                let newY = point.y + offset.height / geometry.size.height
+                                let newPoint = CGPoint(x: newX, y: newY)
+                                graphViewModel.setControlPoint1(for: selectedEdge, at: newPoint)
+                                graphViewModel.setControlPoint1Offset(for: selectedEdge, translation: .zero)
+                            })
+                    #endif
                     ZStack {
                         Circle()
                             .position(adjustedControlPoint2)
@@ -782,6 +805,24 @@ struct GraphView: View {
                             graphViewModel.setControlPoint2(for: selectedEdge, at: newPoint)
                             graphViewModel.setControlPoint2Offset(for: selectedEdge, translation: .zero)
                         })
+                    
+                    Color.clear
+                        .contentShape(Circle())
+                        .position(adjustedControlPoint2)
+                        .frame(width: 50, height: 50)
+                        .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
+                            .onChanged({ drag in
+                                graphViewModel.setControlPoint2Offset(for: selectedEdge, translation: drag.translation)
+                                graphViewModel.curveEdge(selectedEdge)
+                            }).onEnded { _ in
+                                let (_, point) = graphViewModel.getControlPoints(for: selectedEdge)
+                                let (_, offset) = graphViewModel.getControlPointOffsets(for: selectedEdge)
+                                let newX = point.x + offset.width / geometry.size.width
+                                let newY = point.y + offset.height / geometry.size.height
+                                let newPoint = CGPoint(x: newX, y: newY)
+                                graphViewModel.setControlPoint2(for: selectedEdge, at: newPoint)
+                                graphViewModel.setControlPoint2Offset(for: selectedEdge, translation: .zero)
+                            })
                 }
             }
             

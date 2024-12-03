@@ -40,6 +40,7 @@ struct Edge: Identifiable, Codable, Hashable {
 class EdgeViewModel: ObservableObject {
     @Published private var edge: Edge
     var size: CGSize
+    lazy var edgePath: EdgePath = EdgePath(startVertexPosition: getVertexPositionByID(edge.startVertexID)!, endVertexPosition: getVertexPositionByID(edge.endVertexID)!, startOffset: getOffsetForID(edge.startVertexID)!, endOffset: getOffsetForID(edge.endVertexID)!, controlPoint1: getEdgeControlPoints(edge).0, controlPoint2: getEdgeControlPoints(edge).1, controlPoint1Offset: getEdgeControlPointOffsets(edge).0, controlPoint2Offset: getEdgeControlPointOffsets(edge).1, isCurved: edge.curved)
     var getShowingWeights: (UUID) -> Bool
     var setShowingWeights: (UUID, Bool) -> Void
     private var getVertexPositionByID: (UUID) -> CGPoint?
@@ -77,66 +78,12 @@ class EdgeViewModel: ObservableObject {
         self.setWeightPositionOffset = setWeightPositionOffset
     }
     
-    func makePath(size: CGSize) -> Path {
-        let start = getStartVertexPosition()!
-        let end = getEndVertexPosition()!
-        let startOffset = getStartOffset()!
-        let endOffset = getEndOffset()!
-        let (controlPoint1, controlPoint2) = getControlPoints()
-        let (controlPoint1Offset, controlPoint2Offset) = getControlPointOffsets()
-        let path = Path { path in
-            let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
-            let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
-            path.move(to: startPoint)
-            
-            if isCurved() {
-                let newControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
-                                               y: controlPoint1.y * size.height + controlPoint1Offset.height)
-                let newControlPoint2 = CGPoint(x: controlPoint2.x * size.width + controlPoint2Offset.width,
-                                               y: controlPoint2.y * size.height + controlPoint2Offset.height)
-                path.addCurve(to: endPoint, control1: newControlPoint1, control2: newControlPoint2)
-            } else {
-                path.addLine(to: endPoint)
-            }
-        }
-        return path
-    }
-    
-    func midpoint() -> CGPoint {
-        bezierMidpoint(p0: getStartVertexPosition()!, p1: getControlPoints().0, p2: getControlPoints().1, p3: getEndVertexPosition()!)
-    }
-    
-    func midpointGradient() -> CGFloat? {
-        bezierTangentGradient(p0: getStartVertexPosition()!, p1: getControlPoints().0, p2: getControlPoints().1, p3: getEndVertexPosition()!)
-    }
-    
-    func perpendicularGradient() -> CGFloat? {
-        if let midpointGradient = midpointGradient() {
-            if midpointGradient == 0 { return nil }
-            return 1 / midpointGradient
-        }
-        return 0
-    }
-    
-    func pointOnPerpendicular(midpoint: CGPoint, perpendicularGradient: CGFloat, distance: CGFloat) -> (CGPoint, CGPoint) {
-        // Normalize the direction vector
-        let magnitude = sqrt(1 + perpendicularGradient * perpendicularGradient)
-        let dx = distance / magnitude
-        let dy = (distance * perpendicularGradient) / magnitude
-        
-        // Calculate the two points
-        let point1 = CGPoint(x: midpoint.x + dx, y: midpoint.y - dy)
-        let point2 = CGPoint(x: midpoint.x - dx, y: midpoint.y + dy)
-        
-        return (point1, point2)
-    }
-    
     func weightPosition() -> CGPoint {
-        let midPoint = midpoint()
+        let midPoint = edgePath.midpoint()
         let offset = getEdgeWeightOffset()
         
-        if let perpendicularGradient = perpendicularGradient() {
-            let (pointOnPerpendicular, _) = pointOnPerpendicular(midpoint: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
+        if let perpendicularGradient = edgePath.perpendicularGradient() {
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(midpoint: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
             return CGPoint(
                 x: pointOnPerpendicular.x,
                 y: pointOnPerpendicular.y
@@ -147,40 +94,6 @@ class EdgeViewModel: ObservableObject {
             x: midPoint.x * size.width + offset.width,
             y: (midPoint.y + 0.05) * size.height + offset.height
         )
-    }
-    
-    func bezierMidpoint(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGPoint {
-        let t: CGFloat = 0.5
-        let x = pow(1 - t, 3) * p0.x +
-        3 * pow(1 - t, 2) * t * p1.x +
-        3 * (1 - t) * pow(t, 2) * p2.x +
-        pow(t, 3) * p3.x
-        
-        let y = pow(1 - t, 3) * p0.y +
-        3 * pow(1 - t, 2) * t * p1.y +
-        3 * (1 - t) * pow(t, 2) * p2.y +
-        pow(t, 3) * p3.y
-        
-        return CGPoint(x: x, y: y)
-    }
-    
-    func bezierTangentGradient(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGFloat? {
-        let t: CGFloat = 0.5
-        
-        // Derivative components
-        let dx = 3 * (1 - t) * (1 - t) * (p1.x - p0.x)
-        + 6 * (1 - t) * t * (p2.x - p1.x)
-        + 3 * t * t * (p3.x - p2.x)
-        
-        let dy = 3 * (1 - t) * (1 - t) * (p1.y - p0.y)
-        + 6 * (1 - t) * t * (p2.y - p1.y)
-        + 3 * t * t * (p3.y - p2.y)
-        
-        // Avoid division by zero
-        guard dx != 0 else { return nil }
-        
-        // Gradient (dy/dx)
-        return dy / dx
     }
     
     func getID() -> UUID {
@@ -272,12 +185,15 @@ struct EdgeView: View {
     }
     
     var body: some View {
-        edgeViewModel.makePath(size: size)
-            .stroke(edgeViewModel.getColor(), lineWidth: 5)
-            .onAppear {
-                print("Midpoint: (\(edgeViewModel.midpoint().x), \(edgeViewModel.midpoint().y))")
-                print("Temp weight position: (\(tempWeightPosition.x), \(tempWeightPosition.y))")
-            }
+        ZStack {
+            edgeViewModel.edgePath.makePath(size: size)
+            #if os(macOS)
+                .stroke(edgeViewModel.getColor(), lineWidth: 5)
+            #elseif os(iOS)
+                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+            #endif
+        }
+        
         
         if edgeViewModel.getShowingWeights(edgeViewModel.getID()) {
             // TextField for editing the weight
@@ -288,7 +204,7 @@ struct EdgeView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
                     #if os(macOS)
-                        .frame(width: 10, height: 10)
+                        .frame(width: 50, height: 10)
                     #elseif os(iOS)
                         .focused($isTextFieldFocused)
                         .frame(width: 50, height: 20)
@@ -380,5 +296,112 @@ struct EdgeView: View {
             graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
         })
         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+    }
+}
+
+struct EdgePath: Shape {
+    var startVertexPosition: CGPoint
+    var endVertexPosition: CGPoint
+    var startOffset: CGSize
+    var endOffset: CGSize
+    var controlPoint1: CGPoint
+    var controlPoint2: CGPoint
+    var controlPoint1Offset: CGSize
+    var controlPoint2Offset: CGSize
+    var isCurved: Bool
+    
+    func path(in rect: CGRect) -> Path {
+        return makePath(size: CGSize(width: rect.width, height: rect.height))
+    }
+    
+    func makePath(size: CGSize) -> Path {
+        let start = startVertexPosition
+        let end = endVertexPosition
+        let startOffset = startOffset
+        let endOffset = endOffset
+        let controlPoint1 = controlPoint1
+        let controlPoint2 = controlPoint2
+        let controlPoint1Offset = controlPoint1Offset
+        let controlPoint2Offset = controlPoint2Offset
+
+        let path = Path { path in
+            let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
+            let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
+            path.move(to: startPoint)
+            
+            if isCurved {
+                let newControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
+                                               y: controlPoint1.y * size.height + controlPoint1Offset.height)
+                let newControlPoint2 = CGPoint(x: controlPoint2.x * size.width + controlPoint2Offset.width,
+                                               y: controlPoint2.y * size.height + controlPoint2Offset.height)
+                path.addCurve(to: endPoint, control1: newControlPoint1, control2: newControlPoint2)
+            } else {
+                path.addLine(to: endPoint)
+            }
+        }
+        return path
+    }
+    
+    func midpoint() -> CGPoint {
+        bezierMidpoint(p0: startVertexPosition, p1: controlPoint1, p2: controlPoint2, p3: endVertexPosition)
+    }
+    
+    func midpointGradient() -> CGFloat? {
+        bezierTangentGradient(p0: startVertexPosition, p1: controlPoint1, p2: controlPoint2, p3: endVertexPosition)
+    }
+    
+    func perpendicularGradient() -> CGFloat? {
+        if let midpointGradient = midpointGradient() {
+            if midpointGradient == 0 { return nil }
+            return 1 / midpointGradient
+        }
+        return 0
+    }
+    
+    func pointOnPerpendicular(midpoint: CGPoint, perpendicularGradient: CGFloat, distance: CGFloat) -> (CGPoint, CGPoint) {
+        // Normalize the direction vector
+        let magnitude = sqrt(1 + perpendicularGradient * perpendicularGradient)
+        let dx = distance / magnitude
+        let dy = (distance * perpendicularGradient) / magnitude
+        
+        // Calculate the two points
+        let point1 = CGPoint(x: midpoint.x + dx, y: midpoint.y - dy)
+        let point2 = CGPoint(x: midpoint.x - dx, y: midpoint.y + dy)
+        
+        return (point1, point2)
+    }
+    
+    func bezierMidpoint(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGPoint {
+        let t: CGFloat = 0.5
+        let x = pow(1 - t, 3) * p0.x +
+        3 * pow(1 - t, 2) * t * p1.x +
+        3 * (1 - t) * pow(t, 2) * p2.x +
+        pow(t, 3) * p3.x
+        
+        let y = pow(1 - t, 3) * p0.y +
+        3 * pow(1 - t, 2) * t * p1.y +
+        3 * (1 - t) * pow(t, 2) * p2.y +
+        pow(t, 3) * p3.y
+        
+        return CGPoint(x: x, y: y)
+    }
+    
+    func bezierTangentGradient(p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGFloat? {
+        let t: CGFloat = 0.5
+        
+        // Derivative components
+        let dx = 3 * (1 - t) * (1 - t) * (p1.x - p0.x)
+        + 6 * (1 - t) * t * (p2.x - p1.x)
+        + 3 * t * t * (p3.x - p2.x)
+        
+        let dy = 3 * (1 - t) * (1 - t) * (p1.y - p0.y)
+        + 6 * (1 - t) * t * (p2.y - p1.y)
+        + 3 * t * t * (p3.y - p2.y)
+        
+        // Avoid division by zero
+        guard dx != 0 else { return nil }
+        
+        // Gradient (dy/dx)
+        return dy / dx
     }
 }

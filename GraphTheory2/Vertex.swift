@@ -28,6 +28,10 @@ struct Vertex: Identifiable, Codable {
         case id, position, color
     }
     
+    mutating func setOffset(_ size: CGSize) {
+        offset = size
+    }
+    
     // Encoding
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -119,6 +123,7 @@ struct VertexView: View {
     
     var body: some View {
         if let position = vertexViewModel.getPosition(), let offset = vertexViewModel.getOffset() {
+            
             Circle()
                 .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
                 .frame(width: 20, height: 20)

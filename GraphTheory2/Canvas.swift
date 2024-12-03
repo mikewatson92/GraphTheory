@@ -41,7 +41,7 @@ struct Canvas: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .navigation) {
+            ToolbarItemGroup(placement: .automatic) {
                 Button("Save") {
                     isFileExporterPresented = true
                 }

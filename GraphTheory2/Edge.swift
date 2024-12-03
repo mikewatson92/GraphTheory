@@ -250,6 +250,7 @@ class EdgeViewModel: ObservableObject {
 
 struct EdgeView: View {
     @ObservedObject var edgeViewModel: EdgeViewModel
+    @FocusState private var isTextFieldFocused: Bool
     @State private var edittingWeight = false
     @State private var weight: Double = 0.0
     @State private var tempWeightPosition: CGPoint
@@ -282,16 +283,30 @@ struct EdgeView: View {
             // TextField for editing the weight
             
             if edittingWeight {
-                TextField("Enter weight", value: $weight, format: .number)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                //.keyboardType()
-                    .frame(width: 50)
-                    .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()?.x ?? tempWeightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()?.y ?? tempWeightPosition.y) * size.height + tempWeightPositionOffset.height))
-                    .frame(width: 10, height: 10)
-                    .onSubmit {
-                        edittingWeight = false
-                        edgeViewModel.setWeight(weight)
-                    }
+                ZStack {
+                    TextField("Enter weight", value: $weight, format: .number)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    //.keyboardType()
+                    #if os(macOS)
+                        .frame(width: 10, height: 10)
+                    #elseif os(iOS)
+                        .focused($isTextFieldFocused)
+                        .frame(width: 50, height: 20)
+                        //.keyboardType(.decimalPad)
+                    #endif
+                        .onSubmit {
+                            isTextFieldFocused = false
+                            edittingWeight = false
+                            edgeViewModel.setWeight(weight)
+                        }
+                    #if os(iOS)
+                    Color.clear
+                        .opacity(0.25)
+                        .contentShape(Rectangle())
+                        .frame(width: 50, height: 50)
+                    #endif
+                }
+                        .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()?.x ?? tempWeightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()?.y ?? tempWeightPosition.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
                             .onChanged { drag in
@@ -304,7 +319,16 @@ struct EdgeView: View {
                                 edgeViewModel.setEdgeWeightOffset(.zero)
                             })
             } else {
-                Text("\(weight.formatted())")
+                ZStack {
+                    Text("\(weight.formatted())")
+                    #if os(iOS)
+                    Color.clear
+                        .opacity(0.25)
+                        .contentShape(Rectangle())
+                        .frame(width: 50, height: 50)
+                    #endif
+
+                }
                     .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()?.x ?? tempWeightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()?.y ?? tempWeightPosition.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
@@ -317,6 +341,10 @@ struct EdgeView: View {
                                 edgeViewModel.setEdgeWeightPosition(position: tempWeightPosition)
                                 edgeViewModel.setEdgeWeightOffset(.zero)
                             })
+                    .onTapGesture(count: 1) {
+                        isTextFieldFocused = true
+                        edittingWeight = true
+                    }
             }
         }
     }

@@ -973,7 +973,7 @@ struct GraphView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
+            ToolbarItem(placement: .automatic) {
                 ColorPicker(
                     "Vertex Color",
                     selection: Binding(

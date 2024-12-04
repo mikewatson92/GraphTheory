@@ -265,7 +265,7 @@ struct IcosianView: View {
                         icosian.graph.getEdgeWeightPositionByID(edge.id)
                     },
                     setWeightPosition: { edge, position in
-                        icosian.graph.setEdgeWeightPositionByID(id: edge.id, position: position)
+                        //icosian.graph.setEdgeWeightPositionByID(id: edge.id, position: position)
                     },
                     getWeightPositionOffset: { edge in
                         icosian.graph.getEdgeWeightOffsetByID(edge.id)!

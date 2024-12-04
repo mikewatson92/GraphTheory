@@ -16,6 +16,12 @@ struct Edge: Identifiable, Codable, Hashable {
     var weight: Double = 0.0
     var weightPosition: CGPoint?
     var weightPositionOffset: CGSize = .zero
+    /*
+    var controlPoint1: CGPoint?
+    var controlPoint2: CGPoint?
+    var controlPoint1Offset: CGSize = .zero
+    var controlPoint2Offset: CGSize = .zero
+     */
     
     init(startVertexID: UUID, endVertexID: UUID) {
         self.id = UUID()
@@ -136,6 +142,24 @@ class EdgeViewModel: ObservableObject {
         return getEdgeControlPoints(edge)
     }
     
+    /*
+    func setControlPoint1(_ position: CGPoint) {
+        edge.controlPoint1 = position
+    }
+    
+    func setControlPoint2(_ position: CGPoint) {
+        edge.controlPoint2 = position
+    }
+    
+    func setControlPoint1Offset(_ size: CGSize) {
+        edge.controlPoint1Offset = size
+    }
+    
+    func setControlPoint2Offset(_ size: CGSize) {
+        edge.controlPoint2Offset = size
+    }
+     */
+    
     func getControlPointOffsets() -> (CGSize, CGSize) {
         return getEdgeControlPointOffsets(edge)
     }
@@ -231,6 +255,8 @@ struct EdgeView: View {
                             .onEnded { _ in
                                 tempWeightPosition = CGPoint(x: tempWeightPosition.x + tempWeightPositionOffset.width / size.width, y: tempWeightPosition.y + tempWeightPositionOffset.height / size.height)
                                 tempWeightPositionOffset = .zero
+                                // Make sure the view alerts the Edge model of changes
+                                // to the weight position.
                                 edgeViewModel.setEdgeWeightPosition(position: tempWeightPosition)
                                 edgeViewModel.setEdgeWeightOffset(.zero)
                             })

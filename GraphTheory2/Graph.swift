@@ -398,6 +398,13 @@ class GraphViewModel: ObservableObject {
     @Published var timesEdgeSelected: [UUID: Int]
     @Published var mode: Graph.Mode
     @Published var showWeights: Bool
+    var movingVertex: Vertex?
+    // A copy of the edges before any changes occur
+    var edgesWillMove: [Edge] = []
+    // A copy of the edges after changes occur
+    var edgesDidMove: [Edge] = []
+    var vertexWillMove: [UUID: Vertex] = [:]
+    var vertexDidMove: [UUID: Vertex] = [:]
     var showModeMenu: Bool
     
     init(graph: Graph, showWeights: Bool = false, showModeMenu: Bool = true) {
@@ -446,8 +453,112 @@ class GraphViewModel: ObservableObject {
     }
     
     func setColorForEdge(edge: Edge, color: Color) {
-        let index = graph.edges.firstIndex(of: edge)!
-        graph.edges[index].setColor(color)
+        if let index = graph.edges.firstIndex(of: edge) {
+            graph.edges[index].setColor(color)
+        }
+    }
+    
+    // Used for storing an initial copy of a vertex before
+    // changes occur.
+    func vertexWillMove(_ vertex: Vertex) {
+        if !vertexWillMove.keys.contains(where: { $0 == vertex.id }) {
+            print("Adding vertex to vertexWillMove.")
+            vertexWillMove[vertex.id] = vertex
+            let connectedEdges = getConnectedEdges(to: vertex.id)
+            for edge in connectedEdges {
+                // Used for storing an initial copy of an edge before
+                // changes occur.
+                if !edgesWillMove.contains(where: {$0.id == edge.id}) {
+                    print("Appending edge to edgesWillMove for edgeID: \(edge.id)")
+                    edgesWillMove.append(edge)
+                }
+            }
+        } else {
+            print("Vertex already added to vertexWillMove!")
+        }
+    }
+    
+    // Used for storing copies of a vertex after a change occurs.
+    func vertexDidMove(_ vertex: Vertex) {
+        vertexWillMove[vertex.id] = vertex
+        let connectedEdges = getConnectedEdges(to: vertex.id)
+        for edge in connectedEdges {
+            edgesDidMove.removeAll { $0.id == edge.id }
+            edgesDidMove.append(edge)
+        }
+    }
+    
+    func updateEdgeAfterVertexMoves(vertex: Vertex) {
+        for edge in getConnectedEdges(to: vertex.id) {
+            
+        }
+    }
+    
+    // After a vertex and edge change occurs, refresh the four arrays
+    // storing the vertices and edges.
+    func resetVertexEdgeChanges() {
+        edgesWillMove = []
+        edgesDidMove = []
+        vertexWillMove = [:]
+        vertexDidMove = [:]
+    }
+    
+    // Returns a tuple containing the relative control point positions
+    // of an edge before changes occured.
+    // The relative control point position is a point
+    // that represents how far between startVertex.position and
+    // endVertex.position a control point is located.
+    func getEdgeOriginalRelativeControlPoints(_ edge: Edge) -> (CGPoint, CGPoint)? {
+        let startVertexID = edge.startVertexID
+        let endVertexID = edge.endVertexID
+        if let startVertexPosition = vertexWillMove[startVertexID]?.position,
+           let endVertexPosition = vertexWillMove[endVertexID]?.position {
+            let (controlPoint1, controlPoint2) = getControlPoints(for: edge)
+            let x1 = (controlPoint1.x - startVertexPosition.x) / (endVertexPosition.x - startVertexPosition.x)
+            let y1 = (controlPoint1.y - startVertexPosition.y) / (endVertexPosition.y - startVertexPosition.y)
+            let relativePosition1 = CGPoint(x: x1, y: y1)
+            let x2 = (controlPoint2.x - startVertexPosition.x) / (endVertexPosition.x - startVertexPosition.x)
+            let y2 = (controlPoint2.y - startVertexPosition.y) / (endVertexPosition.y - startVertexPosition.y)
+            let relativePosition2 = CGPoint(x: x2, y: y2)
+            return (relativePosition1, relativePosition2)
+        }
+        return nil
+    }
+    
+    // Set the positions of the control points of an edge
+    // after a move has occurred, based on the original
+    // relative positions of the control points.
+    func setEdgeRelativeControlPoints(edge: Edge, geometrySize: CGSize) {
+        let (originalControlPoint1, originalControlPoint2) = getControlPoints(for: edge)
+        let (controlPoint1Offset, controlPoint2Offset) = getControlPointOffsets(for: edge)
+        let x1 = originalControlPoint1.x + controlPoint1Offset.width / geometrySize.width
+        let y1 = originalControlPoint1.y + controlPoint1Offset.height / geometrySize.height
+        let x2 = originalControlPoint2.x + controlPoint2Offset.width / geometrySize.width
+        let y2 = originalControlPoint2.y + controlPoint2Offset.height / geometrySize.height
+        setControlPoint1(for: edge, at: CGPoint(x: x1, y: y1))
+        setControlPoint2(for: edge, at: CGPoint(x: x2, y: y2))
+    }
+    
+    // When a vertex starts being dragged by translation,
+    // update the offsets for the control points of the edge.
+    func setEdgeControlPointOffsets(edge: Edge, translation: CGSize) {
+        if let (relativeControlPoint1, relativeControlPoint2) = getEdgeOriginalRelativeControlPoints(edge), let movingVertex = movingVertex {
+            print("Successfully retrived relative control points.")
+            let dx1 = relativeControlPoint1.x * translation.width
+            let dy1 = relativeControlPoint1.y * translation.height
+            let dx2 = relativeControlPoint2.x * translation.width
+            let dy2 = relativeControlPoint2.y * translation.height
+            if movingVertex.id == edge.endVertexID {
+                setControlPoint1Offset(for: edge, translation: CGSize(width: dx1, height: dy1))
+                setControlPoint2Offset(for: edge, translation: CGSize(width: dx2, height: dy2))
+            } else {
+                setControlPoint1Offset(for: edge, translation: CGSize(width: dx2, height: dy2))
+                setControlPoint2Offset(for: edge, translation: CGSize(width: dx1, height: dy1))
+            }
+        } else {
+            print("Failed to retrive relative control points for edgeID: \(edge.id).")
+            print("edgesWillMove contains \(edgesWillMove.count) edges. It's first edge has edgeID: \(edgesWillMove[0].id)")
+        }
     }
     
     func getGraph() -> Graph {
@@ -840,31 +951,36 @@ struct GraphView: View {
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                         .onChanged({ drag in
                             if mode == .edit {
+                                graphViewModel.movingVertex = vertex
                                 vertexViewModel.setOffset(size: drag.translation)
+                                // Notify the model to store copies of
+                                // the vertex and connected edges in
+                                // their original states.
+                                graphViewModel.vertexWillMove(vertex)
                                 //Update the control points and control point offsets for every edge connected to a moving vertex
                                 let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
                                 for edge in connectedEdges {
-                                    graphViewModel.setControlPoint1Offset(for: edge, translation: drag.translation)
-                                    graphViewModel.setControlPoint2Offset(for: edge, translation: drag.translation)
+                                    // Keep original copies of all
+                                    // vertices connected by edge.
+                                    let otherVertexID = edge.traverse(from: vertex.id)!
+                                    let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
+                                    graphViewModel.vertexWillMove(otherVertex)
+                                    // Update the control point
+                                    // offsets for edge
+                                    graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation)
                                 }
                             }
                         }).onEnded { _ in
                             if mode == .edit {
+                                graphViewModel.movingVertex = nil
+                                graphViewModel.vertexDidMove(vertex)
                                 for edge in graphViewModel.getConnectedEdges(to: vertex.id) {
                                     graphViewModel.setWeightPosition(for: edge, position: CGPoint(x: edge.weightPosition!.x + vertexViewModel.getOffset()!.width / (2 * geometry.size.width), y: edge.weightPosition!.y + vertexViewModel.getOffset()!.height / (2 * geometry.size.height)))
                                     //Update the control points and control point offsets for every edge connected to a moving vertex
-                                    let (point1, point2) = graphViewModel.getControlPoints(for: edge)
-                                    let (offset1, offset2) = graphViewModel.getControlPointOffsets(for: edge)
-                                    let newX1 = point1.x + offset1.width / geometry.size.width
-                                    let newY1 = point1.y + offset1.height / geometry.size.height
-                                    let newX2 = point2.x + offset2.width / geometry.size.width
-                                    let newY2 = point2.y + offset2.height / geometry.size.height
-                                    let newPoint1 = CGPoint(x: newX1, y: newY1)
-                                    let newPoint2 = CGPoint(x: newX2, y: newY2)
-                                    graphViewModel.setControlPoint1(for: edge, at: newPoint1)
+                                    graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometry.size)
                                     graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
-                                    graphViewModel.setControlPoint2(for: edge, at: newPoint2)
                                     graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
+                                    graphViewModel.resetVertexEdgeChanges()
                                 }
                                 // Set the vertex position
                                 vertexViewModel.setPosition(CGPoint(x: vertexViewModel.getPosition()!.x + vertexViewModel.getOffset()!.width / geometry.size.width, y: vertexViewModel.getPosition()!.y + vertexViewModel.getOffset()!.height / geometry.size.height))
@@ -975,7 +1091,7 @@ struct GraphView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 ColorPicker(
-                    "Vertex Color",
+                    "",
                     selection: Binding(
                         get: {
                             if let selectedEdge = selectedEdge {

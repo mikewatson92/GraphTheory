@@ -335,6 +335,7 @@ struct ComplexPolygon {
     var edgeG1F2: Edge
     var edgeG1H2: Edge
     var edgeH1G2: Edge
+    var edgeH1A2: Edge
     // Remaining edges starting from an inner vertex
     var edgeA2D2: Edge
     var edgeA2F2: Edge
@@ -406,6 +407,7 @@ struct ComplexPolygon {
         edgeG1F2 = Edge(startVertexID: G1.id, endVertexID: F2.id)
         edgeG1H2 = Edge(startVertexID: G1.id, endVertexID: H2.id)
         edgeH1G2 = Edge(startVertexID: H1.id, endVertexID: G2.id)
+        edgeH1A2 = Edge(startVertexID: H1.id, endVertexID: A2.id)
         // Initialize remaining edges starting from an inner vertex
         edgeA2D2 = Edge(startVertexID: A2.id, endVertexID: D2.id)
         edgeA2F2 = Edge(startVertexID: A2.id, endVertexID: F2.id)
@@ -439,6 +441,7 @@ struct ComplexPolygon {
         edgeG1F2.color = .blue
         edgeG1H2.color = .red
         edgeH1G2.color = .red
+        edgeH1A2.color = .blue
         // Initialize remaining edges starting from an inner vertex
         edgeA2D2.color = .red
         edgeA2F2.color = .blue
@@ -448,7 +451,7 @@ struct ComplexPolygon {
         edgeC2H2.color = .blue
         edgeD2G2.color = .blue
         edgeE2H2.color = .red
-        graph = Graph(vertices: [A1, B1, C1, D1, E1, F1, G1, H1, A2, B2, C2, D2, E2, F2, G2, H2], edges: [edgeA1B1, edgeA1B2, edgeA1H2, edgeA1H1, edgeB1C1, edgeB1C2, edgeB1A2, edgeC1D1, edgeC1D2, edgeC1B2, edgeD1E1, edgeD1E2, edgeD1C2, edgeE1F1, edgeE1F2, edgeE1D2, edgeF1G1, edgeF1G2, edgeF1E2, edgeG1H1, edgeG1F2, edgeG1H2, edgeH1G2, edgeA2D2, edgeA2F2, edgeB2E2, edgeB2G2, edgeC2F2, edgeC2H2, edgeD2G2, edgeE2H2])
+        graph = Graph(vertices: [A1, B1, C1, D1, E1, F1, G1, H1, A2, B2, C2, D2, E2, F2, G2, H2], edges: [edgeA1B1, edgeA1B2, edgeA1H2, edgeA1H1, edgeB1C1, edgeB1C2, edgeB1A2, edgeC1D1, edgeC1D2, edgeC1B2, edgeD1E1, edgeD1E2, edgeD1C2, edgeE1F1, edgeE1F2, edgeE1D2, edgeF1G1, edgeF1G2, edgeF1E2, edgeG1H1, edgeG1F2, edgeG1H2, edgeH1G2, edgeH1A2, edgeA2D2, edgeA2F2, edgeB2E2, edgeB2G2, edgeC2F2, edgeC2H2, edgeD2G2, edgeE2H2])
         graph.resetMethod = .restoreToOriginal
     }
 }

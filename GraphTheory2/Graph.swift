@@ -488,12 +488,6 @@ class GraphViewModel: ObservableObject {
         }
     }
     
-    func updateEdgeAfterVertexMoves(vertex: Vertex) {
-        for edge in getConnectedEdges(to: vertex.id) {
-            
-        }
-    }
-    
     // After a vertex and edge change occurs, refresh the four arrays
     // storing the vertices and edges.
     func resetVertexEdgeChanges() {
@@ -1025,31 +1019,36 @@ struct GraphView: View {
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                         .onChanged({ drag in
                             if mode == .edit {
+                                graphViewModel.movingVertex = vertex
                                 vertexViewModel.setOffset(size: drag.translation)
+                                // Notify the model to store copies of
+                                // the vertex and connected edges in
+                                // their original states.
+                                graphViewModel.vertexWillMove(vertex)
                                 //Update the control points and control point offsets for every edge connected to a moving vertex
                                 let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
                                 for edge in connectedEdges {
-                                    graphViewModel.setControlPoint1Offset(for: edge, translation: drag.translation)
-                                    graphViewModel.setControlPoint2Offset(for: edge, translation: drag.translation)
+                                    // Keep original copies of all
+                                    // vertices connected by edge.
+                                    let otherVertexID = edge.traverse(from: vertex.id)!
+                                    let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
+                                    graphViewModel.vertexWillMove(otherVertex)
+                                    // Update the control point
+                                    // offsets for edge
+                                    graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation)
                                 }
                             }
                         }).onEnded { _ in
                             if mode == .edit {
+                                graphViewModel.movingVertex = nil
+                                graphViewModel.vertexDidMove(vertex)
                                 for edge in graphViewModel.getConnectedEdges(to: vertex.id) {
                                     graphViewModel.setWeightPosition(for: edge, position: CGPoint(x: edge.weightPosition!.x + vertexViewModel.getOffset()!.width / (2 * geometry.size.width), y: edge.weightPosition!.y + vertexViewModel.getOffset()!.height / (2 * geometry.size.height)))
                                     //Update the control points and control point offsets for every edge connected to a moving vertex
-                                    let (point1, point2) = graphViewModel.getControlPoints(for: edge)
-                                    let (offset1, offset2) = graphViewModel.getControlPointOffsets(for: edge)
-                                    let newX1 = point1.x + offset1.width / geometry.size.width
-                                    let newY1 = point1.y + offset1.height / geometry.size.height
-                                    let newX2 = point2.x + offset2.width / geometry.size.width
-                                    let newY2 = point2.y + offset2.height / geometry.size.height
-                                    let newPoint1 = CGPoint(x: newX1, y: newY1)
-                                    let newPoint2 = CGPoint(x: newX2, y: newY2)
-                                    graphViewModel.setControlPoint1(for: edge, at: newPoint1)
+                                    graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometry.size)
                                     graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
-                                    graphViewModel.setControlPoint2(for: edge, at: newPoint2)
                                     graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
+                                    graphViewModel.resetVertexEdgeChanges()
                                 }
                                 // Set the vertex position
                                 vertexViewModel.setPosition(CGPoint(x: vertexViewModel.getPosition()!.x + vertexViewModel.getOffset()!.width / geometry.size.width, y: vertexViewModel.getPosition()!.y + vertexViewModel.getOffset()!.height / geometry.size.height))

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct StrokeText: View {
     let text: String
-    let width: CGFloat
+    let width: CGFloat = 1
     let color: Color
 
     var body: some View {
@@ -31,6 +31,6 @@ struct StrokeText: View {
 }
 
 #Preview {
-    StrokeText(text: "A", width: 1, color: .black)
+    StrokeText(text: "A", color: .black)
         .frame(width: 50, height: 50)
 }

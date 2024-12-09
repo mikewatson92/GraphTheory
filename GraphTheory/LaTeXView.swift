@@ -48,8 +48,9 @@ struct LaTeXView: NSViewRepresentable {
         webView.configuration.defaultWebpagePreferences = preferences
         
         // Ensure file access (for offline MathJax or resources)
-        webView.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
-        
+        webView.gestureRecognizers = []
+        webView.navigationDelegate = context.coordinator
+
         return webView
     }
     
@@ -58,7 +59,9 @@ struct LaTeXView: NSViewRepresentable {
         <!DOCTYPE html>
         <html>
         <head>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+            <script id="MathJax-script" async
+                      src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+              </script>
             <style>
                 body {
                     margin: 0;
@@ -73,10 +76,10 @@ struct LaTeXView: NSViewRepresentable {
             </style>
         </head>
         <body>
-            <div id="math-content">\\[\(latex)\\]</div>
-            <script>
-                MathJax.typeset();
-            </script>
+            <div id="math-content">\\[\\textcolor{blue}{a^2 + b^2 = c^2}\\]</div>
+                <script>
+                    MathJax.typeset();
+                </script>
         </body>
         </html>
         """

@@ -155,6 +155,22 @@ struct VertexView: View {
     }
     var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor().rawValue)}{\(tempLabel)}"
     }
+    var labelColor : Color {
+        get {
+            switch vertexViewModel.getLabelColor() {
+            case .white:
+                Color.white
+            case .blue:
+                Color.blue
+            case .red:
+                Color.red
+            case .green:
+                Color.green
+            case .black:
+                Color.black
+            }
+        }
+    }
     let size: CGSize
     var mode: [VertexViewModel.Mode] {
         get {
@@ -202,6 +218,16 @@ struct VertexView: View {
                 }
                 
                 if !edittingLabel && mode.contains(.showLabels) {
+                    #if os(macOS)
+                    StrokeText(text: tempLabel, color: labelColor)
+                        .frame(width: size.width, height: size.height, alignment: .center)
+                        .position(x: vertexViewModel.getPosition()!.x * size.width + vertexViewModel.getOffset()!.width, y: vertexViewModel.getPosition()!.y * size.height + vertexViewModel.getOffset()!.height)
+                        //.offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
+                        .onLongPressGesture {
+                            isTextFieldFocused = true
+                            edittingLabel = true
+                        }
+                    #elseif os(iOS)
                     LaTeXView(latex: colorLatexString, size: $latexSize)
                         .frame(width: size.width, height: size.height, alignment: .center)
                         .offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
@@ -209,6 +235,7 @@ struct VertexView: View {
                             isTextFieldFocused = true
                             edittingLabel = true
                         }
+                    #endif
                 } else if mode.contains(.editLabels) {
                     TextField("", text: $tempLabel)
                         .textFieldStyle(RoundedBorderTextFieldStyle())

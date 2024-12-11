@@ -222,7 +222,6 @@ struct VertexView: View {
                     StrokeText(text: tempLabel, color: labelColor)
                         .frame(width: size.width, height: size.height, alignment: .center)
                         .position(x: vertexViewModel.getPosition()!.x * size.width + vertexViewModel.getOffset()!.width, y: vertexViewModel.getPosition()!.y * size.height + vertexViewModel.getOffset()!.height)
-                        //.offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
                         .onLongPressGesture {
                             isTextFieldFocused = true
                             edittingLabel = true

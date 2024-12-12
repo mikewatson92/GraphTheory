@@ -116,16 +116,14 @@ class KruskalViewModel: ObservableObject {
         kruskal.graph.setControlPoint2Offset(for: edge, translation: size)
     }
     
-    func setEdgeWeightPosition(edgeID: UUID, position: CGPoint) {
-        if let index = kruskal.graph.edges.firstIndex(where: { $0.id == edgeID }) {
-            kruskal.graph.edges[index].weightPosition = position
-        }
-    }
-    
     func setWeightPositionOffset(edgeID: UUID, size: CGSize) {
         if let index = kruskal.graph.edges.firstIndex(where: { $0.id == edgeID }) {
             kruskal.graph.edges[index].weightPositionOffset = size
         }
+    }
+    
+    func setEdgeWeightPosition(edgeID: UUID, position: CGPoint) {
+        kruskal.graph.setEdgeWeightPositionByID(id: edgeID, position: position)
     }
     
     func setVertexPosition(vertexID: UUID, position: CGPoint) {

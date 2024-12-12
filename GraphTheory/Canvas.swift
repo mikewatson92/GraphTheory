@@ -80,9 +80,7 @@ struct Canvas: View {
                     }
                 }
                 if algorithm == .none {
-                    Button("Weights") {
-                        graphViewModel.showWeights = !graphViewModel.showWeights
-                    }
+                    Toggle("Weights", isOn: $graphViewModel.showWeights)
                 }
             }
         }

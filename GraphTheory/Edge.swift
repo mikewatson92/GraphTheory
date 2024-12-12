@@ -12,9 +12,8 @@ struct Edge: Identifiable, Codable, Hashable {
     let id: UUID
     var startVertexID: UUID
     var endVertexID: UUID
-    var color: Color
+    var color: Color = Color.primary
     var weight: Double = 0.0
-    var weightPosition: CGPoint = .zero
     var weightPositionParameterT: CGFloat = 0.5
     var weightPositionDistance: CGFloat = 0.05
     var weightPositionOffset: CGSize = .zero
@@ -23,7 +22,6 @@ struct Edge: Identifiable, Codable, Hashable {
         self.id = UUID()
         self.startVertexID = startVertexID
         self.endVertexID = endVertexID
-        self.color = Color.primary
     }
     
     mutating func setColor(_ color: Color) {
@@ -102,12 +100,10 @@ class EdgeViewModel: ObservableObject {
         self.getWeight = getWeight
         self.setWeight = setWeight
         self.getMode = getMode
-        if edge.weightPosition == .zero {
-            setEdgeWeightPosition(position: weightPosition())
-        }
+
         if edge.weightPositionDistance == 0 {
-            self.edge.weightPositionParameterT = edgePath.closestParameterToPoint(externalPoint: edge.weightPosition, p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition)
-            self.edge.weightPositionDistance = edgePath.closestParameterAndDistance(externalPoint: edge.weightPosition, p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition).1
+            self.edge.weightPositionParameterT = edgePath.closestParameterToPoint(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition)
+            self.edge.weightPositionDistance = edgePath.closestParameterAndDistance(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition).1
         }
     }
     
@@ -115,7 +111,7 @@ class EdgeViewModel: ObservableObject {
         removeEdge(edge)
     }
     
-    func weightPosition() -> CGPoint {
+    func initWeightPosition() -> CGPoint {
         let midPoint = edgePath.midpoint()
         let offset = getEdgeWeightOffset()
         
@@ -181,7 +177,7 @@ class EdgeViewModel: ObservableObject {
         return getEdgeControlPointOffsets(edge)
     }
     
-    func getEdgeWeightPosition() -> CGPoint {
+    func getEdgeWeightPosition() -> CGPoint? {
         return getWeightPosition(edge)
     }
     
@@ -218,12 +214,25 @@ struct EdgeView: View {
     @ObservedObject var edgeViewModel: EdgeViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var edittingWeight = false
-    @State private var tempWeightPositionOffset: CGSize = .zero
+    @State private var tempWeightPosition: CGPoint {
+        willSet {
+            edgeViewModel.setEdgeWeightPosition(position: newValue)
+        }
+    }
+    @State private var tempWeightPositionOffset: CGSize = .zero {
+        willSet {
+            edgeViewModel.setEdgeWeightOffset(newValue)
+        }
+    }
     @State private var isSelected = false
     var size: CGSize
     
-    init(edgeViewModel: EdgeViewModel, size: CGSize, showWeights: Bool = false) {
+    init(edgeViewModel: EdgeViewModel, size: CGSize) {
         self.edgeViewModel = edgeViewModel
+        if edgeViewModel.getEdgeWeightPosition() == .zero {
+            edgeViewModel.setEdgeWeightPosition(position: edgeViewModel.initWeightPosition())
+        }
+        self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition() ?? edgeViewModel.initWeightPosition()
         self.size = size
     }
     
@@ -342,14 +351,14 @@ struct EdgeView: View {
                         .frame(width: 50, height: 50)
                     #endif
                 }
-                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition().x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition().y) * size.height + tempWeightPositionOffset.height))
+                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
                             .onChanged { drag in
                                 tempWeightPositionOffset = drag.translation
                             }
                             .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition().x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition().y + tempWeightPositionOffset.height / size.height))
+                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
                                 tempWeightPositionOffset = .zero
                             })
             } else {
@@ -363,14 +372,14 @@ struct EdgeView: View {
                     #endif
 
                 }
-                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition().x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition().y) * size.height + tempWeightPositionOffset.height))
+                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
                             .onChanged { drag in
                                 tempWeightPositionOffset = drag.translation
                             }
                             .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition().x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition().y + tempWeightPositionOffset.height / size.height))
+                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
                                 tempWeightPositionOffset = .zero
                             })
                     .onTapGesture(count: 1) {

@@ -16,6 +16,7 @@ struct Graph: Identifiable, Codable {
     let id: UUID
     var vertices: [UUID: Vertex] = [:]
     var edges: [Edge] = []
+    var edgeWeightPositions: [UUID: CGPoint] = [:]
     var edgeControlPoints1: [UUID: CGPoint] = [:]
     var edgeControlPoints2: [UUID: CGPoint] = [:]
     var edgeControlPoint1Offsets: [UUID: CGSize] = [:]
@@ -106,6 +107,7 @@ struct Graph: Identifiable, Codable {
         setControlPoints(for: edge)
         setControlPoint1Offset(for: edge, translation: .zero)
         setControlPoint2Offset(for: edge, translation: .zero)
+        initWeightPosition(for: edge)
     }
     
     mutating func removeEdge(_ edge: Edge) {
@@ -133,16 +135,11 @@ struct Graph: Identifiable, Codable {
     }
     
     func getEdgeWeightPositionByID(_ id: UUID) -> CGPoint? {
-        if let edge = edges.first(where: { $0.id == id }) {
-            return edge.weightPosition
-        }
-        return nil
+        edgeWeightPositions[id]
     }
     
     mutating func setEdgeWeightPositionByID(id: UUID, position: CGPoint) {
-        if let index = edges.firstIndex(where: { $0.id == id }) {
-            edges[index].weightPosition = position
-        }
+        edgeWeightPositions[id] = position
     }
     
     func getEdgeWeightOffsetByID(_ id: UUID) -> CGSize? {
@@ -298,6 +295,24 @@ struct Graph: Identifiable, Codable {
         let controlPoint1Offset = edgeControlPoint1Offsets[edge.id]!
         let controlPoint2Offset = edgeControlPoint2Offsets[edge.id]!
         return (controlPoint1Offset, controlPoint2Offset)
+    }
+    
+    mutating func initWeightPosition(for edge: Edge) {
+        let edgePath = EdgePath(startVertexPosition: getVertexByID(edge.startVertexID)!.position, endVertexPosition: getVertexByID(edge.endVertexID)!.position, startOffset: CGSize.zero, endOffset: CGSize.zero, controlPoint1: getEdgeControlPoints(for: edge).0, controlPoint2: getEdgeControlPoints(for: edge).1, controlPoint1Offset: getEdgeControlPointOffsets(for: edge).0, controlPoint2Offset: getEdgeControlPointOffsets(for: edge).1)
+        let midPoint = edgePath.midpoint()
+        
+        if let perpendicularGradient = edgePath.perpendicularGradient() {
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
+            edgeWeightPositions[edge.id] = CGPoint(
+                x: pointOnPerpendicular.x,
+                y: pointOnPerpendicular.y
+            )
+        }
+        
+        edgeWeightPositions[edge.id] = CGPoint(
+            x: midPoint.x,
+            y: midPoint.y + 0.05
+        )
     }
     
     mutating func setControlPoints(for edge: Edge) {
@@ -824,7 +839,7 @@ struct GraphView: View {
     
     var body: some View {
         GeometryReader{ geometry in
-            ForEach(graphViewModel.getEdges()) { edge in
+            ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                 let edgeViewModel = EdgeViewModel(
                     edge: edge,
                     size: geometry.size,
@@ -865,7 +880,7 @@ struct GraphView: View {
                     },
                     getMode: { graphViewModel.mode }
                 )
-                EdgeView(edgeViewModel: edgeViewModel, size: geometry.size, showWeights: graphViewModel.showWeights)
+                EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                     .onTapGesture(count: 2) {
                         handleEdgeDoubleClickGesture(for: edge)
                     }

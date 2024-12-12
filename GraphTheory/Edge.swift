@@ -15,8 +15,8 @@ struct Edge: Identifiable, Codable, Hashable {
     var color: Color
     var weight: Double = 0.0
     var weightPosition: CGPoint = .zero
-    var weightPositionParameterT: CGFloat = 0
-    var weightPositionDistance: CGFloat = 0
+    var weightPositionParameterT: CGFloat = 0.5
+    var weightPositionDistance: CGFloat = 0.05
     var weightPositionOffset: CGSize = .zero
     
     init(startVertexID: UUID, endVertexID: UUID) {

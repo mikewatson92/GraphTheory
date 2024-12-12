@@ -546,10 +546,66 @@ class GraphViewModel: ObservableObject {
     // update the offsets for the control points of the edge.
     func setEdgeControlPointOffsets(edge: Edge, translation: CGSize) {
         if let (relativeControlPoint1, relativeControlPoint2) = getEdgeOriginalRelativeControlPoints(edge), let movingVertex = movingVertex {
-            let dx1 = relativeControlPoint1.x * translation.width
-            let dy1 = relativeControlPoint1.y * translation.height
-            let dx2 = relativeControlPoint2.x * translation.width
-            let dy2 = relativeControlPoint2.y * translation.height
+            var dx1 = CGFloat.zero
+            var dy1 = CGFloat.zero
+            var dx2 = CGFloat.zero
+            var dy2 = CGFloat.zero
+            if relativeControlPoint1.x >= 0 {
+                if translation.width >= 0 {
+                    dx1 = min(relativeControlPoint1.x * translation.width, translation.width)
+                } else {
+                    dx1 = max(relativeControlPoint1.x * translation.width, translation.width)
+                }
+            } else {
+                if translation.width >= 0 {
+                    dx1 = max(relativeControlPoint1.x * translation.width, -translation.width)
+                } else {
+                    dx1 = min(relativeControlPoint1.x * translation.width, -translation.width)
+                }
+            }
+            
+            if relativeControlPoint2.x >= 0 {
+                if translation.width >= 0 {
+                    dx2 = min(relativeControlPoint2.x * translation.width, translation.width)
+                } else {
+                    dx2 = max(relativeControlPoint2.x * translation.width, translation.width)
+                }
+            } else {
+                if translation.width >= 0 {
+                    dx2 = max(relativeControlPoint2.x * translation.width, -translation.width)
+                } else {
+                    dx2 = min(relativeControlPoint2.x * translation.width, -translation.width)
+                }
+            }
+            
+            if relativeControlPoint1.y >= 0 {
+                if translation.height >= 0 {
+                    dy1 = min(relativeControlPoint1.y * translation.height, translation.height)
+                } else {
+                    dy1 = max(relativeControlPoint1.y * translation.height, translation.height)
+                }
+            } else {
+                if translation.height >= 0 {
+                    dy1 = max(relativeControlPoint1.y * translation.height, -translation.height)
+                } else {
+                    dy1 = min(relativeControlPoint1.y * translation.height, -translation.height)
+                }
+            }
+            
+            if relativeControlPoint2.y >= 0 {
+                if translation.height >= 0 {
+                    dy2 = min(relativeControlPoint2.y * translation.height, translation.height)
+                } else {
+                    dy2 = max(relativeControlPoint2.y * translation.height, translation.height)
+                }
+            } else {
+                if translation.height >= 0 {
+                    dy2 = max(relativeControlPoint2.y * translation.height, -translation.height)
+                } else {
+                    dy2 = min(relativeControlPoint2.y * translation.height, -translation.height)
+                }
+            }
+            
             if movingVertex.id == edge.endVertexID {
                 setControlPoint1Offset(for: edge, translation: CGSize(width: dx1, height: dy1))
                 setControlPoint2Offset(for: edge, translation: CGSize(width: dx2, height: dy2))

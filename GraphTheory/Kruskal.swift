@@ -270,9 +270,10 @@ struct KruskalView: View {
                     }, getMode: { kruskalViewModel.getGraph().mode }
                     )
                     EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
-                        .onTapGesture(count: 1) {
+                        .highPriorityGesture(TapGesture(count: 1)
+                            .onEnded {
                             handleTap(forEdge: edge)
-                        }
+                        })
                 }
                 
                 ForEach(kruskalViewModel.getAllVertices()) { vertex in

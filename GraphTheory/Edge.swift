@@ -236,8 +236,10 @@ struct EdgeView: View {
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
             #endif
                 .onTapGesture(count: 2) {
-                    isSelected = false
-                    edgeViewModel.removeEdgeFromGraph()
+                    if edgeViewModel.getGraphMode() == .edit {
+                        isSelected = false
+                        edgeViewModel.removeEdgeFromGraph()
+                    }
                 }
                 .onTapGesture(count: 1) {
                     isSelected = !isSelected

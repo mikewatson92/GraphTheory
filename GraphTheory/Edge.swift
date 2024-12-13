@@ -15,7 +15,7 @@ struct Edge: Identifiable, Codable, Hashable {
     var color: Color = Color.primary
     var weight: Double = 0.0
     var weightPositionParameterT: CGFloat = 0.5
-    static let DEFAULT_WEIGHT_DISTANCE = 0.025
+    static let DEFAULT_WEIGHT_DISTANCE = 0.05
     var weightPositionDistance: CGFloat = DEFAULT_WEIGHT_DISTANCE
     var weightPositionOffset: CGSize = .zero
     
@@ -368,6 +368,8 @@ struct EdgeView: View {
                 Group {
                     Text("\(edgeViewModel.getEdgeWeight().formatted())")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
+                        .shadow(color: edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
                     #if os(iOS)
                     Color.clear
                         .opacity(0.25)

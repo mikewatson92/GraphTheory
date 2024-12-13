@@ -100,11 +100,12 @@ class EdgeViewModel: ObservableObject {
         self.getWeight = getWeight
         self.setWeight = setWeight
         self.getMode = getMode
-
+        /*
         if edge.weightPositionDistance == 0 {
             self.edge.weightPositionParameterT = edgePath.closestParameterToPoint(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition)
             self.edge.weightPositionDistance = edgePath.closestParameterAndDistance(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition).1
         }
+         */
     }
     
     func removeEdgeFromGraph() {
@@ -229,9 +230,6 @@ struct EdgeView: View {
     
     init(edgeViewModel: EdgeViewModel, size: CGSize) {
         self.edgeViewModel = edgeViewModel
-        if edgeViewModel.getEdgeWeightPosition() == .zero {
-            edgeViewModel.setEdgeWeightPosition(position: edgeViewModel.initWeightPosition())
-        }
         self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition() ?? edgeViewModel.initWeightPosition()
         self.size = size
     }
@@ -436,11 +434,9 @@ struct EdgeView: View {
             graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
         },
                                           getWeight: { edge in
-            graph.edges.first(where: { $0.id == edge.id })!.weight
+            graph.edges[edge.id]!.weight
         }, setWeight: { edge, weight in
-            if let index = graph.edges.firstIndex(where: { $0.id == edge.id }) {
-                graph.edges[index].weight = weight
-            }
+            graph.edges[edge.id]?.weight = weight
         }, getMode: { graph.mode })
         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
     }

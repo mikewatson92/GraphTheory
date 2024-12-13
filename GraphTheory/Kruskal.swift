@@ -16,13 +16,13 @@ struct Kruskal {
         self.graph = graph
         self.graph.mode = .algorithm
         self.subGraph = Graph(vertices: Array(graph.vertices.values), edges: [])
-        self.validEdges = graph.edges
+        self.validEdges = Array(graph.edges.values)
     }
     
     mutating func removeEdgesFormingCycles() {
         for edge in validEdges {
             var newSubGraph = subGraph
-            newSubGraph.edges.append(edge)
+            newSubGraph.edges[edge.id] = edge
             if newSubGraph.hasCycle() {
                 validEdges.removeAll { $0.id == edge.id }
             }
@@ -60,7 +60,7 @@ class KruskalViewModel: ObservableObject {
     }
     
     func addEdge(_ edge: Edge) {
-        kruskal.subGraph.edges.append(edge)
+        kruskal.subGraph.edges[edge.id] = edge
     }
     
     func removeEdge(_ edge: Edge) {
@@ -68,25 +68,23 @@ class KruskalViewModel: ObservableObject {
     }
     
     func hasEdgeBeenSelected(_ edge: Edge) -> Bool {
-        kruskal.subGraph.edges.contains(where: {$0.id == edge.id})
+        kruskal.subGraph.edges.keys.contains(where: {$0 == edge.id})
     }
     
     func getTreeWeight() -> Double {
         var totalWeight = 0.0
-        for edge in kruskal.subGraph.edges {
+        for edge in kruskal.subGraph.edges.values {
             totalWeight += edge.weight
         }
         return totalWeight
     }
     
     func getWeight(edge: Edge) -> Double {
-        kruskal.graph.edges.first(where: {$0.id == edge.id})!.weight
+        kruskal.graph.edges[edge.id]!.weight
     }
     
     func setWeight(edge: Edge, weight: Double) {
-        if let index = kruskal.graph.edges.firstIndex(where: {$0.id == edge.id}) {
-            kruskal.graph.edges[index].weight = weight
-        }
+        kruskal.graph.edges[edge.id]?.weight = weight
     }
     
     func isComplete() -> Bool {
@@ -117,9 +115,7 @@ class KruskalViewModel: ObservableObject {
     }
     
     func setWeightPositionOffset(edgeID: UUID, size: CGSize) {
-        if let index = kruskal.graph.edges.firstIndex(where: { $0.id == edgeID }) {
-            kruskal.graph.edges[index].weightPositionOffset = size
-        }
+        kruskal.graph.edges[edgeID]?.weightPositionOffset = size
     }
     
     func setEdgeWeightPosition(edgeID: UUID, position: CGPoint) {
@@ -139,13 +135,11 @@ class KruskalViewModel: ObservableObject {
     }
     
     func setEdgeColor(edgeID: UUID, color: Color) {
-        if let index = kruskal.graph.edges.firstIndex(where: { $0.id == edgeID }) {
-            kruskal.graph.edges[index].color = color
-        }
+        kruskal.graph.edges[edgeID]?.color = color
     }
     
     func getAllEdges() -> [Edge] {
-        kruskal.graph.edges
+        Array(kruskal.graph.edges.values)
     }
     
     func getAllVertices() -> [Vertex] {
@@ -159,7 +153,7 @@ class KruskalViewModel: ObservableObject {
         kruskal.sortEdges()
         
         var newSubGraph = kruskal.subGraph
-        newSubGraph.edges.append(edge)
+        newSubGraph.edges[edge.id] = edge
         
         if newSubGraph.hasCycle() {
             withAnimation {
@@ -258,7 +252,7 @@ struct KruskalView: View {
                     }, setWeightPosition: { edge, point in
                         kruskalViewModel.setEdgeWeightPosition(edgeID: edge.id, position: point)
                     }, getWeightPositionOffset: { edge in
-                        kruskalViewModel.getGraph().edges.first(where: { $0.id == edge.id })?.weightPositionOffset ?? CGSize.zero
+                        kruskalViewModel.getGraph().edges[edge.id]?.weightPositionOffset ?? CGSize.zero
                     }, setWeightPositionOffset: { edge, size in
                         kruskalViewModel.setWeightPositionOffset(edgeID: edge.id, size: size)
                     }, getWeight: { edge in

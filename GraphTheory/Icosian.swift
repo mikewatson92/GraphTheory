@@ -240,7 +240,7 @@ struct IcosianView: View {
                         self.selectedVertex = icosian.graph.getVertexByID(newVertexID)
                         visitedVertices.removeAll { $0.id == selectedVertex.id }
                         chosenEdges.removeAll { $0.id == edge.id }
-                        icosian.graph.setEdgeColor(edgeID: edge.id, color: icosian.graph.originalEdges.first { $0.id == edge.id }!.color)
+                        icosian.graph.setEdgeColor(edgeID: edge.id, color: icosian.graph.originalEdges[edge.id]!.color)
                     }
                 }
             }
@@ -249,7 +249,8 @@ struct IcosianView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ForEach(icosian.graph.edges) { edge in
+            ForEach(Array(icosian.graph.edges.values.enumerated()), id: \.1.id) { index, value in
+                let edge = value
                 let edgeViewModel = EdgeViewModel(
                     edge: edge, size: geometry.size,
                     removeEdge: { edge in
@@ -278,7 +279,7 @@ struct IcosianView: View {
                         icosian.graph.setControlPoint2Offset(for: edge, translation: size)
                     },
                     getWeightPosition: { edge in
-                        icosian.graph.getEdgeWeightPositionByID(edge.id)!
+                        icosian.graph.getEdgeWeightPositionByID(edge.id) ?? .zero
                     },
                     setWeightPosition: { edge, position in
                         //icosian.graph.setEdgeWeightPositionByID(id: edge.id, position: position)
@@ -290,20 +291,20 @@ struct IcosianView: View {
                         icosian.graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
                     },
                     getWeight: { edge in
-                        icosian.graph.edges.first(where: {$0.id == edge.id})!.weight
+                        icosian.graph.edges[edge.id]!.weight
                     },
                     setWeight: { edge, weight in
-                        if let index = icosian.graph.edges.firstIndex(where: {$0.id == edge.id}) {
-                            icosian.graph.edges[index].weight = weight
-                        }
+                        icosian.graph.edges[edge.id]?.weight = weight
                     },
                     getMode: { icosian.graph.mode }
                 )
                 EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
-                    .onTapGesture(count: 1) {
-                        handleTapGesture(edge: edge)
-                    }
-                
+                    .highPriorityGesture(
+                        TapGesture(count: 1)
+                            .onEnded {
+                            handleTapGesture(edge: edge)
+                        }
+                    )
             }
             ForEach(Array(icosian.graph.vertices.values)) { vertex in
                 let vertexViewModel = VertexViewModel(

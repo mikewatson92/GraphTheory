@@ -194,7 +194,8 @@ struct ClebschGraphCompleteColoring {
         edgeB3E3 = Edge(startVertexID: vertexB3.id, endVertexID: vertexE3.id)
         edgeC3E3 = Edge(startVertexID: vertexC3.id, endVertexID: vertexE3.id)
         
-        graph = Graph(vertices: [vertexA1, vertexB1, vertexC1, vertexD1, vertexE1, vertexA2, vertexB2, vertexC2, vertexD2, vertexE2, vertexA3, vertexB3, vertexC3, vertexD3, vertexE3, centerVertex], edges: [edgeA1B1, edgeA1C2, edgeA1A3, edgeA1E2, edgeA1E1, edgeB1A2, edgeB1B3, edgeB1D2, edgeB1C1, edgeC1B2, edgeC1C3, edgeC1E2, edgeC1D1, edgeD1C2, edgeD1D3, edgeD1E1, edgeD1A2, edgeE1D2, edgeE1E3, edgeE1B2, edgeA2A3, edgeA2E3, edgeA2Center, edgeB2B3, edgeB2Center, edgeB2A3, edgeC2B3, edgeC2Center, edgeC2C3, edgeD2C3, edgeD2Center, edgeD2D3, edgeE2D3, edgeE2E3, edgeE2Center, edgeA3C3, edgeA3D3, edgeB3D3, edgeB3E3, edgeC3E3])
+        graph = Graph(vertices: [vertexA1, vertexB1, vertexC1, vertexD1, vertexE1, vertexA2, vertexB2, vertexC2, vertexD2, vertexE2, vertexA3, vertexB3, vertexC3, vertexD3, vertexE3, centerVertex],
+                      edges: [edgeA1B1, edgeA1C2, edgeA1A3, edgeA1E2, edgeA1E1, edgeB1A2, edgeB1B3, edgeB1D2, edgeB1C1, edgeC1B2, edgeC1C3, edgeC1E2, edgeC1D1, edgeD1C2, edgeD1D3, edgeD1E1, edgeD1A2, edgeE1D2, edgeE1E3, edgeE1B2, edgeA2A3, edgeA2E3, edgeA2Center, edgeB2B3, edgeB2Center, edgeB2A3, edgeC2B3, edgeC2Center, edgeC2C3, edgeD2C3, edgeD2Center, edgeD2D3, edgeE2D3, edgeE2E3, edgeE2Center, edgeA3C3, edgeA3D3, edgeB3D3, edgeB3E3, edgeC3E3])
         graph.resetMethod = .restoreToOriginal
     }
 }

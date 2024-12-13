@@ -10,7 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var canvasGraphViewModel = GraphViewModel(graph: Graph())
+    @StateObject private var canvasGraphViewModel = GraphViewModel(graph: Graph(), showAlgorithms: true)
 
     var body: some View {
         NavigationSplitView {

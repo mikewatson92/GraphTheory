@@ -31,7 +31,7 @@ struct Canvas: View {
                         .gesture(
                             DragGesture(minimumDistance: 0)
                                 .onEnded { tapLocation in
-                                    if graphViewModel.mode == .edit {
+                                    if graphViewModel.getMode() == .edit {
                                         // Add a vertex at the tap location
                                         let normalizedLocation = CGPoint(
                                             x: tapLocation.location.x / geometry.size.width,

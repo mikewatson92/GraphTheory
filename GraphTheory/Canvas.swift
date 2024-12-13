@@ -10,6 +10,7 @@ import UniformTypeIdentifiers
 
 struct Canvas: View {
     //@Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var graphViewModel: GraphViewModel
     //@State private var isLoadViewVisible = false // State to control visibility
     
@@ -45,6 +46,7 @@ struct Canvas: View {
                     
                     // Render the graph
                     GraphView(graphViewModel: graphViewModel)
+                        .environmentObject(themeViewModel)
                 }
             } else if graphViewModel.getAlgorithm() == .kruskal {
                 KruskalView(graph: graphViewModel.getGraph())
@@ -92,4 +94,5 @@ struct Canvas: View {
 #Preview {
     let graphViewModel = GraphViewModel(graph: Graph())
     Canvas(graphViewModel: graphViewModel)
+        .environmentObject(ThemeViewModel())
 }

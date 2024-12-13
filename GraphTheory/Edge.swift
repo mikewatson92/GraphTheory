@@ -403,7 +403,7 @@ struct EdgeView: View {
         let vertex2 = Vertex(position: CGPoint(x: 0.8, y: 0.5))
         let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
         var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
-        var graphViewModel = GraphViewModel(graph: graph)
+        let graphViewModel = GraphViewModel(graph: graph)
         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size,
                                           removeEdge: { edge in
             graph.removeEdge(edge)

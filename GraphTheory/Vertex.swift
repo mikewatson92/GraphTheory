@@ -255,7 +255,7 @@ struct VertexView: View {
 }
 
 #Preview {
-    var vertex = Vertex(position: CGPoint(x: 0.5, y: 0.5))
+    let vertex = Vertex(position: CGPoint(x: 0.5, y: 0.5))
     var graph = Graph(vertices: [vertex], edges: [])
     let vertexViewModel = VertexViewModel(vertex: vertex, getVertexPosition: { id in graph.getVertexByID(id)?.position}, setVertexPosition: { id, position in graph.setVertexPosition(forID: id, position: position) }, getVertexOffset: { id in graph.getVertexByID(id)?.offset}, setVertexOffset: {id, size in graph.setVertexOffset(forID: id, size: size)},
                                           setVertexColor: { id, color in graph.setVertexColor(forID: id, color: color)})

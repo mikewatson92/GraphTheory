@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct GraphTheoryApp: App {
+    @StateObject private var themeViewModel = ThemeViewModel()
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -22,10 +23,13 @@ struct GraphTheoryApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+   
     var body: some Scene {
+        
         WindowGroup {
             ContentView()
+                .environmentObject(themeViewModel)
+                .accentColor(themeViewModel.accentColor)
         }
         .modelContainer(sharedModelContainer)
     }

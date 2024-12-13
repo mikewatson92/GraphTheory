@@ -763,6 +763,7 @@ class GraphViewModel: ObservableObject {
 
 struct GraphView: View {
     @ObservedObject var graphViewModel: GraphViewModel
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     
     init(graphViewModel: GraphViewModel) {
         self.graphViewModel = graphViewModel
@@ -783,10 +784,10 @@ struct GraphView: View {
         if let nsColor = NSColor(cgColor: cgColor) {
             return Color(nsColor)
         }
+        return Color.clear // Fallback for invalid `CGColor`
 #elseif os(iOS)
         return Color(UIColor(cgColor: cgColor))
 #endif
-        return Color.clear // Fallback for invalid `CGColor`
     }
     
     func handleVertexOnDragGesture(for vertex: Vertex, drag: DragGesture.Value, geometrySize: CGSize) {
@@ -1038,6 +1039,7 @@ struct GraphView: View {
                             graphViewModel.selectedEdge = nil
                             clear()
                         }
+                        .foregroundStyle(themeViewModel.accentColor)
                         
                         if graphViewModel.getAlgorithm() == .none {
                             Toggle("Weights", isOn: $graphViewModel.showWeights)
@@ -1048,6 +1050,7 @@ struct GraphView: View {
                             Text("Edit").tag(Graph.Mode.edit)
                             Text("Explore").tag(Graph.Mode.explore)
                         }
+                        .foregroundStyle(themeViewModel.accentColor)
                         
                         if graphViewModel.showAlgorithms {
                             Picker("Algorithm", selection: Binding(
@@ -1082,9 +1085,11 @@ struct GraphView: View {
                                 Text(color.rawValue).tag(color)
                             }
                         }
-                    } label: {
-                        Label("Settings", systemImage: "ellipsis.circle") // Replace with your preferred icon
                     }
+                    label: {
+                        Label("Settings", systemImage: "ellipsis.circle")
+                    }
+                    
                 }
         }
         
@@ -1135,4 +1140,5 @@ struct PreviewGraph {
 #Preview {
     let preview = PreviewGraph()
     GraphView(graphViewModel: GraphViewModel(graph: preview.graph))
+        .environmentObject(ThemeViewModel())
 }

@@ -984,7 +984,7 @@ struct GraphView: View {
                     clear()
                 }
             }
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .automatic) {
                 ColorPicker(
                     "",
                     selection: Binding(
@@ -1011,7 +1011,7 @@ struct GraphView: View {
                 .labelsHidden()
             }
             if graphViewModel.showModeMenu {
-                ToolbarItem(placement: .automatic) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Picker("Label Color", selection: Binding(
                             get: {
@@ -1042,7 +1042,7 @@ struct GraphView: View {
                             mode = .explore
                         }
                     } label: {
-                        Label("Mode", systemImage: "ellipsis.circle") // Replace with your preferred icon
+                        Label("Settings", systemImage: "ellipsis.circle") // Replace with your preferred icon
                     }
                 }
             }

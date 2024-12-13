@@ -63,6 +63,7 @@ struct Canvas: View {
         }
          */
         .toolbar {
+            #if os(macOS)
             ToolbarItemGroup(placement: .automatic) {
                 /*
                 Button("Save") {
@@ -82,6 +83,27 @@ struct Canvas: View {
                     Toggle("Weights", isOn: $graphViewModel.showWeights)
                 }
             }
+            #elseif os(iOS)
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                /*
+                Button("Save") {
+                    saveGraph()
+                }
+                
+                Button("Load") {
+                 isLoadViewVisible = true
+                 }
+                 */
+                Picker("Algorithm", selection: $algorithm) {
+                    ForEach(Algorithm.allCases, id: \.self) { alg in
+                        Text(alg.rawValue).tag(alg)
+                    }
+                }
+                if algorithm == .none {
+                    Toggle("Weights", isOn: $graphViewModel.showWeights)
+                }
+            }
+            #endif
         }
     }
 }

@@ -15,7 +15,7 @@ struct Edge: Identifiable, Codable, Hashable {
     var color: Color = Color.primary
     var weight: Double = 0.0
     var weightPositionParameterT: CGFloat = 0.5
-    var weightPositionDistance: CGFloat = 0.05
+    var weightPositionDistance: CGFloat = 0.025
     var weightPositionOffset: CGSize = .zero
     
     init(startVertexID: UUID, endVertexID: UUID) {
@@ -100,12 +100,6 @@ class EdgeViewModel: ObservableObject {
         self.getWeight = getWeight
         self.setWeight = setWeight
         self.getMode = getMode
-        /*
-        if edge.weightPositionDistance == 0 {
-            self.edge.weightPositionParameterT = edgePath.closestParameterToPoint(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition)
-            self.edge.weightPositionDistance = edgePath.closestParameterAndDistance(externalPoint: getWeightPosition(edge), p0: edgePath.startVertexPosition, p1: edgePath.controlPoint1, p2: edgePath.controlPoint2, p3: edgePath.endVertexPosition).1
-        }
-         */
     }
     
     func removeEdgeFromGraph() {
@@ -117,7 +111,7 @@ class EdgeViewModel: ObservableObject {
         let offset = getEdgeWeightOffset()
         
         if let perpendicularGradient = edgePath.perpendicularGradient() {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.025)
             return CGPoint(
                 x: pointOnPerpendicular.x,
                 y: pointOnPerpendicular.y
@@ -126,7 +120,7 @@ class EdgeViewModel: ObservableObject {
         
         return CGPoint(
             x: midPoint.x * size.width + offset.width,
-            y: (midPoint.y + 0.05) * size.height + offset.height
+            y: (midPoint.y + 0.025) * size.height + offset.height
         )
     }
     

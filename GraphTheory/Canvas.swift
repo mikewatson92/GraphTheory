@@ -73,7 +73,6 @@ struct Canvas: View {
                  isLoadViewVisible = true
                  }
                  */
-                Text("Algorithm:")
                 Picker("Algorithm", selection: $algorithm) {
                     ForEach(Algorithm.allCases, id: \.self) { alg in
                         Text(alg.rawValue).tag(alg)

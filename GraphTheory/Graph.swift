@@ -299,7 +299,7 @@ struct Graph: Identifiable, Codable {
         let midPoint = edgePath.midpoint()
         
         if let perpendicularGradient = edgePath.perpendicularGradient() {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.05)
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.025)
             edgeWeightPositions[edge.id] = CGPoint(
                 x: pointOnPerpendicular.x,
                 y: pointOnPerpendicular.y
@@ -307,7 +307,7 @@ struct Graph: Identifiable, Codable {
         } else {
             edgeWeightPositions[edge.id] = CGPoint(
                 x: midPoint.x,
-                y: midPoint.y + 0.05
+                y: midPoint.y + 0.025
             )
         }
     }
@@ -433,15 +433,6 @@ class GraphViewModel: ObservableObject {
     func addEdge(_ edge: Edge) {
         graph.addEdge(edge)
         timesEdgeSelected[edge.id] = 0
-        print("Vertex ID's:")
-        for vertex in graph.vertices.values {
-            print(vertex.id)
-        }
-        print("Edge Vertex ID's:")
-        for edge in graph.edges.values {
-            print("Start Vertex ID: \(edge.startVertexID)")
-            print("End Vertex ID: \(edge.endVertexID)")
-        }
     }
     
     func removeEdge(_ edge: Edge) {

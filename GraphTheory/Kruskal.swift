@@ -39,6 +39,7 @@ class KruskalViewModel: ObservableObject {
     @Published private var kruskal: Kruskal
     @Published var errorStatus = ErrorStatus.none
     @Published var completionStatus = CompletionStatus.inProgress
+    var selectedEdge: Edge?
     
     init(graph: Graph) {
         self.kruskal = Kruskal(graph: graph)
@@ -233,7 +234,11 @@ struct KruskalView: View {
                     }, setShowingWeights: { _, _ in },
                                                       getOffset: { id in
                         kruskalViewModel.getGraph().getOffsetByID(id)
-                    }, getEdgeControlPoints: { edge in
+                    }, getSelectedEdge: { kruskalViewModel.selectedEdge },
+                                                      setSelectedEdge: { id in
+                        kruskalViewModel.selectedEdge = edge
+                    },
+                                                      getEdgeControlPoints: { edge in
                         kruskalViewModel.getGraph().getEdgeControlPoints(for: edge)
                     }, setEdgeControlPoint1: { edge, point in
                         kruskalViewModel.setControlPoint1(for: edge, at: point)

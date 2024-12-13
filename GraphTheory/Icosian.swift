@@ -264,6 +264,8 @@ struct IcosianView: View {
                         
                     },
                     getOffset: { id in icosian.graph.getOffsetByID(id)},
+                    getSelectedEdge: { nil },
+                    setSelectedEdge: { _ in },
                     getEdgeControlPoints: { edge in icosian.graph.getEdgeControlPoints(for: edge)},
                     setEdgeControlPoint1: { edge, point in
                         icosian.graph.setControlPoint1(for: edge, at: point)

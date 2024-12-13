@@ -398,6 +398,8 @@ class GraphViewModel: ObservableObject {
     @Published var timesEdgeSelected: [UUID: Int]
     @Published var mode: Graph.Mode
     @Published var showWeights: Bool
+    @Published var selectedVertex: Vertex?
+    @Published var selectedEdge: Edge?
     var movingVertex: Vertex?
     // A copy of the edges before any changes occur
     var edgesWillMove: [Edge] = []
@@ -740,8 +742,6 @@ class GraphViewModel: ObservableObject {
 
 struct GraphView: View {
     @ObservedObject var graphViewModel: GraphViewModel
-    @State private var selectedVertex: Vertex?
-    @State private var selectedEdge: Edge?
     @State private var mode: Graph.Mode
     
     init(graphViewModel: GraphViewModel) {
@@ -787,14 +787,14 @@ struct GraphView: View {
     }
     
     func handleEdgeSingleClickGesture(for edge: Edge) {
-        selectedVertex = nil
+        graphViewModel.selectedVertex = nil
         switch mode {
             // Allows the user to select an edge to display the control points
         case .edit:
-            if selectedEdge?.id != edge.id {
-                selectedEdge = edge
+            if graphViewModel.selectedEdge?.id != edge.id {
+                graphViewModel.selectedEdge = edge
             } else {
-                selectedEdge = nil
+                graphViewModel.selectedEdge = nil
             }
             // Change the colors of the edges to simulate a path through the graph
         case .explore:
@@ -802,7 +802,7 @@ struct GraphView: View {
             let timesSelected = graphViewModel.timesEdgeSelected[edge.id]!
             graphViewModel.setColorForEdge(edge: edge, color: edgeColors[(timesSelected - 1) % edgeColors.count])
         case .icosian:
-            selectedEdge = edge
+            graphViewModel.selectedEdge = edge
         case .algorithm:
             break
         }
@@ -810,7 +810,7 @@ struct GraphView: View {
     
     func handleEdgeDoubleClickGesture(for edge: Edge) {
         if mode == .edit {
-            selectedEdge = nil
+            graphViewModel.selectedEdge = nil
         }
     }
     
@@ -840,6 +840,14 @@ struct GraphView: View {
                         graphViewModel.showWeights = show
                     },
                     getOffset: { id in graphViewModel.getGraph().getOffsetByID(id) },
+                    getSelectedEdge: { graphViewModel.selectedEdge },
+                    setSelectedEdge: { id in
+                        if id != nil {
+                            graphViewModel.selectedEdge = graphViewModel.getEdges().first(where: {$0.id == id})
+                        } else {
+                            graphViewModel.selectedEdge = nil
+                        }
+                    },
                     getEdgeControlPoints: { edge in graphViewModel.getGraph().getEdgeControlPoints(for: edge) },
                     setEdgeControlPoint1: { edge, point in
                         graphViewModel.setControlPoint1(for: edge, at: point)
@@ -877,7 +885,7 @@ struct GraphView: View {
                         handleEdgeLongPressGesture(for: edge)
                     }
             }
-            
+             
             // The vertices
             ForEach(graphViewModel.getVertices()) { vertex in
                 let vertexViewModel = VertexViewModel(
@@ -889,7 +897,7 @@ struct GraphView: View {
                     setVertexColor: { id, color in graphViewModel.setColor(vertex: graphViewModel.getGraph().getVertexByID(vertex.id)!, color: color)})
                 
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                    .shadow(color: vertexViewModel.getVertexID() == selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                    .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                         .onChanged({ drag in
                             if mode == .edit {
@@ -951,27 +959,27 @@ struct GraphView: View {
                         })
                     .onTapGesture(count: 2) {
                         if mode == .edit {
-                            if graphViewModel.getConnectedEdges(to: vertex.id).contains(where: { $0.id == selectedEdge?.id }) {
-                                selectedEdge = nil
+                            if graphViewModel.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
+                                graphViewModel.selectedEdge = nil
                             }
                             graphViewModel.removeEdgesConnected(to: vertexViewModel.getVertexID())
                             graphViewModel.removeVertex(vertex)
                             
-                            selectedVertex = nil
+                            graphViewModel.selectedVertex = nil
                         }
                     }
                     .onTapGesture(count: 1) {
                         if mode == .edit || mode == .explore {
-                            selectedEdge = nil
-                            if selectedVertex == nil {
-                                selectedVertex = graphViewModel.getVertexByID(vertexViewModel.getVertexID())
-                            } else if selectedVertex!.id == vertexViewModel.getVertexID() {
-                                selectedVertex = nil
+                            graphViewModel.selectedEdge = nil
+                            if graphViewModel.selectedVertex == nil {
+                                graphViewModel.selectedVertex = graphViewModel.getVertexByID(vertexViewModel.getVertexID())
+                            } else if graphViewModel.selectedVertex!.id == vertexViewModel.getVertexID() {
+                                graphViewModel.selectedVertex = nil
                             } else if graphViewModel.mode == .edit {
-                                graphViewModel.addEdge(Edge(startVertexID: selectedVertex!.id, endVertexID: vertexViewModel.getVertexID()))
-                                selectedVertex = nil
+                                graphViewModel.addEdge(Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertexViewModel.getVertexID()))
+                                graphViewModel.selectedVertex = nil
                             } else {
-                                selectedVertex = nil
+                                graphViewModel.selectedVertex = nil
                             }
                         }
                     }
@@ -980,7 +988,7 @@ struct GraphView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button("Clear") {
-                    selectedEdge = nil
+                    graphViewModel.selectedEdge = nil
                     clear()
                 }
             }
@@ -989,21 +997,21 @@ struct GraphView: View {
                     "",
                     selection: Binding(
                         get: {
-                            if let selectedEdge = selectedEdge {
+                            if let selectedEdge = graphViewModel.selectedEdge {
                                 return selectedEdge.color
-                            } else if let selectedVertex = selectedVertex {
+                            } else if let selectedVertex = graphViewModel.selectedVertex {
                                 return selectedVertex.color
                             } else {
                                 return Color.white
                             }
                         },
                         set: { newColor in
-                            if let selectedVertex = selectedVertex {
-                                graphViewModel.setColor(vertex: selectedVertex, color: newColor)
-                                self.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
-                            } else if let selectedEdge = selectedEdge {
+                            if let selectedEdge = graphViewModel.selectedEdge {
                                 graphViewModel.setColorForEdge(edge: selectedEdge, color: newColor)
-                                self.selectedEdge = graphViewModel.getEdge(selectedEdge)
+                                graphViewModel.selectedEdge =  graphViewModel.getGraph().edges[selectedEdge.id]
+                            } else if let selectedVertex = graphViewModel.selectedVertex {
+                                graphViewModel.setColor(vertex: selectedVertex, color: newColor)
+                                graphViewModel.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
                             }
                         }
                     )
@@ -1011,17 +1019,17 @@ struct GraphView: View {
                 .labelsHidden()
             }
             if graphViewModel.showModeMenu {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Menu {
                         Picker("Label Color", selection: Binding(
                             get: {
-                                if let selectedVertex = selectedVertex {
+                                if let selectedVertex = graphViewModel.selectedVertex {
                                     return selectedVertex.labelColor
                                 }
                                 return Vertex.LabelColor.white
                             },
                             set: { newColor in
-                                if let selectedVertex = selectedVertex {
+                                if let selectedVertex = graphViewModel.selectedVertex {
                                     graphViewModel.setVertexLabelColor(id: selectedVertex.id, labelColor: newColor)
                                 }
                             }
@@ -1036,8 +1044,8 @@ struct GraphView: View {
                             mode = .edit
                         }
                         Button("Explore Mode") {
-                            selectedVertex = nil
-                            selectedEdge = nil
+                            graphViewModel.selectedVertex = nil
+                            graphViewModel.selectedEdge = nil
                             graphViewModel.setMode(.explore)
                             mode = .explore
                         }

@@ -46,6 +46,8 @@ class EdgeViewModel: ObservableObject {
     private var removeEdge: (Edge) -> Void
     private var getVertexPositionByID: (UUID) -> CGPoint?
     private var getOffsetForID: (UUID) -> CGSize? // the vertex offset
+    var getSelectedEdge: () -> Edge?
+    var setSelectedEdge: (UUID?) -> Void
     private var getEdgeControlPoints: (Edge) -> (CGPoint, CGPoint)
     private var setEdgeControlPoint1: (Edge, CGPoint) -> Void
     private var setEdgeControlPoint2: (Edge, CGPoint) -> Void
@@ -66,6 +68,8 @@ class EdgeViewModel: ObservableObject {
          getShowingWeights: @escaping (UUID) -> Bool,
          setShowingWeights: @escaping (UUID, Bool) -> Void,
          getOffset: @escaping (UUID) -> CGSize?,
+         getSelectedEdge: @escaping () -> Edge?,
+         setSelectedEdge: @escaping (UUID?) -> Void,
          getEdgeControlPoints: @escaping (Edge) -> (CGPoint, CGPoint),
          setEdgeControlPoint1: @escaping (Edge, CGPoint) -> Void,
          setEdgeControlPoint2: @escaping (Edge, CGPoint) -> Void,
@@ -87,6 +91,8 @@ class EdgeViewModel: ObservableObject {
         self.setShowingWeights = setShowingWeights
         self.getVertexPositionByID = getVertexPositionByID
         self.getOffsetForID = getOffset
+        self.getSelectedEdge = getSelectedEdge
+        self.setSelectedEdge = setSelectedEdge
         self.getEdgeControlPoints = getEdgeControlPoints
         self.setEdgeControlPoint1 = setEdgeControlPoint1
         self.setEdgeControlPoint2 = setEdgeControlPoint2
@@ -219,7 +225,6 @@ struct EdgeView: View {
             edgeViewModel.setEdgeWeightOffset(newValue)
         }
     }
-    @State private var isSelected = false
     var size: CGSize
     
     init(edgeViewModel: EdgeViewModel, size: CGSize) {
@@ -229,7 +234,6 @@ struct EdgeView: View {
     }
     
     var body: some View {
-        ZStack {
             edgeViewModel.edgePath.makePath(size: size)
             #if os(macOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 5)
@@ -238,25 +242,30 @@ struct EdgeView: View {
             #endif
                 .onTapGesture(count: 2) {
                     if edgeViewModel.getGraphMode() == .edit {
-                        isSelected = false
+                        if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
+                            edgeViewModel.setSelectedEdge(nil)
+                        }
                         edgeViewModel.removeEdgeFromGraph()
                     }
                 }
                 .onTapGesture(count: 1) {
-                    isSelected = !isSelected
+                    if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
+                        edgeViewModel.setSelectedEdge(nil)
+                    } else {
+                        edgeViewModel.setSelectedEdge(edgeViewModel.getID())
+                    }
                 }
-        }
         
         // Control points for selected edge
         if edgeViewModel.getGraphMode() == .edit {
-            if isSelected {
+            if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
                 let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
                 let (controlPoint1Offset, controlPoint2Offset) = edgeViewModel.getControlPointOffsets()
                 let adjustedControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
                                                     y: controlPoint1.y * size.height + controlPoint1Offset.height)
                 let adjustedControlPoint2 = CGPoint(x: controlPoint2.x * size.width + controlPoint2Offset.width,
                                                     y: controlPoint2.y * size.height + controlPoint2Offset.height)
-                ZStack {
+                Group {
                     Circle()
                         .position(adjustedControlPoint1)
                         .frame(width: 10, height: 10)
@@ -285,7 +294,7 @@ struct EdgeView: View {
                         edgeViewModel.setControlPoint1Offset(.zero)
                     })
                 
-                ZStack {
+                Group {
                     Circle()
                         .position(adjustedControlPoint2)
                         .frame(width: 10, height: 10)
@@ -389,16 +398,26 @@ struct EdgeView: View {
         let vertex2 = Vertex(position: CGPoint(x: 0.8, y: 0.5))
         let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
         var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
+        var graphViewModel = GraphViewModel(graph: graph)
         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size,
                                           removeEdge: { edge in
             graph.removeEdge(edge)
         },
                                           getVertexPositionByID: {id in
             graph.getVertexByID(id)?.position},
+                                          
                                           getShowingWeights: { id in
             false },
                                           setShowingWeights: { id, show in},
                                           getOffset: {id in graph.getOffsetByID(id)},
+                                          getSelectedEdge: { graphViewModel.selectedEdge },
+                                          setSelectedEdge: { id in
+            if id != nil {
+                graphViewModel.selectedEdge = graphViewModel.getEdges().first(where: {$0.id == id})
+            } else {
+                graphViewModel.selectedEdge = nil
+            }
+        },
                                           getEdgeControlPoints: { edge in
             graph.getEdgeControlPoints(for: edge)},
                                           setEdgeControlPoint1: { edge, point in

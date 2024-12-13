@@ -12,13 +12,6 @@ struct Canvas: View {
     //@Environment(\.modelContext) private var modelContext
     @ObservedObject var graphViewModel: GraphViewModel
     //@State private var isLoadViewVisible = false // State to control visibility
-    @State private var algorithm: Algorithm = .none
-    
-    enum Algorithm: String, CaseIterable, Identifiable {
-        case none = "No Algorithm"
-        case kruskal = "Kruskal"
-        var id: String { self.rawValue }
-    }
     
     /*
     private func saveGraph() {
@@ -30,7 +23,7 @@ struct Canvas: View {
     var body: some View {
         
         GeometryReader { geometry in
-            if algorithm == .none {
+            if graphViewModel.getAlgorithm() == .none {
                 ZStack {
                     // Background to detect taps
                     Color.clear
@@ -53,7 +46,7 @@ struct Canvas: View {
                     // Render the graph
                     GraphView(graphViewModel: graphViewModel)
                 }
-            } else if algorithm == .kruskal {
+            } else if graphViewModel.getAlgorithm() == .kruskal {
                 KruskalView(graph: graphViewModel.getGraph())
             }
         }
@@ -62,6 +55,7 @@ struct Canvas: View {
             LoadView(isVisible: $isLoadViewVisible) // Pass binding to manage visibility
         }
          */
+        /*
         .toolbar {
             #if os(macOS)
             ToolbarItemGroup(placement: .automatic) {
@@ -74,14 +68,7 @@ struct Canvas: View {
                  isLoadViewVisible = true
                  }
                  */
-                Picker("Algorithm", selection: $algorithm) {
-                    ForEach(Algorithm.allCases, id: \.self) { alg in
-                        Text(alg.rawValue).tag(alg)
-                    }
-                }
-                if algorithm == .none {
-                    Toggle("Weights", isOn: $graphViewModel.showWeights)
-                }
+  
             }
             #elseif os(iOS)
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -94,17 +81,11 @@ struct Canvas: View {
                  isLoadViewVisible = true
                  }
                  */
-                Picker("Algorithm", selection: $algorithm) {
-                    ForEach(Algorithm.allCases, id: \.self) { alg in
-                        Text(alg.rawValue).tag(alg)
-                    }
-                }
-                if algorithm == .none {
-                    Toggle("Weights", isOn: $graphViewModel.showWeights)
-                }
+                
             }
             #endif
         }
+         */
     }
 }
 

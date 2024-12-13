@@ -32,6 +32,7 @@ struct Graph: Identifiable, Codable {
     //
     var resetMethod: ResetFunction = .resetToZero
     var mode: Mode = .edit
+    var algorithm: Algorithm = .none
     
     init() {
         id = UUID()
@@ -58,6 +59,12 @@ struct Graph: Identifiable, Codable {
         originalEdgeControlPoints2 = self.edgeControlPoints2
         originalEdgeControlPoint1Offsets = self.edgeControlPoint1Offsets
         originalEdgeControlPoint2Offsets = self.edgeControlPoint2Offsets
+    }
+    
+    enum Algorithm: String, Codable, CaseIterable, Identifiable {
+        case none = "No Algorithm"
+        case kruskal = "Kruskal"
+        var id: String { self.rawValue }
     }
     
     enum ResetFunction: Codable {
@@ -730,6 +737,14 @@ class GraphViewModel: ObservableObject {
         self.mode = mode
     }
     
+    func getAlgorithm() -> Graph.Algorithm {
+        graph.algorithm
+    }
+    
+    func setAlgorithm(_ alg: Graph.Algorithm) {
+        graph.algorithm = alg
+    }
+    
     func resetControlPointsAndOffsets(for edge: Edge) {
         graph.resetControlPointsAndOffsets(for: edge)
     }
@@ -987,12 +1002,6 @@ struct GraphView: View {
         }
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button("Clear") {
-                    graphViewModel.selectedEdge = nil
-                    clear()
-                }
-            }
-            ToolbarItem(placement: .automatic) {
                 ColorPicker(
                     "",
                     selection: Binding(
@@ -1018,9 +1027,27 @@ struct GraphView: View {
                 )
                 .labelsHidden()
             }
-            if graphViewModel.showModeMenu {
+            
                 ToolbarItem(placement: .automatic) {
                     Menu {
+                        Button("Clear") {
+                            graphViewModel.selectedEdge = nil
+                            clear()
+                        }
+                        Picker("Algorithm", selection: Binding(
+                            get: {
+                                graphViewModel.getAlgorithm()
+                            }, set: { newValue in
+                                graphViewModel.setAlgorithm(newValue)
+                            }))
+                        {
+                            ForEach(Graph.Algorithm.allCases, id: \.self) { alg in
+                                Text(alg.rawValue).tag(alg)
+                            }
+                        }
+                        if graphViewModel.getAlgorithm() == .none {
+                            Toggle("Weights", isOn: $graphViewModel.showWeights)
+                        }
                         Picker("Label Color", selection: Binding(
                             get: {
                                 if let selectedVertex = graphViewModel.selectedVertex {
@@ -1039,21 +1066,22 @@ struct GraphView: View {
                                 Text(color.rawValue).tag(color)
                             }
                         }
-                        Button("Edit Mode") {
-                            graphViewModel.setMode(.edit)
-                            mode = .edit
-                        }
-                        Button("Explore Mode") {
-                            graphViewModel.selectedVertex = nil
-                            graphViewModel.selectedEdge = nil
-                            graphViewModel.setMode(.explore)
-                            mode = .explore
+                        if graphViewModel.showModeMenu {
+                            Button("Edit Mode") {
+                                graphViewModel.setMode(.edit)
+                                mode = .edit
+                            }
+                            Button("Explore Mode") {
+                                graphViewModel.selectedVertex = nil
+                                graphViewModel.selectedEdge = nil
+                                graphViewModel.setMode(.explore)
+                                mode = .explore
+                            }
                         }
                     } label: {
                         Label("Settings", systemImage: "ellipsis.circle") // Replace with your preferred icon
                     }
                 }
-            }
         }
         
     }

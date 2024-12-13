@@ -15,7 +15,8 @@ struct Edge: Identifiable, Codable, Hashable {
     var color: Color = Color.primary
     var weight: Double = 0.0
     var weightPositionParameterT: CGFloat = 0.5
-    var weightPositionDistance: CGFloat = 0.025
+    static let DEFAULT_WEIGHT_DISTANCE = 0.025
+    var weightPositionDistance: CGFloat = DEFAULT_WEIGHT_DISTANCE
     var weightPositionOffset: CGSize = .zero
     
     init(startVertexID: UUID, endVertexID: UUID) {
@@ -117,7 +118,7 @@ class EdgeViewModel: ObservableObject {
         let offset = getEdgeWeightOffset()
         
         if let perpendicularGradient = edgePath.perpendicularGradient() {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: 0.025)
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: Edge.DEFAULT_WEIGHT_DISTANCE)
             return CGPoint(
                 x: pointOnPerpendicular.x,
                 y: pointOnPerpendicular.y
@@ -126,7 +127,7 @@ class EdgeViewModel: ObservableObject {
         
         return CGPoint(
             x: midPoint.x * size.width + offset.width,
-            y: (midPoint.y + 0.025) * size.height + offset.height
+            y: (midPoint.y + Edge.DEFAULT_WEIGHT_DISTANCE) * size.height + offset.height
         )
     }
     
@@ -240,6 +241,7 @@ struct EdgeView: View {
             #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
             #endif
+                .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
                     if edgeViewModel.getGraphMode() == .edit {
                         if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
@@ -363,8 +365,9 @@ struct EdgeView: View {
                                 tempWeightPositionOffset = .zero
                             })
             } else {
-                ZStack {
+                Group {
                     Text("\(edgeViewModel.getEdgeWeight().formatted())")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
                     #if os(iOS)
                     Color.clear
                         .opacity(0.25)
@@ -406,8 +409,8 @@ struct EdgeView: View {
                                           getVertexPositionByID: {id in
             graph.getVertexByID(id)?.position},
                                           
-                                          getShowingWeights: { id in
-            false },
+                                          getShowingWeights: { _ in
+            true },
                                           setShowingWeights: { id, show in},
                                           getOffset: {id in graph.getOffsetByID(id)},
                                           getSelectedEdge: { graphViewModel.selectedEdge },

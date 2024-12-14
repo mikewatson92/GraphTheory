@@ -905,7 +905,7 @@ struct GraphView: View {
                         handleEdgeLongPressGesture(for: edge)
                     }
             }
-             
+            
             // The vertices
             ForEach(graphViewModel.getVertices()) { vertex in
                 let vertexViewModel = VertexViewModel(
@@ -1032,65 +1032,77 @@ struct GraphView: View {
                 )
                 .labelsHidden()
             }
-            
-                ToolbarItem(placement: .automatic) {
-                    Menu {
-                        Button("Clear") {
-                            graphViewModel.selectedEdge = nil
-                            clear()
-                        }
-                        .foregroundStyle(themeViewModel.accentColor)
-                        
-                        if graphViewModel.getAlgorithm() == .none {
-                            Toggle("Weights", isOn: $graphViewModel.showWeights)
-                        }
-                        
-                        Picker("Mode", selection: Binding(get: { graphViewModel.getMode() }, set: { newValue in graphViewModel.setMode(newValue)})) {
-                            Text("Mode:")
-                            Text("Edit").tag(Graph.Mode.edit)
-                            Text("Explore").tag(Graph.Mode.explore)
-                        }
-                        .foregroundStyle(themeViewModel.accentColor)
-                        
-                        if graphViewModel.showAlgorithms {
-                            Picker("Algorithm", selection: Binding(
-                                get: {
-                                    graphViewModel.getAlgorithm()
-                                }, set: { newValue in
-                                    graphViewModel.setAlgorithm(newValue)
-                                }))
-                            {
-                                Text("Algorithm:")
-                                ForEach(Graph.Algorithm.allCases, id: \.self) { alg in
-                                    Text(alg.rawValue).tag(alg)
-                                }
-                            }
-                        }
-                        
-                        Picker("Label Color", selection: Binding(
-                            get: {
-                                if let selectedVertex = graphViewModel.selectedVertex {
-                                    return selectedVertex.labelColor
-                                }
-                                return Vertex.LabelColor.white
-                            },
-                            set: { newColor in
-                                if let selectedVertex = graphViewModel.selectedVertex {
-                                    graphViewModel.setVertexLabelColor(id: selectedVertex.id, labelColor: newColor)
-                                }
-                            }
-                        )) {
-                            Text("Label Color:")
-                            ForEach(Vertex.LabelColor.allCases) { color in
-                                Text(color.rawValue).tag(color)
-                            }
+            ToolbarItem(placement: .automatic) {
+                Button("Clear", systemImage: "arrow.uturn.left.circle.fill") {
+                    graphViewModel.selectedVertex = nil
+                    graphViewModel.selectedEdge = nil
+                    clear()
+                }
+                .labelsHidden()
+            }
+            ToolbarItem(placement: .automatic) {
+                Menu {
+                    Picker("Algorithm", selection: Binding(
+                        get: {
+                            graphViewModel.getAlgorithm()
+                        }, set: { newValue in
+                            graphViewModel.setAlgorithm(newValue)
+                        }))
+                    {
+                        Text("Algorithm:")
+                        ForEach(Graph.Algorithm.allCases, id: \.self) { alg in
+                            Text(alg.rawValue).tag(alg)
                         }
                     }
-                    label: {
-                        Label("Settings", systemImage: "ellipsis.circle")
+                } label: {
+                    Image(systemName: "flask")
+                }
+            }
+            
+            ToolbarItem(placement: .automatic) {
+                if graphViewModel.getAlgorithm() == .none {
+                    Toggle(isOn: $graphViewModel.showWeights) {
+                        Image(systemName: "number.square.fill")
+                    }
+                }
+            }
+            ToolbarItem(placement: .automatic) {
+                Menu {
+                    Picker("Mode", selection: Binding(get: { graphViewModel.getMode() }, set: { newValue in graphViewModel.setMode(newValue)})) {
+                        Text("Mode:")
+                        Text("Edit").tag(Graph.Mode.edit)
+                        Text("Explore").tag(Graph.Mode.explore)
+                    }
+                    .foregroundStyle(themeViewModel.accentColor)
+                    
+                    if graphViewModel.showAlgorithms {
+                        
                     }
                     
+                    Picker("Label Color", selection: Binding(
+                        get: {
+                            if let selectedVertex = graphViewModel.selectedVertex {
+                                return selectedVertex.labelColor
+                            }
+                            return Vertex.LabelColor.white
+                        },
+                        set: { newColor in
+                            if let selectedVertex = graphViewModel.selectedVertex {
+                                graphViewModel.setVertexLabelColor(id: selectedVertex.id, labelColor: newColor)
+                            }
+                        }
+                    )) {
+                        Text("Label Color:")
+                        ForEach(Vertex.LabelColor.allCases) { color in
+                            Text(color.rawValue).tag(color)
+                        }
+                    }
                 }
+                label: {
+                    Image(systemName: "gear")
+                }
+                
+            }
         }
         
     }

@@ -1038,24 +1038,18 @@ struct GraphView: View {
                     graphViewModel.selectedEdge = nil
                     clear()
                 }
+                .foregroundColor(themeViewModel.accentColor)
                 .labelsHidden()
             }
             ToolbarItem(placement: .automatic) {
                 Menu {
-                    Picker("Algorithm", selection: Binding(
-                        get: {
-                            graphViewModel.getAlgorithm()
-                        }, set: { newValue in
-                            graphViewModel.setAlgorithm(newValue)
-                        }))
-                    {
-                        Text("Algorithm:")
-                        ForEach(Graph.Algorithm.allCases, id: \.self) { alg in
-                            Text(alg.rawValue).tag(alg)
-                        }
+                    Text("Algorithm:")
+                    NavigationLink(destination: KruskalView(graph: graphViewModel.getGraph())) {
+                        Text("Kruskal")
                     }
                 } label: {
                     Image(systemName: "flask")
+                        .tint(themeViewModel.accentColor)
                 }
             }
             

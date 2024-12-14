@@ -47,13 +47,14 @@ struct ContentView: View {
                         Picker("Theme", selection: Binding(get: {themeViewModel.theme}, set: {newTheme in themeViewModel.theme = newTheme})) {
                             ForEach(ThemeViewModel.Theme.allCases) { theme in
                                 Text(theme.rawValue).tag(theme)
+                                    .foregroundColor(themeViewModel.accentColor)
                             }
                         }
                         
                     } label: {
                         Label("Theme", systemImage: "sparkles")
+                            .tint(themeViewModel.accentColor)
                     }
-                    .tint(themeViewModel.accentColor)
                 }
             }
         } detail: {

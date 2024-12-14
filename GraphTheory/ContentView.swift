@@ -16,6 +16,11 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List {
+                Section(header: Text("Learn")) {
+                    NavigationLink("Tutorial", destination: TutorialView())
+                        .foregroundStyle(themeViewModel.colorTheme2)
+                        .environmentObject(themeViewModel)
+                }
                 Section(header: Text("Create")) {
                     NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
                         .foregroundStyle(themeViewModel.colorTheme2)

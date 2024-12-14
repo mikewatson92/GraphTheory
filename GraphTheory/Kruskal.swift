@@ -222,50 +222,7 @@ struct KruskalView: View {
         ZStack {
             GeometryReader { geometry in
                 ForEach(kruskalViewModel.getAllEdges()) { edge in
-                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size,
-                                                      removeEdge: { edge in
-                        kruskalViewModel.removeEdge(edge)
-                    },
-                                                      getVertexPositionByID: { id in
-                        let vertex = kruskalViewModel.getGraph().getVertexByID(id)
-                        return vertex?.position
-                    }, getShowingWeights: { _ in
-                        true
-                    }, setShowingWeights: { _, _ in },
-                                                      getOffset: { id in
-                        kruskalViewModel.getGraph().getOffsetByID(id)
-                    }, getSelectedEdge: { kruskalViewModel.selectedEdge },
-                                                      setSelectedEdge: { id in
-                        kruskalViewModel.selectedEdge = edge
-                    },
-                                                      getEdgeControlPoints: { edge in
-                        kruskalViewModel.getGraph().getEdgeControlPoints(for: edge)
-                    }, setEdgeControlPoint1: { edge, point in
-                        kruskalViewModel.setControlPoint1(for: edge, at: point)
-                    }, setEdgeControlPoint2: { edge, point in
-                        kruskalViewModel.setControlPoint2(for: edge, at: point)
-                    },
-                                                      
-                                                      getEdgeControlPointOffsets: { edge in
-                        kruskalViewModel.getGraph().getEdgeControlPointOffsets(for: edge)
-                    }, setEdgeControlPoint1Offset: { edge, size in
-                        kruskalViewModel.setControlPoint1Offset(for: edge, size: size)
-                    }, setEdgeControlPoint2Offset: { edge, size in
-                        kruskalViewModel.setControlPoint2Offset(for: edge, size: size)
-                    }, getWeightPosition: { edge in
-                        kruskalViewModel.getGraph().getEdgeWeightPositionByID(edge.id) ?? CGPoint(x: 0, y: 0)
-                    }, setWeightPosition: { edge, point in
-                        kruskalViewModel.setEdgeWeightPosition(edgeID: edge.id, position: point)
-                    }, getWeightPositionOffset: { edge in
-                        kruskalViewModel.getGraph().edges[edge.id]?.weightPositionOffset ?? CGSize.zero
-                    }, setWeightPositionOffset: { edge, size in
-                        kruskalViewModel.setWeightPositionOffset(edgeID: edge.id, size: size)
-                    }, getWeight: { edge in
-                        kruskalViewModel.getWeight(edge: edge)
-                    }, setWeight: { edge, weight in
-                        kruskalViewModel.setWeight(edge: edge, weight: weight)
-                    }, getMode: { kruskalViewModel.getGraph().mode }
-                    )
+                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: GraphViewModel(graph: kruskalViewModel.getGraph()))
                     EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                         .highPriorityGesture(TapGesture(count: 1)
                             .onEnded {
@@ -274,17 +231,7 @@ struct KruskalView: View {
                 }
                 
                 ForEach(kruskalViewModel.getAllVertices()) { vertex in
-                    let vertexViewModel = VertexViewModel(vertex: vertex, mode: [.showLabels, .noEditLabels], getVertexPosition: { id in
-                        kruskalViewModel.getGraph().vertices[id]?.position
-                    }, setVertexPosition: { id, point in
-                        kruskalViewModel.setVertexPosition(vertexID: id, position: point)
-                    }, getVertexOffset: { id in
-                        kruskalViewModel.getGraph().vertices[id]?.offset
-                    }, setVertexOffset: { id, size in
-                        kruskalViewModel.setVertexOffset(vertexID: id, size: size)
-                    }, setVertexColor: { id, color in
-                        kruskalViewModel.setVertexColor(vertexID: id, color: color)
-                    })
+                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: GraphViewModel(graph: kruskalViewModel.getGraph()), mode: [.showLabels, .noEditLabels])
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                 }
             }

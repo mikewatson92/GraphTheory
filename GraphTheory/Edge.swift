@@ -40,77 +40,18 @@ struct Edge: Identifiable, Codable, Hashable {
 
 class EdgeViewModel: ObservableObject {
     @Published private var edge: Edge
+    @Published var graphViewModel: GraphViewModel
     var size: CGSize
-    lazy var edgePath: EdgePath = EdgePath(startVertexPosition: getVertexPositionByID(edge.startVertexID)!, endVertexPosition: getVertexPositionByID(edge.endVertexID)!, startOffset: getOffsetForID(edge.startVertexID)!, endOffset: getOffsetForID(edge.endVertexID)!, controlPoint1: getEdgeControlPoints(edge).0, controlPoint2: getEdgeControlPoints(edge).1, controlPoint1Offset: getEdgeControlPointOffsets(edge).0, controlPoint2Offset: getEdgeControlPointOffsets(edge).1)
-    var getShowingWeights: (UUID) -> Bool
-    var setShowingWeights: (UUID, Bool) -> Void
-    private var removeEdge: (Edge) -> Void
-    private var getVertexPositionByID: (UUID) -> CGPoint?
-    private var getOffsetForID: (UUID) -> CGSize? // the vertex offset
-    var getSelectedEdge: () -> Edge?
-    var setSelectedEdge: (UUID?) -> Void
-    private var getEdgeControlPoints: (Edge) -> (CGPoint, CGPoint)
-    private var setEdgeControlPoint1: (Edge, CGPoint) -> Void
-    private var setEdgeControlPoint2: (Edge, CGPoint) -> Void
-    private var getEdgeControlPointOffsets: (Edge) -> (CGSize, CGSize)
-    private var setEdgeControlPoint1Offset: (Edge, CGSize) -> Void
-    private var setEdgeControlPoint2Offset: (Edge, CGSize) -> Void
-    private var getWeightPosition: (Edge) -> CGPoint
-    private var setWeightPosition: (Edge, CGPoint) -> Void
-    private var getWeightPositionOffset: (Edge) -> CGSize
-    private var setWeightPositionOffset: (Edge, CGSize) -> Void
-    private var getWeight: (Edge) -> Double
-    private var setWeight: (Edge, Double) -> Void
-    private var getMode: () -> Graph.Mode
+    lazy var edgePath: EdgePath = EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)!.position, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)!.position, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID)!, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID)!, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1)
     
-    init(edge: Edge, size: CGSize,
-         removeEdge: @escaping (Edge) -> Void,
-         getVertexPositionByID: @escaping (UUID) -> CGPoint?,
-         getShowingWeights: @escaping (UUID) -> Bool,
-         setShowingWeights: @escaping (UUID, Bool) -> Void,
-         getOffset: @escaping (UUID) -> CGSize?,
-         getSelectedEdge: @escaping () -> Edge?,
-         setSelectedEdge: @escaping (UUID?) -> Void,
-         getEdgeControlPoints: @escaping (Edge) -> (CGPoint, CGPoint),
-         setEdgeControlPoint1: @escaping (Edge, CGPoint) -> Void,
-         setEdgeControlPoint2: @escaping (Edge, CGPoint) -> Void,
-         getEdgeControlPointOffsets: @escaping (Edge) -> (CGSize, CGSize),
-         setEdgeControlPoint1Offset: @escaping (Edge, CGSize) -> Void,
-         setEdgeControlPoint2Offset: @escaping (Edge, CGSize) -> Void,
-         getWeightPosition: @escaping (Edge) -> CGPoint,
-         setWeightPosition: @escaping (Edge, CGPoint) -> Void,
-         getWeightPositionOffset: @escaping (Edge) -> CGSize,
-         setWeightPositionOffset: @escaping (Edge, CGSize) -> Void,
-         getWeight: @escaping (Edge) -> Double,
-         setWeight: @escaping (Edge, Double) -> Void,
-         getMode: @escaping () -> Graph.Mode
-    ) {
+    init(edge: Edge, size: CGSize, graphViewModel: GraphViewModel) {
         self.edge = edge
         self.size = size
-        self.removeEdge = removeEdge
-        self.getShowingWeights = getShowingWeights
-        self.setShowingWeights = setShowingWeights
-        self.getVertexPositionByID = getVertexPositionByID
-        self.getOffsetForID = getOffset
-        self.getSelectedEdge = getSelectedEdge
-        self.setSelectedEdge = setSelectedEdge
-        self.getEdgeControlPoints = getEdgeControlPoints
-        self.setEdgeControlPoint1 = setEdgeControlPoint1
-        self.setEdgeControlPoint2 = setEdgeControlPoint2
-        self.getEdgeControlPointOffsets = getEdgeControlPointOffsets
-        self.setEdgeControlPoint1Offset = setEdgeControlPoint1Offset
-        self.setEdgeControlPoint2Offset = setEdgeControlPoint2Offset
-        self.getWeightPosition = getWeightPosition
-        self.setWeightPosition = setWeightPosition
-        self.getWeightPositionOffset = getWeightPositionOffset
-        self.setWeightPositionOffset = setWeightPositionOffset
-        self.getWeight = getWeight
-        self.setWeight = setWeight
-        self.getMode = getMode
+        self.graphViewModel = graphViewModel
     }
     
     func removeEdgeFromGraph() {
-        removeEdge(edge)
+        graphViewModel.removeEdge(edge)
     }
     
     func initWeightPosition() -> CGPoint {
@@ -136,7 +77,7 @@ class EdgeViewModel: ObservableObject {
     }
     
     func getGraphMode() -> Graph.Mode {
-        getMode()
+        graphViewModel.getMode()
     }
     
     func getColor() -> Color {
@@ -144,11 +85,11 @@ class EdgeViewModel: ObservableObject {
     }
     
     func getEdgeWeight() -> Double {
-        getWeight(edge)
+        graphViewModel.getWeight(edge: edge)
     }
     
     func setEdgeWeight(_ weight: Double) {
-        setWeight(edge, weight)
+        graphViewModel.setWeight(edge: edge, weight: weight)
     }
     
     func setColor(_ color: Color) {
@@ -156,64 +97,65 @@ class EdgeViewModel: ObservableObject {
     }
     
     func getStartVertexPosition() -> CGPoint? {
-        return getVertexPositionByID(edge.startVertexID)
+        graphViewModel.getVertexByID(edge.startVertexID)?.position
     }
     
     func getEndVertexPosition() -> CGPoint? {
-        return getVertexPositionByID(edge.endVertexID)
+        graphViewModel.getVertexByID(edge.endVertexID)?.position
     }
     
     func getStartOffset() -> CGSize? {
-        return getOffsetForID(edge.startVertexID)
+        graphViewModel.getGraph().getOffsetByID(edge.startVertexID)
     }
     
     func getEndOffset() -> CGSize? {
-        return getOffsetForID(edge.endVertexID)
+        graphViewModel.getGraph().getOffsetByID(edge.endVertexID)
     }
     
     func getControlPoints() -> (CGPoint, CGPoint) {
-        return getEdgeControlPoints(edge)
+        graphViewModel.getControlPoints(for: edge)
     }
     
     func getControlPointOffsets() -> (CGSize, CGSize) {
-        return getEdgeControlPointOffsets(edge)
+        graphViewModel.getControlPointOffsets(for: edge)
     }
     
     func getEdgeWeightPosition() -> CGPoint? {
-        return getWeightPosition(edge)
+        graphViewModel.getWeightPosition(for: edge)
     }
     
     func setEdgeWeightPosition(position: CGPoint) {
-        setWeightPosition(edge, position)
+        graphViewModel.setWeightPosition(for: edge, position: position)
     }
     
     func getEdgeWeightOffset() -> CGSize {
-        return getWeightPositionOffset(edge)
+        graphViewModel.getWeightPositionOffset(for: edge)!
     }
     
     func setEdgeWeightOffset(_ size: CGSize) {
-        setWeightPositionOffset(edge, size)
+        graphViewModel.setWeightPositionOffset(for: edge, offset: size)
     }
     
     func setControlPoint1(_ point: CGPoint) {
-        setEdgeControlPoint1(edge, point)
+        graphViewModel.setControlPoint1(for: edge, at: point)
     }
     
     func setControlPoint2(_ point: CGPoint) {
-        setEdgeControlPoint2(edge, point)
+        graphViewModel.setControlPoint2(for: edge, at: point)
     }
     
     func setControlPoint1Offset(_ size: CGSize) {
-        setEdgeControlPoint1Offset(edge, size)
+        graphViewModel.setControlPoint1Offset(for: edge, translation: size)
     }
     
     func setControlPoint2Offset(_ size: CGSize) {
-        setEdgeControlPoint2Offset(edge, size)
+        graphViewModel.setControlPoint2Offset(for: edge, translation: size)
     }
 }
 
 struct EdgeView: View {
     @ObservedObject var edgeViewModel: EdgeViewModel
+    @ObservedObject var graphViewModel: GraphViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var edittingWeight = false
     @State private var tempWeightPosition: CGPoint {
@@ -230,6 +172,7 @@ struct EdgeView: View {
     
     init(edgeViewModel: EdgeViewModel, size: CGSize) {
         self.edgeViewModel = edgeViewModel
+        self.graphViewModel = edgeViewModel.graphViewModel
         self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition() ?? edgeViewModel.initWeightPosition()
         self.size = size
     }
@@ -244,23 +187,23 @@ struct EdgeView: View {
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
                     if edgeViewModel.getGraphMode() == .edit {
-                        if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
-                            edgeViewModel.setSelectedEdge(nil)
+                        if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                            graphViewModel.selectedEdge = nil
                         }
                         edgeViewModel.removeEdgeFromGraph()
                     }
                 }
                 .onTapGesture(count: 1) {
-                    if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
-                        edgeViewModel.setSelectedEdge(nil)
+                    if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                        graphViewModel.selectedEdge = nil
                     } else {
-                        edgeViewModel.setSelectedEdge(edgeViewModel.getID())
+                        graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
                     }
                 }
         
         // Control points for selected edge
         if edgeViewModel.getGraphMode() == .edit {
-            if edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() {
+            if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
                 let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
                 let (controlPoint1Offset, controlPoint2Offset) = edgeViewModel.getControlPointOffsets()
                 let adjustedControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
@@ -328,7 +271,7 @@ struct EdgeView: View {
         }
         
         
-        if edgeViewModel.getShowingWeights(edgeViewModel.getID()) {
+        if  graphViewModel.showWeights {
             // TextField for editing the weight
             
             if edittingWeight {
@@ -368,8 +311,8 @@ struct EdgeView: View {
                 Group {
                     Text("\(edgeViewModel.getEdgeWeight().formatted())")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
-                        .shadow(color: edgeViewModel.getSelectedEdge()?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
+                        .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
+                        .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
                     #if os(iOS)
                     Color.clear
                         .opacity(0.25)
@@ -404,58 +347,7 @@ struct EdgeView: View {
         let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
         var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
         let graphViewModel = GraphViewModel(graph: graph)
-        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size,
-                                          removeEdge: { edge in
-            graph.removeEdge(edge)
-        },
-                                          getVertexPositionByID: {id in
-            graph.getVertexByID(id)?.position},
-                                          
-                                          getShowingWeights: { _ in
-            true },
-                                          setShowingWeights: { id, show in},
-                                          getOffset: {id in graph.getOffsetByID(id)},
-                                          getSelectedEdge: { graphViewModel.selectedEdge },
-                                          setSelectedEdge: { id in
-            if id != nil {
-                graphViewModel.selectedEdge = graphViewModel.getEdges().first(where: {$0.id == id})
-            } else {
-                graphViewModel.selectedEdge = nil
-            }
-        },
-                                          getEdgeControlPoints: { edge in
-            graph.getEdgeControlPoints(for: edge)},
-                                          setEdgeControlPoint1: { edge, point in
-            graph.setControlPoint1(for: edge, at: point)
-        },
-                                          setEdgeControlPoint2: { edge, point in
-            graph.setControlPoint2(for: edge, at: point)
-        },
-                                          getEdgeControlPointOffsets: {edge in
-            graph.getEdgeControlPointOffsets(for: edge)},
-                                          setEdgeControlPoint1Offset: { edge, size in
-            graph.setControlPoint1Offset(for: edge, translation: size)
-        },
-                                          setEdgeControlPoint2Offset: { edge, size in
-            graph.setControlPoint2Offset(for: edge, translation: size)
-        },
-                                          getWeightPosition: { edge in
-            
-            graph.getEdgeWeightPositionByID(edge.id)!},
-                                          setWeightPosition: { edge, position in
-            
-            graph.setEdgeWeightPositionByID(id: edge.id, position: position)},
-                                          getWeightPositionOffset: { edge in
-            graph.getEdgeWeightOffsetByID(edge.id)!
-        },
-                                          setWeightPositionOffset: { edge, offset in
-            graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
-        },
-                                          getWeight: { edge in
-            graph.edges[edge.id]!.weight
-        }, setWeight: { edge, weight in
-            graph.edges[edge.id]?.weight = weight
-        }, getMode: { graph.mode })
+        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
     }
 }

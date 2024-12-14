@@ -846,54 +846,7 @@ struct GraphView: View {
     var body: some View {
         GeometryReader{ geometry in
             ForEach(graphViewModel.getEdges(), id: \.id) { edge in
-                let edgeViewModel = EdgeViewModel(
-                    edge: edge,
-                    size: geometry.size,
-                    removeEdge: { edge in
-                        graphViewModel.removeEdge(edge)
-                    },
-                    getVertexPositionByID: { id in graphViewModel.getGraph().getVertexByID(id)?.position },
-                    getShowingWeights: { id in
-                        graphViewModel.showWeights
-                    },
-                    setShowingWeights: { id, show in
-                        graphViewModel.showWeights = show
-                    },
-                    getOffset: { id in graphViewModel.getGraph().getOffsetByID(id) },
-                    getSelectedEdge: { graphViewModel.selectedEdge },
-                    setSelectedEdge: { id in
-                        if id != nil {
-                            graphViewModel.selectedEdge = graphViewModel.getEdges().first(where: {$0.id == id})
-                        } else {
-                            graphViewModel.selectedEdge = nil
-                        }
-                    },
-                    getEdgeControlPoints: { edge in graphViewModel.getGraph().getEdgeControlPoints(for: edge) },
-                    setEdgeControlPoint1: { edge, point in
-                        graphViewModel.setControlPoint1(for: edge, at: point)
-                    },
-                    setEdgeControlPoint2: { edge, point in
-                        graphViewModel.setControlPoint2(for: edge, at: point)
-                    },
-                    getEdgeControlPointOffsets: { edge in graphViewModel.getGraph().getEdgeControlPointOffsets(for: edge) },
-                    setEdgeControlPoint1Offset: { edge, size in
-                        graphViewModel.setControlPoint1Offset(for: edge, translation: size)
-                    },
-                    setEdgeControlPoint2Offset: { edge, size in
-                        graphViewModel.setControlPoint2Offset(for: edge, translation: size)
-                    },
-                    getWeightPosition: { edge in graphViewModel.getGraph().getEdgeWeightPositionByID(edge.id) ?? .zero},
-                    setWeightPosition: { edge, position in graphViewModel.setWeightPosition(for: edge, position: position) },
-                    getWeightPositionOffset: { edge in graphViewModel.getGraph().getEdgeWeightOffsetByID(edge.id) ?? .zero },
-                    setWeightPositionOffset: { edge, offset in graphViewModel.setWeightPositionOffset(for: edge, offset: offset)},
-                    getWeight: { edge in
-                        graphViewModel.getWeight(edge: edge)
-                    },
-                    setWeight: { edge, weight in
-                        graphViewModel.setWeight(edge: edge, weight: weight)
-                    },
-                    getMode: { graphViewModel.getMode() }
-                )
+                let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                 EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                     .onTapGesture(count: 2) {
                         handleEdgeDoubleClickGesture(for: edge)
@@ -908,13 +861,7 @@ struct GraphView: View {
             
             // The vertices
             ForEach(graphViewModel.getVertices()) { vertex in
-                let vertexViewModel = VertexViewModel(
-                    vertex: vertex,
-                    getVertexPosition: { id in graphViewModel.getGraph().getVertexByID(id)?.position },
-                    setVertexPosition: { id, position in graphViewModel.setVertexPosition(vertex: vertex, position: position) },
-                    getVertexOffset: { id in graphViewModel.getGraph().getVertexByID(id)?.offset},
-                    setVertexOffset: { id, size in graphViewModel.setVertexOffset(vertex: vertex, size: size)},
-                    setVertexColor: { id, color in graphViewModel.setColor(vertex: graphViewModel.getGraph().getVertexByID(vertex.id)!, color: color)})
+                let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                 
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                     .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)

@@ -66,33 +66,21 @@ struct Vertex: Identifiable, Codable {
 
 class VertexViewModel: ObservableObject {
     @Published private var vertex: Vertex
+    @Published var graphViewModel: GraphViewModel
     var mode: [Mode]
-    private var getVertexPosition: (UUID) -> CGPoint?
-    private var setVertexPosition: (UUID, CGPoint) -> Void
-    private var getVertexOffset: (UUID) -> CGSize?
-    private var setVertexOffset: (UUID, CGSize) -> Void
-    private var setVertexColor: (UUID, Color) -> Void
     
-    init(vertex: Vertex, mode: [Mode] = [.editLabels, .showLabels], getVertexPosition: @escaping (UUID) -> CGPoint?,
-         setVertexPosition: @escaping (UUID, CGPoint) -> Void,
-         getVertexOffset: @escaping (UUID) -> CGSize?,
-         setVertexOffset: @escaping (UUID, CGSize) -> Void,
-         setVertexColor: @escaping (UUID, Color) -> Void)
+    init(vertex: Vertex, graphViewModel: GraphViewModel, mode: [Mode] = [.editLabels, .showLabels])
     {
         self.vertex = vertex
+        self.graphViewModel = graphViewModel
         self.mode = mode
-        self.getVertexPosition = getVertexPosition
-        self.setVertexPosition = setVertexPosition
-        self.getVertexOffset = getVertexOffset
-        self.setVertexOffset = setVertexOffset
-        self.setVertexColor = setVertexColor
     }
     
     var color: Color {
         get { vertex.color }
         set {
             vertex.color = newValue
-            setVertexColor(vertex.id, newValue)
+            graphViewModel.setColor(vertex: vertex, color: newValue)
         }
     }
     
@@ -113,24 +101,24 @@ class VertexViewModel: ObservableObject {
     }
     
     func getPosition() -> CGPoint? {
-        return getVertexPosition(vertex.id)
+        graphViewModel.getVertexByID(vertex.id)?.position
     }
     
     func setPosition(_ position: CGPoint) {
-        setVertexPosition(vertex.id, position)
+        graphViewModel.setVertexPosition(vertex: vertex, position: position)
     }
     
     func getOffset() -> CGSize? {
-        return getVertexOffset(vertex.id)
+        graphViewModel.getGraph().getOffsetByID(vertex.id)
     }
     
     func setOffset(size: CGSize) {
-        setVertexOffset(vertex.id, size)
+        graphViewModel.setVertexOffset(vertex: vertex, size: size)
     }
     
     func setColor(vertexID: UUID, color: Color) {
         self.color = color
-        setVertexColor(vertexID, color)
+        graphViewModel.setColor(vertex: graphViewModel.getVertexByID(vertexID)!, color: color)
     }
     
     func getLabel() -> String {
@@ -257,8 +245,7 @@ struct VertexView: View {
 #Preview {
     let vertex = Vertex(position: CGPoint(x: 0.5, y: 0.5))
     var graph = Graph(vertices: [vertex], edges: [])
-    let vertexViewModel = VertexViewModel(vertex: vertex, getVertexPosition: { id in graph.getVertexByID(id)?.position}, setVertexPosition: { id, position in graph.setVertexPosition(forID: id, position: position) }, getVertexOffset: { id in graph.getVertexByID(id)?.offset}, setVertexOffset: {id, size in graph.setVertexOffset(forID: id, size: size)},
-                                          setVertexColor: { id, color in graph.setVertexColor(forID: id, color: color)})
+    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: GraphViewModel(graph: graph))
     GeometryReader { geometry in
         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
     }

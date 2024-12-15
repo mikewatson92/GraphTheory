@@ -88,18 +88,23 @@ struct CurveEdgeTutorial: View {
                 ZStack {
                     Color.clear
                         .contentShape(Rectangle())
-                    HStack {
+                    VStack {
+                        Spacer()
                         Spacer()
                         HStack {
-                            Text("Swipe")
-                                .font(.title)
-                                .padding([.leading], 50)
-                            Image(systemName: "arrow.forward")
-                                .font(.title)
-                                .padding([.trailing], 50)
+                            Spacer()
+                            HStack {
+                                Text("Swipe")
+                                    .font(.title)
+                                    .padding([.leading], 50)
+                                Image(systemName: "arrow.forward")
+                                    .font(.title)
+                                    .padding([.trailing], 50)
+                            }
+                            .background(in: RoundedRectangle(cornerRadius: 10))
+                            .backgroundStyle(themeViewModel.accentColor)
+                            Spacer()
                         }
-                        .background(in: RoundedRectangle(cornerRadius: 10))
-                        .backgroundStyle(themeViewModel.accentColor)
                         Spacer()
                     }
                 }
@@ -236,7 +241,7 @@ struct CurveEdgeTutorialView: View {
             
             if edittingWeight {
                 ZStack {
-                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
+                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() ?? 0.0 }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
                     #if os(macOS)
@@ -269,7 +274,7 @@ struct CurveEdgeTutorialView: View {
                             })
             } else {
                 Group {
-                    Text("\(edgeViewModel.getEdgeWeight().formatted())")
+                    Text("\(edgeViewModel.getEdgeWeight()?.formatted() ?? "0")")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
                         .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)

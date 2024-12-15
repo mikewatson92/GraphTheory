@@ -38,15 +38,15 @@ struct AddVertexTutorial: View {
                         .padding([.bottom], 50)
                     }
                 }
+                .transition(.slide)
+                .animation(.easeInOut(duration: 1), value: showInstructions)
                 .onTapGesture(count: 1) {
                     withAnimation {
                         showInstructions = false
                     }
                 }
-                .animation(.easeInOut, value: showInstructions)
-            }
-            
-            if !showInstructions {
+                
+            } else {
                 ZStack {
                     GeometryReader { geometry in
                         ZStack {
@@ -72,31 +72,37 @@ struct AddVertexTutorial: View {
                         }
                     }
                 }
-                .animation(.easeInOut, value: showEnd || showInstructions)
+                .transition(.slide)
+                .animation(.easeInOut(duration: 1), value: showInstructions)
             }
             
             if showEnd {
                 ZStack {
                     Color.clear
                         .contentShape(Rectangle())
-                    HStack {
+                    VStack {
+                        Spacer()
                         Spacer()
                         HStack {
-                            Text("Swipe")
-                                .font(.title)
-                                .padding([.leading], 50)
-                            Image(systemName: "arrow.forward")
-                                .font(.title)
-                                .padding([.trailing], 50)
+                            Spacer()
+                            HStack {
+                                Text("Swipe")
+                                    .font(.title)
+                                    .padding([.leading], 50)
+                                Image(systemName: "arrow.forward")
+                                    .font(.title)
+                                    .padding([.trailing], 50)
+                            }
+                            .background(in: RoundedRectangle(cornerRadius: 10))
+                            .backgroundStyle(themeViewModel.accentColor)
+                            Spacer()
                         }
-                        .background(in: RoundedRectangle(cornerRadius: 10))
-                        .backgroundStyle(themeViewModel.accentColor)
                         Spacer()
                     }
                 }
-                .animation(.easeInOut, value: showEnd)
+                .transition(.slide)
+                .animation(.easeInOut(duration: 1), value: showEnd)
             }
-            
         }
     }
 }

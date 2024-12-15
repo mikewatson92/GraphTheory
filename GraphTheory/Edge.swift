@@ -84,7 +84,7 @@ class EdgeViewModel: ObservableObject {
         return edge.color
     }
     
-    func getEdgeWeight() -> Double {
+    func getEdgeWeight() -> Double? {
         graphViewModel.getWeight(edge: edge)
     }
     
@@ -276,7 +276,7 @@ struct EdgeView: View {
             
             if edittingWeight {
                 ZStack {
-                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
+                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() ?? 0.0 }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
                     #if os(macOS)
@@ -309,7 +309,7 @@ struct EdgeView: View {
                             })
             } else {
                 Group {
-                    Text("\(edgeViewModel.getEdgeWeight().formatted())")
+                    Text("\(edgeViewModel.getEdgeWeight()?.formatted() ?? "0")")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
                         .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
@@ -345,7 +345,7 @@ struct EdgeView: View {
         let vertex1 = Vertex(position: CGPoint(x: 0.2, y: 0.5))
         let vertex2 = Vertex(position: CGPoint(x: 0.8, y: 0.5))
         let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
-        var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
+        let graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
         let graphViewModel = GraphViewModel(graph: graph)
         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)

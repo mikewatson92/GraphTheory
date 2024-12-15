@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TutorialView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    
+
     var body: some View {
         TabView {
             AddVertexTutorial()

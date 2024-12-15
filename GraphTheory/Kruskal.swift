@@ -64,10 +64,6 @@ class KruskalViewModel: ObservableObject {
         kruskal.subGraph.edges[edge.id] = edge
     }
     
-    func removeEdge(_ edge: Edge) {
-        kruskal.graph.removeEdge(edge)
-    }
-    
     func hasEdgeBeenSelected(_ edge: Edge) -> Bool {
         kruskal.subGraph.edges.keys.contains(where: {$0 == edge.id})
     }
@@ -95,40 +91,6 @@ class KruskalViewModel: ObservableObject {
             }
         }
         return false
-    }
-    
-    func setControlPoint1(for edge: Edge, at point: CGPoint) {
-        kruskal.graph.setControlPoint1(for: edge, at: point)
-            
-        }
-    
-    func setControlPoint2(for edge: Edge, at point: CGPoint)
-    {
-        kruskal.graph.setControlPoint2(for: edge, at: point)
-    }
-    
-    func setControlPoint1Offset(for edge: Edge, size: CGSize) {
-        kruskal.graph.setControlPoint1Offset(for: edge, translation: size)
-    }
-    
-    func setControlPoint2Offset(for edge: Edge, size: CGSize) {
-        kruskal.graph.setControlPoint2Offset(for: edge, translation: size)
-    }
-    
-    func setWeightPositionOffset(edgeID: UUID, size: CGSize) {
-        kruskal.graph.edges[edgeID]?.weightPositionOffset = size
-    }
-    
-    func setEdgeWeightPosition(edgeID: UUID, position: CGPoint) {
-        kruskal.graph.setEdgeWeightPositionByID(id: edgeID, position: position)
-    }
-    
-    func setVertexPosition(vertexID: UUID, position: CGPoint) {
-        kruskal.graph.vertices[vertexID]?.position = position
-    }
-    
-    func setVertexOffset(vertexID: UUID, size: CGSize) {
-        kruskal.graph.vertices[vertexID]?.offset = size
     }
     
     func setVertexColor(vertexID: UUID, color: Color) {
@@ -174,17 +136,21 @@ class KruskalViewModel: ObservableObject {
             completionStatus = .completed
         }
         kruskal.validEdges.removeAll { $0.id == edge.id }
+        setVertexColor(vertexID: edge.startVertexID, color: .green)
+        setVertexColor(vertexID: edge.endVertexID, color: .green)
         return true
     }
 }
 
 struct KruskalView: View {
     @ObservedObject var kruskalViewModel: KruskalViewModel
+    var graphViewModel: GraphViewModel
     @State private var errorEdge: Edge? = nil
     @State private var showBanner = false
     
     init(graph: Graph) {
         self.kruskalViewModel = KruskalViewModel(graph: graph)
+        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true, showModeMenu: false, showAlgorithms: false)
     }
     
     func handleTap(forEdge edge: Edge) {
@@ -222,7 +188,7 @@ struct KruskalView: View {
         ZStack {
             GeometryReader { geometry in
                 ForEach(kruskalViewModel.getAllEdges()) { edge in
-                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: GraphViewModel(graph: kruskalViewModel.getGraph()))
+                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                     EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                         .highPriorityGesture(TapGesture(count: 1)
                             .onEnded {
@@ -231,30 +197,29 @@ struct KruskalView: View {
                 }
                 
                 ForEach(kruskalViewModel.getAllVertices()) { vertex in
-                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: GraphViewModel(graph: kruskalViewModel.getGraph()), mode: [.showLabels, .noEditLabels])
+                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel, mode: [.showLabels, .noEditLabels])
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                 }
             }
             // Banner shown upon completion
             if showBanner {
-                withAnimation {
-                    VStack {
-                        Text("The weight of the minimum spanning tree is: \(kruskalViewModel.getTreeWeight().formatted())")
-                            .foregroundColor(Color.primary)
-                            .padding()
-                            .background(Color.secondary)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Button {
-                            withAnimation {
-                                showBanner = false
-                            }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
+                VStack {
+                    Text("The weight of the minimum spanning tree is: \(kruskalViewModel.getTreeWeight().formatted())")
+                        .foregroundColor(Color.primary)
+                        .padding()
+                        .background(Color.secondary)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                    Button {
+                        withAnimation {
+                            showBanner = false
                         }
-                        Spacer()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
                     }
+                    Spacer()
                 }
+                .padding([.top], 25)
                 .zIndex(1)
                 .transition(.move(edge: .top))
             } else if kruskalViewModel.errorStatus == .cycleError {
@@ -266,6 +231,7 @@ struct KruskalView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }
+                .padding([.top], 25)
                 .zIndex(1)
                 .transition(.move(edge: .top))
             } else if kruskalViewModel.errorStatus == .notLowestWeightError {
@@ -277,6 +243,7 @@ struct KruskalView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }
+                .padding([.top], 25)
                 .zIndex(1)
                 .transition(.move(edge: .top))
             }

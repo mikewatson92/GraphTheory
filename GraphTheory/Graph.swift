@@ -224,11 +224,26 @@ struct Graph: Identifiable, Codable {
         return false
     }
     
+    // Returns true if there is a single edge connecting
+    // the two vertices.
+    func areVerticesAdjacent(_ vertex1ID: UUID, _ vertex2ID: UUID) -> Bool {
+        let connectedEdges = getConnectedEdges(to: vertex1ID)
+        for edge in connectedEdges {
+            if let adjacentVertex = edge.traverse(from: vertex1ID) {
+                if adjacentVertex == vertex2ID {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
     func isConnected() -> Bool {
-        let permutations = Permutation.permute(Array(vertices.values), r: 2)!
-        for permutation in permutations {
-            if !areVerticesConnected(permutation[0].id, permutation[1].id) {
-                return false
+        if let permutations = Permutation.permute(Array(vertices.values), r: 2) {
+            for permutation in permutations {
+                if !areVerticesConnected(permutation[0].id, permutation[1].id) {
+                    return false
+                }
             }
         }
         return true
@@ -647,6 +662,10 @@ class GraphViewModel: ObservableObject {
         return graph.getEdgeByID(edge.id)
     }
     
+    func setVertexLabel(id: UUID, label: String) {
+        graph.vertices[id]?.label = label
+    }
+    
     func setVertexLabelColor(id: UUID, labelColor: Vertex.LabelColor) {
         graph.vertices[id]?.labelColor = labelColor
     }
@@ -683,7 +702,7 @@ class GraphViewModel: ObservableObject {
         graph.setControlPoint2(for: edge, at: point)
     }
     
-    func getWeight(edge: Edge) -> Double {
+    func getWeight(edge: Edge) -> Double? {
         graph.edges[edge.id]!.weight
     }
     
@@ -993,6 +1012,9 @@ struct GraphView: View {
                     Text("Algorithm:")
                     NavigationLink(destination: KruskalView(graph: graphViewModel.getGraph())) {
                         Text("Kruskal")
+                    }
+                    NavigationLink(destination: PrimView(graph: graphViewModel.getGraph())) {
+                        Text("Prim")
                     }
                 } label: {
                     Image(systemName: "flask")

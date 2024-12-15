@@ -100,6 +100,10 @@ class VertexViewModel: ObservableObject {
         vertex.labelColor
     }
     
+    func setLabelColor(_ color: Vertex.LabelColor) {
+        graphViewModel.setVertexLabelColor(id: vertex.id, labelColor: color)
+    }
+    
     func getPosition() -> CGPoint? {
         graphViewModel.getVertexByID(vertex.id)?.position
     }
@@ -122,10 +126,11 @@ class VertexViewModel: ObservableObject {
     }
     
     func getLabel() -> String {
-        vertex.label
+        graphViewModel.getVertexByID(vertex.id)?.label ?? ""
     }
     
     func setLabel(_ newLabel: String) {
+        graphViewModel.setVertexLabel(id: vertex.id, label: newLabel)
         vertex.label = newLabel
     }
 }
@@ -174,10 +179,6 @@ struct VertexView: View {
         self.tempLabel = vertexViewModel.getLabel()
     }
     
-    enum Mode {
-        case editLabels, noEditLabels
-    }
-    
     var body: some View {
         Group {
             if let position = vertexViewModel.getPosition(), let offset = vertexViewModel.getOffset() {
@@ -201,13 +202,15 @@ struct VertexView: View {
 #endif
                 }
                 .onLongPressGesture {
-                    isTextFieldFocused = true
-                    edittingLabel = true
+                    if mode.contains(.editLabels) {
+                        isTextFieldFocused = true
+                        edittingLabel = true
+                    }
                 }
                 
                 if !edittingLabel && mode.contains(.showLabels) {
                     #if os(macOS)
-                    StrokeText(text: tempLabel, color: labelColor)
+                    StrokeText(text: vertexViewModel.getLabel(), color: labelColor)
                         .frame(width: size.width, height: size.height, alignment: .center)
                         .position(x: vertexViewModel.getPosition()!.x * size.width + vertexViewModel.getOffset()!.width, y: vertexViewModel.getPosition()!.y * size.height + vertexViewModel.getOffset()!.height)
                         .onLongPressGesture {
@@ -224,7 +227,7 @@ struct VertexView: View {
                         }
                     #endif
                 } else if mode.contains(.editLabels) {
-                    TextField("", text: $tempLabel)
+                    TextField("", text: Binding(get: {vertexViewModel.getLabel()}, set: {newValue in vertexViewModel.setLabel(newValue)}))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
                         .frame(width: 200, height: 20)
@@ -239,12 +242,15 @@ struct VertexView: View {
                 }
             }
         }
+        .onAppear {
+            vertexViewModel.setLabelColor(colorScheme == .light ? .white : .black)
+        }
     }
 }
 
 #Preview {
     let vertex = Vertex(position: CGPoint(x: 0.5, y: 0.5))
-    var graph = Graph(vertices: [vertex], edges: [])
+    let graph = Graph(vertices: [vertex], edges: [])
     let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: GraphViewModel(graph: graph))
     GeometryReader { geometry in
         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)

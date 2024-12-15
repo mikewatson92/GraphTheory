@@ -74,18 +74,23 @@ struct WeightsTutorial: View {
                 ZStack {
                     Color.clear
                         .contentShape(Rectangle())
-                    HStack {
+                    VStack {
+                        Spacer()
                         Spacer()
                         HStack {
-                            Text("Swipe")
-                                .font(.title)
-                                .padding([.leading], 50)
-                            Image(systemName: "arrow.forward")
-                                .font(.title)
-                                .padding([.trailing], 50)
+                            Spacer()
+                            HStack {
+                                Text("Swipe")
+                                    .font(.title)
+                                    .padding([.leading], 50)
+                                Image(systemName: "arrow.forward")
+                                    .font(.title)
+                                    .padding([.trailing], 50)
+                            }
+                            .background(in: RoundedRectangle(cornerRadius: 10))
+                            .backgroundStyle(themeViewModel.accentColor)
+                            Spacer()
                         }
-                        .background(in: RoundedRectangle(cornerRadius: 10))
-                        .backgroundStyle(themeViewModel.accentColor)
                         Spacer()
                     }
                 }

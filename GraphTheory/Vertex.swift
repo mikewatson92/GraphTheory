@@ -141,12 +141,7 @@ struct VertexView: View {
     @FocusState private var isTextFieldFocused: Bool
     @State private var latexSize = CGSize(width: 1, height: 1)
     @State private var edittingLabel: Bool = false
-    @State private var tempLabel: String {
-        willSet {
-            vertexViewModel.setLabel(newValue)
-        }
-    }
-    var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor().rawValue)}{\(tempLabel)}"
+    var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor().rawValue)}{\(vertexViewModel.getLabel())}"
     }
     var labelColor : Color {
         get {
@@ -176,7 +171,6 @@ struct VertexView: View {
     init(vertexViewModel: VertexViewModel, size: CGSize) {
         _vertexViewModel = .init(wrappedValue: vertexViewModel)
         self.size = size
-        self.tempLabel = vertexViewModel.getLabel()
     }
     
     var body: some View {

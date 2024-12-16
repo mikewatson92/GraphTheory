@@ -22,7 +22,7 @@ struct VertexLabelTutorial: View {
                         .contentShape(Rectangle())
                     VStack {
                         Spacer()
-                        Text("Tap a vertex to highlight it. In the settings menu, choose a color for the vertex label. Then long press the vertex to enter a new label.")
+                        Text("Long press the vertex to enter a new label.")
                             .font(.largeTitle)
                             .padding()
                         Spacer()

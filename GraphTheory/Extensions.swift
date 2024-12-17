@@ -13,6 +13,15 @@ import UIKit
 #endif
 import CoreGraphics
 
+extension Binding {
+    static func optional<T: Sendable>(_ source: Binding<T?>, defaultValue: T) -> Binding<T> {
+        Binding<T>(
+            get: { source.wrappedValue ?? defaultValue },
+            set: { source.wrappedValue = $0 }
+        )
+    }
+}
+
 extension Color: Codable {
     
     init(hex: String) {

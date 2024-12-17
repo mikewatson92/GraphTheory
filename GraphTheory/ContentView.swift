@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject private var canvasGraphViewModel = GraphViewModel(graph: Graph(), showAlgorithms: true)
+    @StateObject private var matrixViewModel = Matrix2DViewModel(matrix: Matrix2D(numberOfItems: 1))
 
     var body: some View {
         NavigationSplitView {
@@ -25,6 +26,7 @@ struct ContentView: View {
                     NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
                         .foregroundStyle(themeViewModel.colorTheme2)
                         .environmentObject(themeViewModel)
+                    NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())

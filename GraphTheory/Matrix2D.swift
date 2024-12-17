@@ -10,7 +10,7 @@ import SwiftUI
 struct Matrix2D {
     private(set) var numberOfItems: CGFloat
     var vertexLabels: [String]
-    var itemLabels: [Int?]
+    var itemLabels: [Double?]
     static let MAX_ITEMS = 10
     
     init(numberOfItems: Int) {
@@ -19,7 +19,7 @@ struct Matrix2D {
         self.itemLabels = Array(repeating: nil, count: Matrix2D.MAX_ITEMS * Matrix2D.MAX_ITEMS )
     }
     
-    subscript(row: Int, column: Int) -> Int? {
+    subscript(row: Int, column: Int) -> Double? {
         get {
             itemLabels[row * Int(numberOfItems) + column]
         } set {
@@ -140,7 +140,7 @@ struct Matrix2DView: View {
 
 struct GridItemView: View {
     @Binding var label: String?
-    @Binding var weight: Int?
+    @Binding var weight: Double?
     @State private var edittingLabel = false
     @State private var mode = Mode.editLabels
     
@@ -166,7 +166,7 @@ struct GridItemView: View {
                         .padding()
                         .foregroundColor(Color.primary)
                 } else {
-                    Text(weight != nil ? "\(weight ?? 0)" : "-")
+                    Text(weight != nil ? "\(weight?.formatted() ?? "0")" : "-")
                         .font(.system(size: 100)) // Start with a large font
                         .minimumScaleFactor(0.1) // Allow text to scale down
                         .lineLimit(1)            // Ensure the text stays on one line

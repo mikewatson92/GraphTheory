@@ -100,22 +100,24 @@ struct Matrix2DView: View {
             
             VStack {
                 Slider(value: Binding(get: {matrixViewModel.matrix.numberOfItems}, set: {newValue in matrixViewModel.setNumberOfItems(Int(newValue))}), in: 1...10, step: 1)
+                    .padding()
+                HStack(spacing: 0) {
+                    Spacer()
+                        .frame(width: cellSize, height: cellSize)
+                        .border(Color.black, width: 2)
+                    ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { number in
+                        GridItemView(label: Binding(get: {matrixViewModel.columnHeaders[number]}, set: {_ in }), weight: .constant(nil))
+                            .frame(width: cellSize, height: cellSize)
+                            .border(Color.black, width: 2)
+                    }
+                }
+                
                 HStack(spacing: 0) {
                     Spacer()
                         .frame(width: cellSize, height: cellSize)
                         .border(Color.black, width: 2)
                     ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { column in
                         GridItemView(label: Binding(get: {matrixViewModel.matrix.vertexLabels[column]}, set: {newValue in matrixViewModel.matrix.vertexLabels[column] = newValue ?? "X"}), weight: .constant(nil))
-                            .frame(width: cellSize, height: cellSize)
-                            .border(Color.black, width: 2)
-                    }
-                }
-                HStack(spacing: 0) {
-                    Spacer()
-                        .frame(width: cellSize, height: cellSize)
-                        .border(Color.black, width: 2)
-                    ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { number in
-                        GridItemView(label: Binding(get: {matrixViewModel.columnHeaders[number]}, set: {newValue in matrixViewModel.columnHeaders[number] = newValue ?? "X"}), weight: .constant(nil))
                             .frame(width: cellSize, height: cellSize)
                             .border(Color.black, width: 2)
                     }

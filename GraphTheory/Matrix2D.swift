@@ -41,21 +41,19 @@ struct Matrix2D {
             for index in 0..<(Matrix2D.MAX_ITEMS * Matrix2D.MAX_ITEMS) {
                 itemLabels[index] = nil
             }
-        }
-        
-        if difference > 0 {
             for index in 0..<Int(numberOfItems) {
                 vertexLabels[index] = originalMatrix.vertexLabels[index]
             }
+
+        }
+        
+        if difference > 0 {
             for row in 0..<Int(originalNumberOfItems) {
                 for column in 0..<Int(originalNumberOfItems) {
                     self[row, column] = originalMatrix[row, column]
                 }
             }
         } else if difference < 0 {
-            for index in 0..<Int(numberOfItems) {
-                vertexLabels[index] = originalMatrix.vertexLabels[index]
-            }
             for row in 0..<n {
                 for column in 0..<n {
                     self[row, column] = originalMatrix[row, column]
@@ -68,10 +66,13 @@ struct Matrix2D {
 class Matrix2DViewModel: ObservableObject {
     @Published var matrix: Matrix2D
     var columnHeaders: [String]
+    var columnHeaderColors: [Color]
+    var showColumnHeaders = false
     
     init(matrix: Matrix2D) {
         self.matrix = matrix
-        self.columnHeaders = Array(repeating: "", count: Int(matrix.numberOfItems))
+        self.columnHeaders = Array(repeating: "", count: Int(Matrix2D.MAX_ITEMS))
+        self.columnHeaderColors = Array(repeating: Color.clear, count: Int(Matrix2D.MAX_ITEMS))
     }
     
     func setNumberOfItems(_ n: Int) {
@@ -90,52 +91,52 @@ class Matrix2DViewModel: ObservableObject {
 
 struct Matrix2DView: View {
     @ObservedObject var matrixViewModel: Matrix2DViewModel
-    let padding: CGFloat = 15
+    let padding: CGFloat = CGFloat(15)
     
     var body: some View {
         
         GeometryReader { geometry in
             let width = geometry.size.width
-            let cellSize = (width - CGFloat(padding) * 2) / (matrixViewModel.matrix.numberOfItems + 1)
+            let height = geometry.size.height
+            let totalHorizontalPadding = 2 * padding
+            let cellWidth = (width - totalHorizontalPadding) / (matrixViewModel.matrix.numberOfItems + 1)
+            let cellHeight = (height - 6 * padding) / (matrixViewModel.matrix.numberOfItems + (matrixViewModel.showColumnHeaders ? 2 : 1))
+            let cellSize = min(cellWidth, cellHeight)
             
-            VStack {
+            VStack(spacing: 0) {
                 Slider(value: Binding(get: {matrixViewModel.matrix.numberOfItems}, set: {newValue in matrixViewModel.setNumberOfItems(Int(newValue))}), in: 1...10, step: 1)
                     .padding()
-                HStack(spacing: 0) {
-                    Spacer()
-                        .frame(width: cellSize, height: cellSize)
-                        .border(Color.black, width: 2)
-                    ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { number in
-                        GridItemView(label: Binding(get: {matrixViewModel.columnHeaders[number]}, set: {_ in }), weight: .constant(nil))
+                if matrixViewModel.showColumnHeaders {
+                    HStack(spacing: 0) {
+                        Spacer()
                             .frame(width: cellSize, height: cellSize)
-                            .border(Color.black, width: 2)
+                        ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { number in
+                            GridItemView(label: Binding(get: {matrixViewModel.columnHeaders[number]}, set: {_ in }), weight: .constant(nil))
+                                .frame(width: cellSize, height: cellSize)
+                        }
                     }
                 }
                 
                 HStack(spacing: 0) {
                     Spacer()
                         .frame(width: cellSize, height: cellSize)
-                        .border(Color.black, width: 2)
                     ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { column in
                         GridItemView(label: Binding(get: {matrixViewModel.matrix.vertexLabels[column]}, set: {newValue in matrixViewModel.matrix.vertexLabels[column] = newValue ?? "X"}), weight: .constant(nil))
                             .frame(width: cellSize, height: cellSize)
-                            .border(Color.black, width: 2)
                     }
                 }
                 ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { row in
                     HStack(spacing: 0) {
                         GridItemView(label: Binding(get: {matrixViewModel.matrix.vertexLabels[row]}, set: {newValue in matrixViewModel.matrix.vertexLabels[row] = newValue ?? "X"}), weight: .constant(nil))
                             .frame(width: cellSize, height: cellSize)
-                            .border(Color.black, width: 2)
                         ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { column in
                             GridItemView(label: .constant(nil), weight: Binding(get: {matrixViewModel.matrix[row, column]}, set: {newValue in matrixViewModel.matrix[row, column] = newValue}))
                                 .frame(width: cellSize, height: cellSize)
-                                .border(Color.black, width: 2)
                         }
                     }
                 }
             }
-            .padding([.leading, .trailing], padding)
+            .padding(padding)
         }
     }
 }
@@ -159,25 +160,40 @@ struct GridItemView: View {
                 }
             }) {
                 if let label = label {
-                    Text(label)
-                        .font(.system(size: 100)) // Start with a large font
-                        .minimumScaleFactor(0.1) // Allow text to scale down
-                        .lineLimit(1)            // Ensure the text stays on one line
-                        .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .foregroundColor(Color.primary)
+                    ZStack {
+                        Text(label)
+                            .font(.system(size: 100)) // Start with a large font
+                            .minimumScaleFactor(0.1) // Allow text to scale down
+                            .lineLimit(1)            // Ensure the text stays on one line
+                            .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
+                            .multilineTextAlignment(.center)
+                            .aspectRatio(1, contentMode: .fill)
+                            .padding()
+                            .foregroundColor(Color.primary)
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.primary, lineWidth: 5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .aspectRatio(1, contentMode: .fill)
+                    }
                 } else {
-                    Text(weight != nil ? "\(weight?.formatted() ?? "0")" : "-")
-                        .font(.system(size: 100)) // Start with a large font
-                        .minimumScaleFactor(0.1) // Allow text to scale down
-                        .lineLimit(1)            // Ensure the text stays on one line
-                        .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .foregroundColor(Color.primary)
+                    ZStack {
+                        Text(weight != nil ? "\(weight?.formatted() ?? "0")" : "-")
+                            .font(.system(size: 100)) // Start with a large font
+                            .minimumScaleFactor(0.1) // Allow text to scale down
+                            .lineLimit(1)            // Ensure the text stays on one line
+                            .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
+                            .multilineTextAlignment(.center)
+                            .aspectRatio(1, contentMode: .fill)
+                            .padding()
+                            .foregroundColor(Color.primary)
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.primary, lineWidth: 5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .aspectRatio(1, contentMode: .fill)
+                    }
                 }
             }
+            .buttonStyle(.borderless)
         } else {
             if label != nil {
                 TextField("Label:", text: Binding(get: { label! }, set: {newValue in label = newValue.isEmpty ? nil : newValue}))
@@ -199,6 +215,6 @@ struct GridItemView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var matrixViewModel = Matrix2DViewModel(matrix: Matrix2D(numberOfItems: 1))
+    @Previewable @StateObject var matrixViewModel = Matrix2DViewModel(matrix: Matrix2D(numberOfItems: 3))
     Matrix2DView(matrixViewModel: matrixViewModel)
 }

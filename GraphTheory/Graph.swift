@@ -703,7 +703,7 @@ class GraphViewModel: ObservableObject {
     }
     
     func getWeight(edge: Edge) -> Double? {
-        graph.edges[edge.id]!.weight
+        graph.edges[edge.id]?.weight
     }
     
     func setWeight(edge: Edge, weight: Double) {

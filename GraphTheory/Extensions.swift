@@ -13,90 +13,133 @@ import UIKit
 #endif
 import CoreGraphics
 
-
-
 extension Color: Codable {
     
-    init(hex: String) {
-        var hexString = hex
-        if hexString.hasPrefix("#") {
-            hexString.removeFirst()
-        }
-        
-        let scanner = Scanner(string: hexString)
-        var hexValue: UInt64 = 0
-        scanner.scanHexInt64(&hexValue)
-        
-        switch hexString.count {
-        case 6: // RGB (without alpha)
-            let r = Double((hexValue & 0xFF0000) >> 16) / 255.0
-            let g = Double((hexValue & 0x00FF00) >> 8) / 255.0
-            let b = Double(hexValue & 0x0000FF) / 255.0
-            self.init(red: r, green: g, blue: b)
-        case 8: // RGBA
-            let r = Double((hexValue & 0xFF000000) >> 24) / 255.0
-            let g = Double((hexValue & 0x00FF0000) >> 16) / 255.0
-            let b = Double((hexValue & 0x0000FF00) >> 8) / 255.0
-            let a = Double(hexValue & 0x000000FF) / 255.0
-            self.init(red: r, green: g, blue: b, opacity: a)
-        default:
-            // Default to clear if the hex string is invalid
-            self.init(.clear)
-        }
-    }
-    
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let red = try container.decode(Double.self, forKey: .red)
-        let green = try container.decode(Double.self, forKey: .green)
-        let blue = try container.decode(Double.self, forKey: .blue)
-        let opacity = try container.decode(Double.self, forKey: .opacity)
-        self = Color(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
+        let container = try decoder.singleValueContainer()
+        let rgba = try container.decode([CGFloat].self)
+        guard rgba.count == 4 else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid RGBA array; expected 4 components.")
+        }
+        self = Color(.sRGB, red: rgba[0], green: rgba[1], blue: rgba[2], opacity: rgba[3])
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        guard let components = self.toRGBAComponents() else {
-            throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Unable to extract RGBA components."))
+        var container = encoder.singleValueContainer()
+        guard let components = self.cgColorComponents else {
+            throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Unable to extract CGColor components"))
         }
-        try container.encode(components.red, forKey: .red)
-        try container.encode(components.green, forKey: .green)
-        try container.encode(components.blue, forKey: .blue)
-        try container.encode(components.opacity, forKey: .opacity)
+        try container.encode(components)
     }
     
-    private func toRGBAComponents() -> (red: Double, green: Double, blue: Double, opacity: Double)? {
-#if canImport(UIKit)
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        
-        if UIColor(self).getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-            return (Double(red), Double(green), Double(blue), Double(alpha))
-        }
+    var cgColorComponents: [CGFloat]? {
+#if os(macOS)
+        let cgColor = NSColor(self).cgColor
+#else
+        let cgColor = UIColor(self).cgColor
 #endif
-        return nil
+        guard let components = cgColor.components, components.count >= 4 else { return nil }
+        return components
     }
     
-    private enum CodingKeys: String, CodingKey {
-        case red, green, blue, opacity
+    func toHexString() -> String? {
+#if os(macOS)
+        let cgColor = NSColor(self).cgColor
+#else
+        let cgColor = UIColor(self).cgColor
+#endif
+        
+        guard let components = cgColor.components, components.count >= 3 else { return nil }
+        let r = Int(components[0] * 255)
+        let g = Int(components[1] * 255)
+        let b = Int(components[2] * 255)
+        let a = Int((components.count >= 4 ? components[3] : 1.0) * 255)
+        return String(format: "#%02X%02X%02X%02X", r, g, b, a)
     }
     
-    func toHex() -> String? {
-        #if os(macOS)
-        let colorToConvert = NSColor(self)
-        #elseif os(iOS)
-        let colorToConvert = UIColor(self)
-        #endif
-        guard let components = colorToConvert.cgColor.components, components.count >= 3 else {
+    init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        var rgb: UInt64 = 0
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+        let length = hexSanitized.count
+        
+        let r, g, b, a: CGFloat
+        if length == 6 {
+            (r, g, b, a) = (
+                CGFloat((rgb & 0xFF0000) >> 16) / 255.0,
+                CGFloat((rgb & 0x00FF00) >> 8) / 255.0,
+                CGFloat(rgb & 0x0000FF) / 255.0,
+                1.0
+            )
+        } else if length == 8 {
+            (r, g, b, a) = (
+                CGFloat((rgb & 0xFF000000) >> 24) / 255.0,
+                CGFloat((rgb & 0x00FF0000) >> 16) / 255.0,
+                CGFloat((rgb & 0x0000FF00) >> 8) / 255.0,
+                CGFloat(rgb & 0x000000FF) / 255.0
+            )
+        } else {
             return nil
         }
-        let r = components[0]
-        let g = components[1]
-        let b = components[2]
-        let a = colorToConvert.cgColor.alpha
-        return String(format: "#%02X%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255), Int(a * 255))
+        self = Color(.sRGB, red: r, green: g, blue: b, opacity: a)
     }
 }
 
+#if os(macOS)
+extension NSColor {
+    convenience init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+        
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+        let alpha = hexSanitized.count == 8 ? CGFloat((rgb & 0xFF000000) >> 24) / 255.0 : 1.0
+        
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
+    }
+    
+    // Convert NSColor to hex string
+    var hexString: String {
+        guard let rgbColor = usingColorSpace(.deviceRGB) else { return "#000000" }
+        let r = Int(rgbColor.redComponent * 255)
+        let g = Int(rgbColor.greenComponent * 255)
+        let b = Int(rgbColor.blueComponent * 255)
+        let a = Int(rgbColor.alphaComponent * 255)
+        return String(format: "#%02X%02X%02X%02X", r, g, b, a)
+    }
+}
+#else
+extension UIColor {
+    convenience init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+        
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+        let alpha = hexSanitized.count == 8 ? CGFloat((rgb & 0xFF000000) >> 24) / 255.0 : 1.0
+        
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
+    }
+    
+    // Convert UIColor to hex string
+    var hexString: String {
+        guard let components = cgColor.components, components.count >= 3 else {
+            return "#000000"
+        }
+        let r = Int(components[0] * 255)
+        let g = Int(components[1] * 255)
+        let b = Int(components[2] * 255)
+        let a = components.count == 4 ? Int(components[3] * 255) : 255
+        return String(format: "#%02X%02X%02X%02X", r, g, b, a)
+    }
+}
+#endif

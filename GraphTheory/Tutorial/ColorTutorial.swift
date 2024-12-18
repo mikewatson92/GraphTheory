@@ -25,7 +25,7 @@ struct ColorTutorial: View {
                         Spacer()
                         Text("Tap a vertex or edge to select it. Use the color picker to change its color.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.colorTheme1)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                         Spacer()
                         Spacer()
@@ -110,7 +110,7 @@ struct ColorTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accentColor)
                             Spacer()
                         }
                         Spacer()

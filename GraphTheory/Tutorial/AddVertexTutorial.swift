@@ -24,7 +24,7 @@ struct AddVertexTutorial: View {
                         Spacer()
                         Text("Tap on the screen to add a vertex.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.colorTheme1)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                         Spacer()
                         Spacer()
@@ -95,7 +95,7 @@ struct AddVertexTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accentColor)
                             Spacer()
                         }
                         Spacer()

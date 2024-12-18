@@ -34,7 +34,7 @@ struct StraightenTutorial: View {
                         Spacer()
                         Text("Long press a curved edge to straighten it.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.colorTheme1)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                         Spacer()
                         Spacer()
@@ -99,7 +99,7 @@ struct StraightenTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accentColor)
                             Spacer()
                         }
                         Spacer()

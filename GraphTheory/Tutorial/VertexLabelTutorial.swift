@@ -24,7 +24,7 @@ struct VertexLabelTutorial: View {
                         Spacer()
                         Text("Long press the vertex to enter a new label.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.colorTheme1)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                         Spacer()
                         Spacer()
@@ -101,7 +101,7 @@ struct VertexLabelTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accentColor)
                             Spacer()
                         }
                         Spacer()
@@ -118,7 +118,7 @@ struct VertexLabelTutorial: View {
                         Text("Edit").tag(Graph.Mode.edit)
                         Text("Explore").tag(Graph.Mode.explore)
                     }
-                    .foregroundStyle(themeViewModel.accentColor)
+                    .foregroundStyle(themeViewModel.theme!.accentColor)
                     
                     if graphViewModel.showAlgorithms {
                         

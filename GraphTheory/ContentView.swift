@@ -19,40 +19,39 @@ struct ContentView: View {
             List {
                 Section(header: Text("Learn")) {
                     NavigationLink("Tutorial", destination: TutorialView())
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .tint(themeViewModel.accentColor)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                 }
                 Section(header: Text("Create")) {
                     NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                     NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                         
                     NavigationLink("Peterson Graph", destination: PetersonView())
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                     
                     NavigationLink("Complex Polygon", destination: ComplexPolygonView())
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                     
                 }
                 Section(header: Text("Games")) {
                     NavigationLink("Icosian Game", destination: IcosianView())
-                        .foregroundStyle(themeViewModel.colorTheme2)
-                        .accentColor(themeViewModel.accentColor)
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                        .accentColor(themeViewModel.theme!.accentColor)
                 }
             }
-            .foregroundStyle(themeViewModel.colorTheme1)
-            .accentColor(themeViewModel.accentColor)
+            .foregroundStyle(themeViewModel.theme!.primaryColor)
+            .accentColor(themeViewModel.theme!.accentColor)
             .environmentObject(themeViewModel)
 #if os(macOS)
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
@@ -61,15 +60,20 @@ struct ContentView: View {
                 ToolbarItem(placement: .automatic) {
                     Menu {
                         Picker("Theme", selection: Binding(get: {themeViewModel.theme}, set: {newTheme in themeViewModel.theme = newTheme})) {
-                            ForEach(ThemeViewModel.Theme.allCases) { theme in
-                                Text(theme.rawValue).tag(theme)
-                                    .foregroundColor(themeViewModel.accentColor)
-                            }
+                            Text("Natural")
+                                .tag(DefaultThemes.natural)
+                            Text("Default Light Mode")
+                                .tag(DefaultThemes.defaultLight)
+                            Text("Default Dark Mode")
+                                .tag(DefaultThemes.defaultDark)
+                            Text("Cyber Punk Light")
+                                .tag(DefaultThemes.cyberPunkLight)
+                            Text("Cyber Punk Dark")
+                                .tag(DefaultThemes.cyberPunkDark)
                         }
-                        
                     } label: {
                         Label("Theme", systemImage: "sparkles")
-                            .tint(themeViewModel.accentColor)
+                            .tint(themeViewModel.theme!.accentColor)
                     }
                 }
             }

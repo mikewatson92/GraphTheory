@@ -1018,7 +1018,7 @@ struct GraphView: View {
                     clear()
                 }) {
                     Image(systemName: "arrow.uturn.left.circle")
-                        .tint(themeViewModel.accentColor)
+                        .tint(themeViewModel.theme!.accentColor)
                 }
             }
             ToolbarItem(placement: .automatic) {
@@ -1032,7 +1032,7 @@ struct GraphView: View {
                     }
                 } label: {
                     Image(systemName: "flask")
-                        .tint(themeViewModel.accentColor)
+                        .tint(themeViewModel.theme!.accentColor)
                 }
             }
             
@@ -1040,7 +1040,7 @@ struct GraphView: View {
                 if graphViewModel.getAlgorithm() == .none {
                     Toggle(isOn: $graphViewModel.showWeights) {
                         Image(systemName: "number.square")
-                            .tint(themeViewModel.accentColor)
+                            .tint(themeViewModel.theme!.accentColor)
                     }
                 }
             }
@@ -1051,11 +1051,7 @@ struct GraphView: View {
                         Text("Edit").tag(Graph.Mode.edit)
                         Text("Explore").tag(Graph.Mode.explore)
                     }
-                    .foregroundStyle(themeViewModel.accentColor)
-                    
-                    if graphViewModel.showAlgorithms {
-                        
-                    }
+                    .foregroundStyle(themeViewModel.theme!.accentColor)
                     
                     Picker("Label Color", selection: Binding(
                         get: {
@@ -1078,7 +1074,7 @@ struct GraphView: View {
                 }
                 label: {
                     Image(systemName: "gear")
-                        .tint(themeViewModel.accentColor)
+                        .tint(themeViewModel.theme!.accentColor)
                 }
                 
             }

@@ -29,7 +29,7 @@ struct GraphTheoryApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(themeViewModel)
-                .accentColor(themeViewModel.accentColor)
+                .accentColor(themeViewModel.theme!.accentColor)
         }
         .modelContainer(sharedModelContainer)
     }

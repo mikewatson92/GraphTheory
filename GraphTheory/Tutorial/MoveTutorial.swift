@@ -24,7 +24,7 @@ struct MoveTutorial: View {
                         Spacer()
                         Text("Drag a vertex to move it.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.colorTheme1)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                         Spacer()
                         Spacer()
@@ -145,7 +145,7 @@ struct MoveTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accentColor)
                             Spacer()
                         }
                         Spacer()

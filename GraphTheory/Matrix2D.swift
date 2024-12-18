@@ -143,7 +143,13 @@ struct Matrix2DView: View {
 
 struct GridItemView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    @Binding var label: String?
+    @Binding var label: String? {
+        didSet (oldLabel) {
+            if oldLabel == "" {
+                label = "X"
+            }
+        }
+    }
     @Binding var weight: Double?
     @State private var edittingLabel = false
     @State private var mode = Mode.editLabels
@@ -197,7 +203,12 @@ struct GridItemView: View {
             .buttonStyle(.borderless)
         } else {
             if label != nil {
-                TextField("Label:", text: Binding(get: { label! }, set: {newValue in label = newValue.isEmpty ? nil : newValue}))
+                TextField("Label:", text: Binding(
+                    get: { label ?? "X" }, // Provide a default value when `label` is `nil`
+                    set: { newValue in
+                        label = newValue
+                    }
+                ))
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
                     .foregroundColor(themeViewModel.theme!.secondaryColor)
@@ -205,7 +216,7 @@ struct GridItemView: View {
                         edittingLabel = false
                     }
             } else {
-                TextField("Weight:", value: Binding(get: { weight }, set: {newValue in weight = newValue}), format: .number)
+                TextField("Weight:", value: $weight, format: .number)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
                     .foregroundColor(themeViewModel.theme!.secondaryColor)

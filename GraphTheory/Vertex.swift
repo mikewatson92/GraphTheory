@@ -11,7 +11,7 @@ struct Vertex: Identifiable, Codable {
     let id: UUID
     var position: CGPoint = .zero
     var offset: CGSize = .zero
-    var color: Color = Color.primary
+    var color: Color?
     var strokeColor: Color = Color.secondary
     var label: String = ""
     var labelColor: LabelColor = .white
@@ -43,25 +43,6 @@ struct Vertex: Identifiable, Codable {
     mutating func setOffset(_ size: CGSize) {
         offset = size
     }
-    
-    // Encoding
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
-        try container.encode(position, forKey: .position)
-        // Convert Color to a string representation (e.g., hex)
-        try container.encode(color.toHex(), forKey: .color)
-    }
-    
-    // Decoding
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        // Convert the stored string back into a Color
-        let colorHex = try container.decode(String.self, forKey: .color)
-        color = Color(hex: colorHex)
-    }
 }
 
 class VertexViewModel: ObservableObject {
@@ -76,7 +57,7 @@ class VertexViewModel: ObservableObject {
         self.mode = mode
     }
     
-    var color: Color {
+    var color: Color? {
         get { vertex.color }
         set {
             vertex.color = newValue
@@ -184,7 +165,7 @@ struct VertexView: View {
 #elseif os(iOS)
                         .frame(width: 40, height: 40)
 #endif
-                        .foregroundStyle(vertexViewModel.color)
+                        .foregroundStyle(vertexViewModel.color ?? (colorScheme == .light ? .black : .white))
                     
                     Circle()
                         .stroke(vertexViewModel.strokeColor)

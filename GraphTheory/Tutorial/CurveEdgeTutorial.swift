@@ -32,6 +32,7 @@ struct CurveEdgeTutorial: View {
                         Spacer()
                         Text("Tap an edge to select it. Drag the red dots to change the shape.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

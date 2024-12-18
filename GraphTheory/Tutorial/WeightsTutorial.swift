@@ -32,6 +32,7 @@ struct WeightsTutorial: View {
                         Spacer()
                         Text("Tap the \(Image(systemName: "number.square.fill")) symbol to show the edge weights. Tap a weight and enter a new number.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

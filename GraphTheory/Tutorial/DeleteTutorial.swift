@@ -24,6 +24,7 @@ struct DeleteTutorial: View {
                         Spacer()
                         Text("Double tap a vertex or edge to delete it.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

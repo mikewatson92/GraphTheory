@@ -45,7 +45,6 @@ struct Canvas: View {
                 
                 // Render the graph
                 GraphView(graphViewModel: graphViewModel)
-                    .environmentObject(themeViewModel)
             }
         }
         /*

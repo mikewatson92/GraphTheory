@@ -24,6 +24,7 @@ struct VertexLabelTutorial: View {
                         Spacer()
                         Text("Long press the vertex to enter a new label.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

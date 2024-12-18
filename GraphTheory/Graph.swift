@@ -178,7 +178,7 @@ struct Graph: Identifiable, Codable {
         }
     }
     
-    mutating func setVertexColor(forID id: UUID, color: Color) {
+    mutating func setVertexColor(forID id: UUID, color: Color?) {
         vertices[id]?.color = color
     }
     
@@ -679,7 +679,7 @@ class GraphViewModel: ObservableObject {
         graph.setVertexOffset(forID: vertex.id, size: size)
     }
     
-    func setColor(vertex: Vertex, color: Color) {
+    func setColor(vertex: Vertex, color: Color?) {
         graph.setVertexColor(forID: vertex.id, color: color)
     }
     
@@ -781,8 +781,10 @@ class GraphViewModel: ObservableObject {
 }
 
 struct GraphView: View {
-    @ObservedObject var graphViewModel: GraphViewModel
     @EnvironmentObject var themeViewModel: ThemeViewModel
+    @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var graphViewModel: GraphViewModel
+    @State private var vertexEdgeColor: Color = .white
     
     init(graphViewModel: GraphViewModel) {
         self.graphViewModel = graphViewModel
@@ -884,6 +886,11 @@ struct GraphView: View {
                 
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                     .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                    .onAppear {
+                        if vertexViewModel.color == nil {
+                            vertexViewModel.setColor(vertexID: vertex.id, color: vertexEdgeColor)
+                        }
+                    }
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                         .onChanged({ drag in
                             if graphViewModel.getMode() == .edit {
@@ -971,6 +978,9 @@ struct GraphView: View {
                     }
             }
         }
+        .onAppear {
+            vertexEdgeColor = colorScheme == .light ? .black : .white
+        }
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 ColorPicker(
@@ -979,10 +989,10 @@ struct GraphView: View {
                         get: {
                             if let selectedEdge = graphViewModel.selectedEdge {
                                 return selectedEdge.color
-                            } else if let selectedVertex = graphViewModel.selectedVertex {
-                                return selectedVertex.color
+                            } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
+                                return selectedVertexColor
                             } else {
-                                return Color.white
+                                return vertexEdgeColor
                             }
                         },
                         set: { newColor in
@@ -992,6 +1002,8 @@ struct GraphView: View {
                             } else if let selectedVertex = graphViewModel.selectedVertex {
                                 graphViewModel.setColor(vertex: selectedVertex, color: newColor)
                                 graphViewModel.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
+                            } else {
+                                vertexEdgeColor = newColor
                             }
                         }
                     )
@@ -999,13 +1011,15 @@ struct GraphView: View {
                 .labelsHidden()
             }
             ToolbarItem(placement: .automatic) {
-                Button("Clear", systemImage: "arrow.uturn.left.circle.fill") {
+                Button(action: {
                     graphViewModel.selectedVertex = nil
                     graphViewModel.selectedEdge = nil
+                    vertexEdgeColor = colorScheme == .light ? .black : .white
                     clear()
+                }) {
+                    Image(systemName: "arrow.uturn.left.circle")
+                        .tint(themeViewModel.accentColor)
                 }
-                .foregroundColor(themeViewModel.accentColor)
-                .labelsHidden()
             }
             ToolbarItem(placement: .automatic) {
                 Menu {
@@ -1025,7 +1039,8 @@ struct GraphView: View {
             ToolbarItem(placement: .automatic) {
                 if graphViewModel.getAlgorithm() == .none {
                     Toggle(isOn: $graphViewModel.showWeights) {
-                        Image(systemName: "number.square.fill")
+                        Image(systemName: "number.square")
+                            .tint(themeViewModel.accentColor)
                     }
                 }
             }
@@ -1063,6 +1078,7 @@ struct GraphView: View {
                 }
                 label: {
                     Image(systemName: "gear")
+                        .tint(themeViewModel.accentColor)
                 }
                 
             }

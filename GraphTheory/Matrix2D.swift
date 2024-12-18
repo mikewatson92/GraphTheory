@@ -142,6 +142,7 @@ struct Matrix2DView: View {
 }
 
 struct GridItemView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @Binding var label: String?
     @Binding var weight: Double?
     @State private var edittingLabel = false
@@ -169,9 +170,9 @@ struct GridItemView: View {
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
                             .padding()
-                            .foregroundColor(Color.primary)
+                            .foregroundColor(themeViewModel.colorTheme2)
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.primary, lineWidth: 5)
+                            .stroke(themeViewModel.colorTheme1, lineWidth: 5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                     }
@@ -185,9 +186,9 @@ struct GridItemView: View {
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
                             .padding()
-                            .foregroundColor(Color.primary)
+                            .foregroundColor(themeViewModel.colorTheme2)
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.primary, lineWidth: 5)
+                            .stroke(themeViewModel.colorTheme1, lineWidth: 5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                     }
@@ -199,6 +200,7 @@ struct GridItemView: View {
                 TextField("Label:", text: Binding(get: { label! }, set: {newValue in label = newValue.isEmpty ? nil : newValue}))
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
+                    .foregroundColor(themeViewModel.colorTheme2)
                     .onSubmit {
                         edittingLabel = false
                     }
@@ -206,6 +208,7 @@ struct GridItemView: View {
                 TextField("Weight:", value: Binding(get: { weight }, set: {newValue in weight = newValue}), format: .number)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
+                    .foregroundColor(themeViewModel.colorTheme2)
                     .onSubmit {
                         edittingLabel = false
                     }

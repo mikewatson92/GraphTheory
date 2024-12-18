@@ -20,31 +20,40 @@ struct ContentView: View {
                 Section(header: Text("Learn")) {
                     NavigationLink("Tutorial", destination: TutorialView())
                         .foregroundStyle(themeViewModel.colorTheme2)
-                        .environmentObject(themeViewModel)
+                        .tint(themeViewModel.accentColor)
+                        .accentColor(themeViewModel.accentColor)
                 }
                 Section(header: Text("Create")) {
                     NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
                         .foregroundStyle(themeViewModel.colorTheme2)
-                        .environmentObject(themeViewModel)
+                        .accentColor(themeViewModel.accentColor)
                     NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
+                        .foregroundStyle(themeViewModel.colorTheme2)
+                        .accentColor(themeViewModel.accentColor)
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())
                         .foregroundStyle(themeViewModel.colorTheme2)
+                        .accentColor(themeViewModel.accentColor)
                         
                     NavigationLink("Peterson Graph", destination: PetersonView())
                         .foregroundStyle(themeViewModel.colorTheme2)
+                        .accentColor(themeViewModel.accentColor)
                     
                     NavigationLink("Complex Polygon", destination: ComplexPolygonView())
                         .foregroundStyle(themeViewModel.colorTheme2)
+                        .accentColor(themeViewModel.accentColor)
                     
                 }
                 Section(header: Text("Games")) {
                     NavigationLink("Icosian Game", destination: IcosianView())
                         .foregroundStyle(themeViewModel.colorTheme2)
+                        .accentColor(themeViewModel.accentColor)
                 }
             }
             .foregroundStyle(themeViewModel.colorTheme1)
+            .accentColor(themeViewModel.accentColor)
+            .environmentObject(themeViewModel)
 #if os(macOS)
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
 #endif

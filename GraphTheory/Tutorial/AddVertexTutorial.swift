@@ -24,6 +24,7 @@ struct AddVertexTutorial: View {
                         Spacer()
                         Text("Tap on the screen to add a vertex.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

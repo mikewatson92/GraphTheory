@@ -164,6 +164,7 @@ struct Icosian {
 }
 
 struct IcosianView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @State private var icosian = Icosian()
     @State private var selectedVertex: Vertex?
     @State private var edgeError: Edge?
@@ -289,13 +290,16 @@ struct IcosianView: View {
         }
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button("Clear") {
+                Button(action: {
                     edgeError = nil
                     icosian.graph.restoreToOriginal()
                     icosian.step = .chooseVertex
                     selectedVertex = nil
                     chosenEdges = []
                     visitedVertices = []
+                }) {
+                    Image(systemName: "arrow.uturn.left.circle")
+                        .tint(themeViewModel.accentColor)
                 }
             }
         }

@@ -23,7 +23,6 @@ struct TutorialView: View {
             VertexLabelTutorial()
             TutorialEnd()
         }
-        .environmentObject(themeViewModel)
         #if os(iOS)
         .tabViewStyle(.page)
         #elseif os(macOS)

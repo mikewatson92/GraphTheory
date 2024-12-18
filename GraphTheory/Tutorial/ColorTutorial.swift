@@ -10,6 +10,7 @@ import SwiftUI
 struct ColorTutorial: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject private var graphViewModel = GraphViewModel(graph: K33().graph)
+    @State private var vertexEdgeColor: Color = .white
     @State private var showInstructions = true
     @State private var showCanvas = false
     @State private var colorDidChange = false
@@ -24,6 +25,7 @@ struct ColorTutorial: View {
                         Spacer()
                         Text("Tap a vertex or edge to select it. Use the color picker to change its color.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()
@@ -125,10 +127,10 @@ struct ColorTutorial: View {
                         get: {
                             if let selectedEdge = graphViewModel.selectedEdge {
                                 return selectedEdge.color
-                            } else if let selectedVertex = graphViewModel.selectedVertex {
-                                return selectedVertex.color
+                            } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
+                                return selectedVertexColor
                             } else {
-                                return Color.white
+                                return vertexEdgeColor
                             }
                         },
                         set: { newColor in
@@ -140,6 +142,8 @@ struct ColorTutorial: View {
                                 colorDidChange = true
                                 graphViewModel.setColor(vertex: selectedVertex, color: newColor)
                                 graphViewModel.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
+                            } else {
+                                vertexEdgeColor = newColor
                             }
                         }
                     )

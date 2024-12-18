@@ -24,6 +24,7 @@ struct MoveTutorial: View {
                         Spacer()
                         Text("Drag a vertex to move it.")
                             .font(.largeTitle)
+                            .foregroundColor(themeViewModel.colorTheme1)
                             .padding()
                         Spacer()
                         Spacer()

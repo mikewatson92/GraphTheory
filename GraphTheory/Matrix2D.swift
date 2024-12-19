@@ -143,13 +143,7 @@ struct Matrix2DView: View {
 
 struct GridItemView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    @Binding var label: String? {
-        didSet (oldLabel) {
-            if oldLabel == "" {
-                label = "X"
-            }
-        }
-    }
+    @Binding var label: String?
     @Binding var weight: Double?
     @State private var edittingLabel = false
     @State private var mode = Mode.editLabels
@@ -214,6 +208,9 @@ struct GridItemView: View {
                     .foregroundColor(themeViewModel.theme!.secondaryColor)
                     .onSubmit {
                         edittingLabel = false
+                        if label == "" {
+                            label = "X"
+                        }
                     }
             } else {
                 TextField("Weight:", value: $weight, format: .number)

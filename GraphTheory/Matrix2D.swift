@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Matrix2D {
+    // numberOfItems is actually the number of rows (or columns) of a square matrix
     private(set) var numberOfItems: CGFloat
     var vertexLabels: [String]
     var itemLabels: [Double?]
@@ -25,6 +26,10 @@ struct Matrix2D {
         } set {
             itemLabels[row * Int(numberOfItems) + column] = newValue
         }
+    }
+    
+    func indexIsValid(row: Int, column: Int) -> Bool {
+        return row >= 0 && row < Int(numberOfItems) && column >= 0 && column < Int(numberOfItems)
     }
     
     mutating func setNumberOfItems(_ n: Int) {
@@ -65,33 +70,28 @@ struct Matrix2D {
 
 class Matrix2DViewModel: ObservableObject {
     @Published var matrix: Matrix2D
-    var columnHeaders: [String]
-    var columnHeaderColors: [Color]
-    var showColumnHeaders = false
     
     init(matrix: Matrix2D) {
         self.matrix = matrix
-        self.columnHeaders = Array(repeating: "", count: Int(Matrix2D.MAX_ITEMS))
-        self.columnHeaderColors = Array(repeating: Color.clear, count: Int(Matrix2D.MAX_ITEMS))
     }
     
     func setNumberOfItems(_ n: Int) {
-        if n > Int(matrix.numberOfItems) {
-            for _ in 1...(n - Int(matrix.numberOfItems)) {
-                columnHeaders.append("")
-            }
-        } else if n < Int(matrix.numberOfItems) {
-            for _ in 1...(Int(matrix.numberOfItems) - n) {
-                columnHeaders.removeLast()
-            }
-        }
         matrix.setNumberOfItems(n)
     }
 }
 
 struct Matrix2DView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var matrixViewModel: Matrix2DViewModel
+    @State private var showPrimsAlgorithm = false
+    let showSlider = true
     let padding: CGFloat = CGFloat(15)
+    
+    func clear() {
+        matrixViewModel.setNumberOfItems(3)
+        matrixViewModel.matrix.vertexLabels = Array(repeating: "X", count: Matrix2D.MAX_ITEMS)
+        matrixViewModel.matrix.itemLabels = Array(repeating: nil, count: Matrix2D.MAX_ITEMS * Matrix2D.MAX_ITEMS )
+    }
     
     var body: some View {
         
@@ -100,21 +100,13 @@ struct Matrix2DView: View {
             let height = geometry.size.height
             let totalHorizontalPadding = 2 * padding
             let cellWidth = (width - totalHorizontalPadding) / (matrixViewModel.matrix.numberOfItems + 1)
-            let cellHeight = (height - 6 * padding) / (matrixViewModel.matrix.numberOfItems + (matrixViewModel.showColumnHeaders ? 2 : 1))
+            let cellHeight = (height - 6 * padding) / (matrixViewModel.matrix.numberOfItems + 1)
             let cellSize = min(cellWidth, cellHeight)
             
             VStack(spacing: 0) {
-                Slider(value: Binding(get: {matrixViewModel.matrix.numberOfItems}, set: {newValue in matrixViewModel.setNumberOfItems(Int(newValue))}), in: 1...10, step: 1)
-                    .padding()
-                if matrixViewModel.showColumnHeaders {
-                    HStack(spacing: 0) {
-                        Spacer()
-                            .frame(width: cellSize, height: cellSize)
-                        ForEach(0..<Int(matrixViewModel.matrix.numberOfItems), id: \.self) { number in
-                            GridItemView(label: Binding(get: {matrixViewModel.columnHeaders[number]}, set: {_ in }), weight: .constant(nil))
-                                .frame(width: cellSize, height: cellSize)
-                        }
-                    }
+                if showSlider {
+                    Slider(value: Binding(get: {matrixViewModel.matrix.numberOfItems}, set: {newValue in matrixViewModel.setNumberOfItems(Int(newValue))}), in: 1...10, step: 1)
+                        .padding()
                 }
                 
                 HStack(spacing: 0) {
@@ -137,6 +129,23 @@ struct Matrix2DView: View {
                 }
             }
             .padding(padding)
+            .navigationDestination(isPresented: $showPrimsAlgorithm) {
+                PrimTableView(primViewModel: PrimTableViewModel(matrix: matrixViewModel.matrix))
+            }
+            .toolbar {
+                ToolbarItem(placement: .automatic) {
+                    Button(action: { clear() }) {
+                        Image(systemName: "arrow.uturn.left.circle")
+                            .tint(themeViewModel.theme!.accentColor)
+                    }
+                }
+                ToolbarItem(placement: .automatic) {
+                    Button(action: { showPrimsAlgorithm = true }) {
+                        Image(systemName: "flask")
+                            .tint(themeViewModel.theme!.accentColor)
+                    }
+                }
+            }
         }
     }
 }
@@ -145,8 +154,18 @@ struct GridItemView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @Binding var label: String?
     @Binding var weight: Double?
+    @Binding var color: Color
     @State private var edittingLabel = false
-    @State private var mode = Mode.editLabels
+    var mode = Mode.editLabels
+    var customAction: (() -> Void)?
+    
+    init(label: Binding<String?> = .constant(nil), weight: Binding<Double?> = .constant(nil), color: Binding<Color> = .constant(Color.clear), mode: Mode = .editLabels, customAction: (() -> Void)? = nil) {
+        self._label = label
+        self._weight = weight
+        self._color = color
+        self.mode = mode
+        self.customAction = customAction
+    }
     
     enum Mode {
         case editLabels
@@ -158,6 +177,8 @@ struct GridItemView: View {
             Button(action: {
                 if mode == .editLabels {
                     edittingLabel = true
+                } else if customAction != nil {
+                    customAction!()
                 }
             }) {
                 if let label = label {
@@ -171,6 +192,11 @@ struct GridItemView: View {
                             .aspectRatio(1, contentMode: .fill)
                             .padding()
                             .foregroundColor(themeViewModel.theme!.secondaryColor)
+                        Circle()
+                            .stroke(color, lineWidth: 5)
+                            .padding()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(themeViewModel.theme!.primaryColor, lineWidth: 5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -187,6 +213,11 @@ struct GridItemView: View {
                             .aspectRatio(1, contentMode: .fill)
                             .padding()
                             .foregroundColor(themeViewModel.theme!.secondaryColor)
+                        Circle()
+                            .stroke(color, lineWidth: 5)
+                            .padding()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(themeViewModel.theme!.primaryColor, lineWidth: 5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)

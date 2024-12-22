@@ -156,6 +156,7 @@ class PrimViewModel: ObservableObject {
 }
 
 struct PrimView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject var primViewModel: PrimViewModel
     var graphViewModel: GraphViewModel
     @State private var errorEdge: Edge?
@@ -211,9 +212,9 @@ struct PrimView: View {
             if showBanner {
                 VStack {
                     Text("The weight of the minimum spanning tree is: \(primViewModel.getTreeWeight().formatted())")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Button {
                         withAnimation {
@@ -231,9 +232,9 @@ struct PrimView: View {
             } else if primViewModel.error == .notConnected {
                 VStack {
                     Text("This edge is not connected to any of your chosen vertices.")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }
@@ -244,9 +245,9 @@ struct PrimView: View {
             } else if primViewModel.error == .cycle {
                 VStack {
                     Text("This edge forms a cycle.")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }
@@ -256,9 +257,9 @@ struct PrimView: View {
             } else if primViewModel.error == .notLowestWeight {
                 VStack {
                     Text("There is another edge with smaller weight.")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }

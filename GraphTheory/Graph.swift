@@ -324,7 +324,7 @@ struct Graph: Identifiable, Codable {
         let midPoint = edgePath.midpoint()
         
         if let perpendicularGradient = edgePath.perpendicularGradient() {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: Edge.DEFAULT_WEIGHT_DISTANCE)
+            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: CGFloat(edge.sign) * Edge.DEFAULT_WEIGHT_DISTANCE)
             edgeWeightPositions[edge.id] = CGPoint(
                 x: pointOnPerpendicular.x,
                 y: pointOnPerpendicular.y
@@ -332,7 +332,7 @@ struct Graph: Identifiable, Codable {
         } else {
             edgeWeightPositions[edge.id] = CGPoint(
                 x: midPoint.x,
-                y: midPoint.y + Edge.DEFAULT_WEIGHT_DISTANCE
+                y: midPoint.y + (edge.sign == 1 ? Edge.DEFAULT_WEIGHT_DISTANCE : -Edge.DEFAULT_WEIGHT_DISTANCE)
             )
         }
     }

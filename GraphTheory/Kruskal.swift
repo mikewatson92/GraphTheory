@@ -97,6 +97,10 @@ class KruskalViewModel: ObservableObject {
         kruskal.graph.vertices[vertexID]?.color = color
     }
     
+    func setVertexLabelColor(vertexID: UUID, color: Vertex.LabelColor) {
+        kruskal.graph.vertices[vertexID]?.labelColor = color
+    }
+    
     func setEdgeColor(edgeID: UUID, color: Color) {
         kruskal.graph.edges[edgeID]?.color = color
     }
@@ -143,6 +147,7 @@ class KruskalViewModel: ObservableObject {
 }
 
 struct KruskalView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var kruskalViewModel: KruskalViewModel
     var graphViewModel: GraphViewModel
     @State private var errorEdge: Edge? = nil
@@ -205,9 +210,9 @@ struct KruskalView: View {
             if showBanner {
                 VStack {
                     Text("The weight of the minimum spanning tree is: \(kruskalViewModel.getTreeWeight().formatted())")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Button {
                         withAnimation {
@@ -225,9 +230,9 @@ struct KruskalView: View {
             } else if kruskalViewModel.errorStatus == .cycleError {
                 VStack {
                     Text("This edge forms a cycle.")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }
@@ -237,9 +242,9 @@ struct KruskalView: View {
             } else if kruskalViewModel.errorStatus == .notLowestWeightError {
                 VStack {
                     Text("There is another edge with smaller weight.")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }

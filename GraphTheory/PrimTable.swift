@@ -130,6 +130,7 @@ class PrimTableViewModel: ObservableObject {
 }
 
 struct PrimTableView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject var primViewModel: PrimTableViewModel
     @State private var showBanner = false
     let padding: CGFloat = CGFloat(15)
@@ -194,9 +195,9 @@ struct PrimTableView: View {
                 HStack {
                     Spacer()
                     Text("The weight of the minimum spanning tree is: \(primViewModel.prim.sumOfWeights.formatted()).")
-                        .foregroundColor(Color.primary)
+                        .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
-                        .background(Color.secondary)
+                        .background(themeViewModel.theme!.secondaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 20))
                     Spacer()
                 }

@@ -18,6 +18,7 @@ struct Edge: Identifiable, Codable, Hashable {
     static let DEFAULT_WEIGHT_DISTANCE = 0.05
     var weightPositionDistance: CGFloat = DEFAULT_WEIGHT_DISTANCE
     var weightPositionOffset: CGSize = .zero
+    var sign = 1 // Used for deciding which side of the edge the weight will be display on
     
     init(startVertexID: UUID, endVertexID: UUID) {
         self.id = UUID()

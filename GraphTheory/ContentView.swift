@@ -20,34 +20,33 @@ struct ContentView: View {
                 Section(header: Text("Learn")) {
                     NavigationLink("Tutorial", destination: TutorialView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                 }
                 Section(header: Text("Create")) {
                     NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                     NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                         
                     NavigationLink("Peterson Graph", destination: PetersonView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                     
                     NavigationLink("Complex Polygon", destination: ComplexPolygonView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
                     
                 }
                 Section(header: Text("Games")) {
                     NavigationLink("Icosian Game", destination: IcosianView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
-                        .accentColor(themeViewModel.theme!.accentColor)
+                }
+                Section(header: Text("Practice")) {
+                    NavigationLink("Kruskal's Algorithm", destination: Kruskal1View())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Prim's Table Algorithm", destination: Prim1View())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
             }
             .foregroundStyle(themeViewModel.theme!.primaryColor)

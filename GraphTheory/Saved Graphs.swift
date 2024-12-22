@@ -465,12 +465,73 @@ struct ComplexPolygonView: View {
     }
 }
 
-struct Saved_Graphs: View {
-    var body: some View {
-        GraphView(graphViewModel: GraphViewModel(graph: K33().graph))
+struct Kruskal1 {
+    var graph: Graph
+    
+    init() {
+        var vertex0 = Vertex(position: CGPoint(x: 0.1, y: 0.5))
+        vertex0.label = "0"
+        var vertex1 = Vertex(position: CGPoint(x: 0.3, y: 0.2))
+        vertex1.label = "1"
+        var vertex2 = Vertex(position: CGPoint(x: 0.5, y: 0.2))
+        vertex2.label = "2"
+        var vertex3 = Vertex(position: CGPoint(x: 0.7, y: 0.2))
+        vertex3.label = "3"
+        var vertex4 = Vertex(position: CGPoint(x: 0.9, y: 0.5))
+        vertex4.label = "4"
+        var vertex5 = Vertex(position: CGPoint(x: 0.7, y: 0.8))
+        vertex5.label = "5"
+        var vertex6 = Vertex(position: CGPoint(x: 0.5, y: 0.8))
+        vertex6.label = "6"
+        var vertex7 = Vertex(position: CGPoint(x: 0.3, y: 0.8))
+        vertex7.label = "7"
+        var vertex8 = Vertex(position: CGPoint(x: 0.5, y: 0.5))
+        vertex8.label = "8"
+        var edge01 = Edge(startVertexID: vertex0.id, endVertexID: vertex1.id)
+        edge01.weight = 4
+        var edge07 = Edge(startVertexID: vertex0.id, endVertexID: vertex7.id)
+        edge07.weight = 8
+        var edge12 = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
+        edge12.weight = 8
+        var edge17 = Edge(startVertexID: vertex1.id, endVertexID: vertex7.id)
+        edge17.weight = 11
+        var edge23 = Edge(startVertexID: vertex2.id, endVertexID: vertex3.id)
+        edge23.weight = 7
+        var edge25 = Edge(startVertexID: vertex2.id, endVertexID: vertex5.id)
+        edge25.weight = 4
+        var edge28 = Edge(startVertexID: vertex2.id, endVertexID: vertex8.id)
+        edge28.weight = 2
+        edge28.sign = -1
+        var edge34 = Edge(startVertexID: vertex3.id, endVertexID: vertex4.id)
+        edge34.weight = 9
+        var edge35 = Edge(startVertexID: vertex3.id, endVertexID: vertex5.id)
+        edge35.weight = 14
+        var edge45 = Edge(startVertexID: vertex4.id, endVertexID: vertex5.id)
+        edge45.weight = 10
+        var edge56 = Edge(startVertexID: vertex5.id, endVertexID: vertex6.id)
+        edge56.weight = 2
+        var edge67 = Edge(startVertexID: vertex6.id, endVertexID: vertex7.id)
+        edge67.weight = 1
+        var edge68 = Edge(startVertexID: vertex6.id, endVertexID: vertex8.id)
+        edge68.weight = 6
+        var edge78 = Edge(startVertexID: vertex7.id, endVertexID: vertex8.id)
+        edge78.weight = 7
+        let vertices = [vertex0, vertex1, vertex2, vertex3, vertex4, vertex5, vertex6, vertex7, vertex8]
+        let edges = [edge01, edge07, edge12, edge17, edge23, edge25, edge28, edge34, edge35, edge45, edge56, edge67, edge68, edge78]
+        self.graph = Graph(vertices: vertices, edges: edges)
     }
 }
 
-#Preview {
-    Saved_Graphs()
+struct Kruskal1View: View {
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject private var kruskalViewModel = KruskalViewModel(graph: Kruskal1().graph)
+    
+    var body: some View {
+        KruskalView(graph: kruskalViewModel.getGraph())
+            .onAppear {
+                for vertex in kruskalViewModel.getAllVertices() {
+                    kruskalViewModel.setVertexLabelColor(vertexID: vertex.id, color: colorScheme == .light ? .white : .black)
+                }
+            }
+    }
 }

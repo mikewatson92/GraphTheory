@@ -21,6 +21,8 @@ struct Graph: Identifiable, Codable {
     var edgeControlPoints2: [UUID: CGPoint] = [:]
     var edgeControlPoint1Offsets: [UUID: CGSize] = [:]
     var edgeControlPoint2Offsets: [UUID: CGSize] = [:]
+    var edgeForwardArrowParameters: [UUID: CGFloat] = [:]
+    var edgeReverseArrowParameters: [UUID: CGFloat] = [:]
     // Default values saved when the graph is initially constructed.
     // Used for restoring to defaults.
     var originalVertices: [UUID: Vertex] = [:]
@@ -29,6 +31,8 @@ struct Graph: Identifiable, Codable {
     var originalEdgeControlPoints2: [UUID: CGPoint] = [:]
     var originalEdgeControlPoint1Offsets: [UUID: CGSize] = [:]
     var originalEdgeControlPoint2Offsets: [UUID: CGSize] = [:]
+    var originalEdgeForwardArrowParameters: [UUID: CGFloat] = [:]
+    var originalEdgeReverseArrowParameters: [UUID: CGFloat] = [:]
     //
     var resetMethod: ResetFunction = .resetToZero
     var mode: Mode = .edit
@@ -59,6 +63,8 @@ struct Graph: Identifiable, Codable {
         originalEdgeControlPoints2 = self.edgeControlPoints2
         originalEdgeControlPoint1Offsets = self.edgeControlPoint1Offsets
         originalEdgeControlPoint2Offsets = self.edgeControlPoint2Offsets
+        originalEdgeForwardArrowParameters = self.edgeForwardArrowParameters
+        originalEdgeReverseArrowParameters = self.edgeReverseArrowParameters
     }
     
     enum Algorithm: String, Codable, CaseIterable, Identifiable {
@@ -482,6 +488,22 @@ class GraphViewModel: ObservableObject {
         graph.edges[edge.id]?.color = color
     }
     
+    func getEdgeDirection(_ edge: Edge) -> Edge.Directed {
+        graph.edges[edge.id]?.directed ?? .none
+    }
+    
+    func setEdgeDirection(edge: Edge, direction: Edge.Directed) {
+        graph.edges[edge.id]?.directed = direction
+    }
+    
+    func setEdgeForwardArrowParameter(id: UUID, parameter: CGFloat) {
+        graph.edgeForwardArrowParameters[id] = parameter
+    }
+    
+    func setEdgeReverseArrowParameter(id: UUID, parameter: CGFloat) {
+        graph.edgeReverseArrowParameters[id] = parameter
+    }
+    
     // Used for storing an initial copy of a vertex before
     // changes occur.
     func vertexWillMove(_ vertex: Vertex) {
@@ -735,8 +757,8 @@ class GraphViewModel: ObservableObject {
     }
     
     func getControlPoints(for edge: Edge) -> (CGPoint, CGPoint) {
-        let controlPoint1 = graph.edgeControlPoints1[edge.id]!
-        let controlPoint2 = graph.edgeControlPoints2[edge.id]!
+        let controlPoint1 = graph.edgeControlPoints1[edge.id] ?? CGPoint.zero
+        let controlPoint2 = graph.edgeControlPoints2[edge.id] ?? CGPoint.zero
         return (controlPoint1, controlPoint2)
     }
     
@@ -785,6 +807,7 @@ struct GraphView: View {
     @Environment(\.colorScheme) var colorScheme
     @ObservedObject var graphViewModel: GraphViewModel
     @State private var vertexEdgeColor: Color = .white
+    @State private var edgeDirection = Edge.Directed.none
     
     init(graphViewModel: GraphViewModel) {
         self.graphViewModel = graphViewModel
@@ -834,6 +857,8 @@ struct GraphView: View {
         case .edit:
             if graphViewModel.selectedEdge?.id != edge.id {
                 graphViewModel.selectedEdge = edge
+                edgeDirection = graphViewModel.selectedEdge!.directed
+                
             } else {
                 graphViewModel.selectedEdge = nil
             }
@@ -969,7 +994,9 @@ struct GraphView: View {
                             } else if graphViewModel.selectedVertex!.id == vertexViewModel.getVertexID() {
                                 graphViewModel.selectedVertex = nil
                             } else if graphViewModel.getMode() == .edit {
-                                graphViewModel.addEdge(Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertexViewModel.getVertexID()))
+                                let newEdge = Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertexViewModel.getVertexID())
+                                graphViewModel.addEdge(newEdge)
+                                graphViewModel.setEdgeDirection(edge: newEdge, direction: edgeDirection)
                                 graphViewModel.selectedVertex = nil
                             } else {
                                 graphViewModel.selectedVertex = nil
@@ -1035,11 +1062,30 @@ struct GraphView: View {
                         .tint(themeViewModel.theme!.accentColor)
                 }
             }
-            
             ToolbarItem(placement: .automatic) {
                 if graphViewModel.getAlgorithm() == .none {
-                    Toggle(isOn: $graphViewModel.showWeights) {
-                        Image(systemName: "number.square")
+                    Menu {
+                        Toggle(isOn: $graphViewModel.showWeights) {
+                            Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accentColor)
+                        }
+                        Picker("Direction", systemImage: "arrow.left.and.right", selection: Binding(get: {
+                            if let selectedEdge = graphViewModel.selectedEdge {
+                                return graphViewModel.getEdgeDirection(selectedEdge)
+                            } else {
+                                return edgeDirection
+                            }}, set: { newValue in
+                                edgeDirection = newValue
+                                if let selectedEdge = graphViewModel.selectedEdge {
+                                    graphViewModel.setEdgeDirection(edge: selectedEdge, direction: newValue)
+                                }
+                            })) {
+                            ForEach(Edge.Directed.allCases, id: \.self) { direction in
+                                Text(direction.rawValue).tag(direction)
+                            }
+                        }
+                        .tint(themeViewModel.theme!.accentColor)
+                    } label: {
+                        Image(systemName: "arrow.left.arrow.right.square")
                             .tint(themeViewModel.theme!.accentColor)
                     }
                 }

@@ -19,11 +19,21 @@ struct Edge: Identifiable, Codable, Hashable {
     var weightPositionDistance: CGFloat = DEFAULT_WEIGHT_DISTANCE
     var weightPositionOffset: CGSize = .zero
     var sign = 1 // Used for deciding which side of the edge the weight will be display on
+    var directed = Directed.none
     
     init(startVertexID: UUID, endVertexID: UUID) {
         self.id = UUID()
         self.startVertexID = startVertexID
         self.endVertexID = endVertexID
+    }
+    
+    enum Directed: String, Codable, CaseIterable, Identifiable {
+        case none = "Undirected"
+        case forward = "Forward Directed"
+        case reverse = "Reverse Directed"
+        case bidirectional = "Bidirectional"
+        
+        var id: String { self.rawValue }
     }
     
     mutating func setColor(_ color: Color) {
@@ -43,12 +53,129 @@ class EdgeViewModel: ObservableObject {
     @Published private var edge: Edge
     @Published var graphViewModel: GraphViewModel
     var size: CGSize
+    lazy var forwardArrow = Arrow(angle: forwardAngle)
+    lazy var reverseArrow = Arrow(angle: reverseAngle)
+    var forwardAngle: CGFloat {
+        var angle: CGFloat
+        if let startPosition = getStartVertexPosition(),
+           let startOffset = getStartOffset(),
+           let endPosition = getEndVertexPosition(),
+           let endOffset = getEndOffset() {
+            let p0X = startPosition.x + startOffset.width / size.width
+            let p0Y = startPosition.y + startOffset.height / size.height
+            let p1X = getControlPoints().0.x + getControlPointOffsets().0.width / size.width
+            let p1Y = getControlPoints().0.y + getControlPointOffsets().0.height / size.height
+            let p2X = getControlPoints().1.x + getControlPointOffsets().1.width / size.width
+            let p2Y = getControlPoints().1.y + getControlPointOffsets().1.height / size.height
+            let p3X = endPosition.x + endOffset.width / size.width
+            let p3Y = endPosition.y + endOffset.height / size.height
+            if let gradient = edgePath.bezierTangentGradient(t: graphViewModel.getGraph().edgeForwardArrowParameters[edge.id] ?? 0.5, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y)) {
+                var sign = CGFloat(0)
+                if p1Y > p2Y {
+                    if p1X > p2X {
+                        if gradient > 0 {
+                            sign = 1
+                        } else {
+                            sign = 0
+                        }
+                    } else if p1X < p2X {
+                        if gradient < 0 {
+                            sign = 0
+                        } else {
+                            sign = 0
+                        }
+                    }
+                } else {
+                    if p1X > p2X {
+                        if gradient > 0 {
+                            sign = 0
+                        } else {
+                            sign = 1
+                        }
+                    } else if p1X < p2X {
+                        if gradient < 0 {
+                            sign = 0
+                        } else {
+                            sign = 0
+                        }
+                    }
+                }
+                angle = atan(gradient) + CGFloat.pi * sign
+            } else {
+                angle = CGFloat.pi / 2 * (p0Y >= p1Y ? 1 : -1)
+            }
+            return angle
+        }
+        return 0
+    }
+    var reverseAngle: CGFloat {
+        var angle: CGFloat
+        if let startPosition = getStartVertexPosition(),
+           let startOffset = getStartOffset(),
+           let endPosition = getEndVertexPosition(),
+           let endOffset = getEndOffset() {
+            let p0X = startPosition.x + startOffset.width / size.width
+            let p0Y = startPosition.y + startOffset.height / size.height
+            let p1X = getControlPoints().0.x + getControlPointOffsets().0.width / size.width
+            let p1Y = getControlPoints().0.y + getControlPointOffsets().0.height / size.height
+            let p2X = getControlPoints().1.x + getControlPointOffsets().1.width / size.width
+            let p2Y = getControlPoints().1.y + getControlPointOffsets().1.height / size.height
+            let p3X = endPosition.x + endOffset.width / size.width
+            let p3Y = endPosition.y + endOffset.height / size.height
+            if let gradient = edgePath.bezierTangentGradient(t: graphViewModel.getGraph().edgeReverseArrowParameters[edge.id] ?? 0.5, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y)) {
+                var sign = CGFloat(0)
+                if p1Y > p2Y {
+                    if p1X > p2X {
+                        if gradient > 0 {
+                            sign = 0
+                        } else {
+                            sign = 1
+                        }
+                    } else if p1X < p2X {
+                        if gradient < 0 {
+                            sign = 1
+                        } else {
+                            sign = 1
+                        }
+                    }
+                } else {
+                    if p1X > p2X {
+                        if gradient > 0 {
+                            sign = 1
+                        } else {
+                            sign = 0
+                        }
+                    } else if p1X < p2X {
+                        if gradient < 0 {
+                            sign = 1
+                        } else {
+                            sign = 1
+                        }
+                    }
+                }
+                angle = atan(gradient) + CGFloat.pi * sign
+            } else {
+                angle = CGFloat.pi / 2 * (p0Y >= p1Y ? 1 : -1)
+            }
+            return angle
+        }
+        return 0
+    }
     lazy var edgePath: EdgePath = EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)!.position, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)!.position, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID)!, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID)!, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1)
+    var directed: Edge.Directed {
+        get {
+            edge.directed
+        } set {
+            edge.directed = newValue
+        }
+    }
     
     init(edge: Edge, size: CGSize, graphViewModel: GraphViewModel) {
         self.edge = edge
         self.size = size
         self.graphViewModel = graphViewModel
+        self.forwardArrow = Arrow(angle: forwardAngle)
+        self.reverseArrow = Arrow(angle: reverseAngle)
     }
     
     func removeEdgeFromGraph() {
@@ -91,6 +218,22 @@ class EdgeViewModel: ObservableObject {
     
     func setEdgeWeight(_ weight: Double) {
         graphViewModel.setWeight(edge: edge, weight: weight)
+    }
+    
+    func getForwardArrowParameter() -> CGFloat {
+        graphViewModel.getGraph().edgeForwardArrowParameters[edge.id] ?? 0.75
+    }
+    
+    func getReverseArrowParameter() -> CGFloat {
+        graphViewModel.getGraph().edgeReverseArrowParameters[edge.id] ?? 0.25
+    }
+    
+    func setForwardArrowParameter(_ p: CGFloat) {
+        graphViewModel.setEdgeForwardArrowParameter(id: edge.id, parameter: p)
+    }
+    
+    func setReverseArrowParameter(_ p: CGFloat) {
+        graphViewModel.setEdgeReverseArrowParameter(id: edge.id, parameter: p)
     }
     
     func setColor(_ color: Color) {
@@ -159,6 +302,18 @@ struct EdgeView: View {
     @ObservedObject var graphViewModel: GraphViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var edittingWeight = false
+    @State private var tempForwardArrowPosition = CGPoint.zero
+    @State private var tempReverseArrowPosition = CGPoint.zero
+    @State private var forwardArrowOffset = CGSize.zero {
+        willSet {
+            edgeViewModel.setForwardArrowParameter( edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: tempForwardArrowPosition.x + forwardArrowOffset.width / size.width, y: tempForwardArrowPosition.y + forwardArrowOffset.height / size.height), p0: edgeViewModel.getStartVertexPosition() ?? .zero, p1: edgeViewModel.getControlPoints().0, p2: edgeViewModel.getControlPoints().1, p3: edgeViewModel.getEndVertexPosition() ?? .zero))
+        }
+    }
+    @State private var reverseArrowOffset = CGSize.zero {
+        willSet {
+            edgeViewModel.setReverseArrowParameter(edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: tempReverseArrowPosition.x + reverseArrowOffset.width / size.width, y: tempReverseArrowPosition.y + reverseArrowOffset.height / size.height), p0: edgeViewModel.getStartVertexPosition() ?? .zero, p1: edgeViewModel.getControlPoints().0, p2: edgeViewModel.getControlPoints().1, p3: edgeViewModel.getEndVertexPosition() ?? .zero))
+        }
+    }
     @State private var tempWeightPosition: CGPoint {
         willSet {
             edgeViewModel.setEdgeWeightPosition(position: newValue)
@@ -170,12 +325,54 @@ struct EdgeView: View {
         }
     }
     var size: CGSize
+    var forwardArrowPoint: CGPoint {
+        get {
+            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
+            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
+            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
+            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
+            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
+            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
+            let p0X = startPosition.x + startOffset.width / size.width
+            let p0Y = startPosition.y + startOffset.height / size.height
+            let p1X = controlPoint1.x + control1Offset.width / size.width
+            let p1Y = controlPoint1.y + control1Offset.height / size.height
+            let p2X = controlPoint2.x + control2Offset.width / size.width
+            let p2Y = controlPoint2.y + control2Offset.height / size.height
+            let p3X = endPosition.x + endOffset.width / size.width
+            let p3Y = endPosition.y + endOffset.height / size.height
+            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.getForwardArrowParameter(), p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+        }
+    }
+    var reverseArrowPoint: CGPoint {
+        get {
+            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
+            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
+            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
+            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
+            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
+            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
+            let p0X = startPosition.x + startOffset.width / size.width
+            let p0Y = startPosition.y + startOffset.height / size.height
+            let p1X = controlPoint1.x + control1Offset.width / size.width
+            let p1Y = controlPoint1.y + control1Offset.height / size.height
+            let p2X = controlPoint2.x + control2Offset.width / size.width
+            let p2Y = controlPoint2.y + control2Offset.height / size.height
+            let p3X = endPosition.x + endOffset.width / size.width
+            let p3Y = endPosition.y + endOffset.height / size.height
+            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.getReverseArrowParameter(), p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+        }
+    }
     
     init(edgeViewModel: EdgeViewModel, size: CGSize) {
         self.edgeViewModel = edgeViewModel
         self.graphViewModel = edgeViewModel.graphViewModel
         self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition() ?? edgeViewModel.initWeightPosition()
         self.size = size
+        self._tempForwardArrowPosition = .init(wrappedValue: forwardArrowPoint)
+        self._tempReverseArrowPosition = .init(wrappedValue: reverseArrowPoint)
     }
     
     var body: some View {
@@ -201,6 +398,34 @@ struct EdgeView: View {
                         graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
                     }
                 }
+        
+        if edgeViewModel.directed == .forward || edgeViewModel.directed == .bidirectional {
+            edgeViewModel.forwardArrow
+                .stroke(edgeViewModel.getColor(), lineWidth: 4)
+                .frame(width: 40, height: 40)
+                .position(CGPoint(x: forwardArrowPoint.x * size.width, y: forwardArrowPoint.y * size.height))
+                .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
+                    .onChanged({ drag in
+                        forwardArrowOffset = drag.translation
+                    }).onEnded { _ in
+                        forwardArrowOffset = .zero
+                        tempForwardArrowPosition = forwardArrowPoint
+                    })
+        }
+        
+        if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {
+            edgeViewModel.reverseArrow
+                .stroke(edgeViewModel.getColor(), lineWidth: 4)
+                .frame(width: 40, height: 40)
+                .position(CGPoint(x: reverseArrowPoint.x * size.width, y: reverseArrowPoint.y * size.height))
+                .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
+                    .onChanged({ drag in
+                        reverseArrowOffset = drag.translation
+                    }).onEnded { _ in
+                        reverseArrowOffset = .zero
+                        tempReverseArrowPosition = reverseArrowPoint
+                    })
+        }
         
         // Control points for selected edge
         if edgeViewModel.getGraphMode() == .edit {
@@ -353,7 +578,7 @@ struct EdgeView: View {
     }
 }
 
-struct EdgePath: Shape {
+struct EdgePath {
     var startVertexPosition: CGPoint
     var endVertexPosition: CGPoint
     var startOffset: CGSize
@@ -362,10 +587,6 @@ struct EdgePath: Shape {
     var controlPoint2: CGPoint
     var controlPoint1Offset: CGSize
     var controlPoint2Offset: CGSize
-    
-    func path(in rect: CGRect) -> Path {
-        return makePath(size: CGSize(width: rect.width, height: rect.height))
-    }
     
     func makePath(size: CGSize) -> Path {
         let start = startVertexPosition
@@ -507,5 +728,24 @@ struct EdgePath: Shape {
         
         // Gradient (dy/dx)
         return dy / dx
+    }
+}
+
+struct Arrow: Shape {
+    let angle: CGFloat
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path { path in
+            let start = CGPoint(x: rect.midX, y: rect.minY)
+            let point = CGPoint(x: rect.maxX, y: rect.midY)
+            let end = CGPoint(x: rect.midX, y: rect.maxY)
+            path.move(to: start)
+            path.addLine(to: point)
+            path.addLine(to: end)
+        }
+        path = path.applying(CGAffineTransform.init(translationX: -rect.width / 2, y: -rect.height / 2))
+        path = path.applying(CGAffineTransform.init(rotationAngle: angle))
+        path = path.applying(CGAffineTransform.init(translationX: rect.width / 2, y: rect.height / 2))
+        return path
     }
 }

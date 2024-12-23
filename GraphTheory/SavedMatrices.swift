@@ -16,7 +16,7 @@ struct Prim1 {
         matrix[0, 3] = 15
         matrix[0, 5] = 16
         matrix[1, 0] = 27
-        matrix[1, 3] = 6
+        matrix[1, 2] = 6
         matrix[2, 0] = 12
         matrix[2, 1] = 6
         matrix[2, 3] = 14

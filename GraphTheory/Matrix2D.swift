@@ -182,7 +182,7 @@ struct GridItemView: View {
                 }
             }) {
                 if let label = label {
-                    ZStack {
+                    GeometryReader { geometry in
                         Text(label)
                             .font(.system(size: 100)) // Start with a large font
                             .minimumScaleFactor(0.1) // Allow text to scale down
@@ -190,11 +190,11 @@ struct GridItemView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
-                            .padding()
+                            .padding(geometry.size.width / 7.5)
                             .foregroundColor(themeViewModel.theme!.secondaryColor)
                         Circle()
-                            .stroke(color, lineWidth: 5)
-                            .padding()
+                            .stroke(color, lineWidth: geometry.size.width / 10)
+                            .padding(geometry.size.width / 10)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)
@@ -203,7 +203,7 @@ struct GridItemView: View {
                             .aspectRatio(1, contentMode: .fill)
                     }
                 } else {
-                    ZStack {
+                    GeometryReader { geometry in
                         Text(weight != nil ? "\(weight?.formatted() ?? "0")" : "-")
                             .font(.system(size: 100)) // Start with a large font
                             .minimumScaleFactor(0.1) // Allow text to scale down
@@ -211,11 +211,11 @@ struct GridItemView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the available space
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
-                            .padding()
+                            .padding(geometry.size.width / 7.5)
                             .foregroundColor(themeViewModel.theme!.secondaryColor)
                         Circle()
-                            .stroke(color, lineWidth: 5)
-                            .padding()
+                            .stroke(color, lineWidth: geometry.size.width / 20)
+                            .padding(geometry.size.width / 5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)

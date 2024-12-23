@@ -183,7 +183,7 @@ struct PrimTableView: View {
                                     }
                                 }
                                 Rectangle()
-                                    .frame(width: cellSize * (primViewModel.prim.matrix.numberOfItems + 1), height: cellWidth / 10)
+                                    .frame(width: cellSize * (primViewModel.prim.matrix.numberOfItems + 1), height: cellWidth / 25)
                                     .foregroundColor(primViewModel.rowHeaderColors[row])
                             }
                         }

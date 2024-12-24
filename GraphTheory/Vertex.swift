@@ -14,7 +14,7 @@ struct Vertex: Identifiable, Codable {
     var color: Color?
     var strokeColor: Color = Color.secondary
     var label: String = ""
-    var labelColor: LabelColor = .white
+    var labelColor: LabelColor?
     
     init() {
         self.id = UUID()
@@ -77,7 +77,7 @@ class VertexViewModel: ObservableObject {
         return vertex.id
     }
     
-    func getLabelColor() -> Vertex.LabelColor {
+    func getLabelColor() -> Vertex.LabelColor? {
         vertex.labelColor
     }
     
@@ -122,21 +122,29 @@ struct VertexView: View {
     @FocusState private var isTextFieldFocused: Bool
     @State private var latexSize = CGSize(width: 1, height: 1)
     @State private var edittingLabel: Bool = false
-    var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor().rawValue)}{\(vertexViewModel.getLabel())}"
+    @State private var tempLabelColor: Vertex.LabelColor? {
+        willSet {
+            vertexViewModel.graphViewModel.setVertexLabelColor(id: vertexViewModel.getVertexID(), labelColor: newValue!)
+
+        }
+    }
+    var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor()?.rawValue ?? (colorScheme == .light ? "white" : "black"))}{\(vertexViewModel.getLabel())}"
     }
     var labelColor : Color {
         get {
             switch vertexViewModel.getLabelColor() {
+            case nil:
+                return colorScheme == .light ? .white : .black
             case .white:
-                Color.white
+                return Color.white
             case .blue:
-                Color.blue
+                return Color.blue
             case .red:
-                Color.red
+                return Color.red
             case .green:
-                Color.green
+                return Color.green
             case .black:
-                Color.black
+                return Color.black
             }
         }
     }
@@ -218,7 +226,7 @@ struct VertexView: View {
             }
         }
         .onAppear {
-            vertexViewModel.setLabelColor(colorScheme == .light ? .white : .black)
+            tempLabelColor = (colorScheme == .light ? .white : .black)
         }
     }
 }

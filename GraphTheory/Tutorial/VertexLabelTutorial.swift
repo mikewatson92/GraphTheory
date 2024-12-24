@@ -127,7 +127,7 @@ struct VertexLabelTutorial: View {
                     Picker("Label Color", selection: Binding(
                         get: {
                             if let selectedVertex = graphViewModel.selectedVertex {
-                                return selectedVertex.labelColor
+                                return selectedVertex.labelColor ?? .white
                             }
                             return Vertex.LabelColor.white
                         },

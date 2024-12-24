@@ -139,6 +139,93 @@ struct Graph: Identifiable, Codable {
         }
     }
     
+    func degree(_ vertex: Vertex) -> Int {
+        return getConnectedEdges(to: vertex.id).count
+    }
+    
+    func edgeDescription(_ edge: Edge) -> String {
+        return "Edge\(vertices[edge.startVertexID]!.label)\(vertices[edge.endVertexID]!.label)"
+    }
+    
+    func getAllPathsBetween(_ startVertex: Vertex, _ endVertex: Vertex) -> [[Edge]] {
+        var allPaths: [[Edge]] = []
+        let connectedEdges = getConnectedEdges(to: startVertex.id)
+        for edge in connectedEdges {
+            let path: [Edge] = [edge]
+            let currentVertexID = edge.traverse(from: startVertex.id)!
+            getAllPathsBasedOn(startVertex, endVertex, currentVertex: vertices[currentVertexID]!, currentPath: path)
+        }
+        
+        func getAllPathsBasedOn(_ startVertex: Vertex, _ endVertex: Vertex, currentVertex: Vertex, currentPath: [Edge]) {
+            if currentVertex.id == endVertex.id {
+                allPaths.append(currentPath)
+                return
+            }
+            
+            var newConnectedEdges = getConnectedEdges(to: currentVertex.id)
+            for edge in currentPath {
+                newConnectedEdges.removeAll(where: { $0.id == edge.id })
+            }
+            for edge in newConnectedEdges {
+                let currentVertexID = edge.traverse(from: currentVertex.id)!
+                var newPath = currentPath
+                newPath.append(edge)
+                getAllPathsBasedOn(startVertex, endVertex, currentVertex: vertices[currentVertexID]!, currentPath: newPath)
+            }
+        }
+        return allPaths
+    }
+    
+    func smallestDistance(from startVertex: Vertex, to endVertex: Vertex) -> Double? {
+        guard areVerticesConnected(startVertex.id, endVertex.id) else { return nil }
+        let paths = getAllPathsBetween(startVertex, endVertex)
+        print("There are \(paths.count) paths from \(startVertex.label) to \(endVertex.label)")
+        for path in paths {
+            print("Path:")
+            for edge in path {
+                print(edgeDescription(edge))
+            }
+        }
+        var pathWeights: [Double] = []
+        for path in paths {
+            var pathWeight = 0.0
+            for edge in path {
+                pathWeight += edge.weight
+            }
+            pathWeights.append(pathWeight)
+        }
+        return pathWeights.min()
+    }
+    
+    func shortestPaths(from startVertex: Vertex, to endVertex: Vertex) -> [[Edge]] {
+        let paths = getAllPathsBetween(startVertex, endVertex)
+        guard !paths.isEmpty else { return [] }
+        let smallestDistance = smallestDistance(from: startVertex, to: endVertex)
+        var shortestPaths: [[Edge]] = []
+        
+        for path in paths {
+            if pathWeight(path) == smallestDistance {
+                shortestPaths.append(path)
+            }
+        }
+        for path in shortestPaths {
+            print("Getting shortest paths between vertices.")
+            for edge in path {
+                print("Edge\(vertices[edge.startVertexID]!.label)\(vertices[edge.endVertexID]!.label)")
+            }
+        }
+        return shortestPaths
+    }
+    
+    func pathWeight(_ edges: [Edge]) -> Double? {
+        guard !edges.isEmpty else { return nil }
+        var weight = 0.0
+        for edge in edges {
+            weight += edge.weight
+        }
+        return weight
+    }
+    
     func getVertexByID(_ id: UUID) -> Vertex? {
         return vertices[id]
     }
@@ -244,6 +331,13 @@ struct Graph: Identifiable, Codable {
         return false
     }
     
+    func areEdgesAdjacent(_ edge1ID: UUID, edge2ID: UUID) -> Bool {
+        return edges[edge1ID]?.startVertexID == edges[edge2ID]?.startVertexID ||
+        edges[edge1ID]?.startVertexID == edges[edge2ID]?.endVertexID ||
+        edges[edge1ID]?.endVertexID == edges[edge2ID]?.startVertexID ||
+        edges[edge1ID]?.endVertexID == edges[edge2ID]?.endVertexID
+    }
+    
     func isConnected() -> Bool {
         if let permutations = Permutation.permute(Array(vertices.values), r: 2) {
             for permutation in permutations {
@@ -294,6 +388,23 @@ struct Graph: Identifiable, Codable {
                     newEdges.removeValue(forKey: edge.id)
                     let subGraph = Graph(vertices: Array(vertices.values), edges: Array(newEdges.values))
                     if subGraph.areVerticesConnected(vertexID, nextVertexID) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    func isEulerian(subGraph: Graph = Graph()) -> Bool {
+        for vertex in Array(vertices.values) {
+            let connectedEdges = getConnectedEdges(to: vertex.id)
+            for edge in connectedEdges {
+                if !subGraph.edges.values.contains(where: { $0.id == edge.id }) {
+                    var newEdges = Array(subGraph.edges.values)
+                    newEdges.append(edge)
+                    let newSubGraph = Graph(vertices: Array(vertices.values), edges: newEdges)
+                    if isEulerian(subGraph: newSubGraph) {
                         return true
                     }
                 }
@@ -1102,7 +1213,7 @@ struct GraphView: View {
                     Picker("Label Color", selection: Binding(
                         get: {
                             if let selectedVertex = graphViewModel.selectedVertex {
-                                return selectedVertex.labelColor
+                                return selectedVertex.labelColor ?? .white
                             }
                             return Vertex.LabelColor.white
                         },

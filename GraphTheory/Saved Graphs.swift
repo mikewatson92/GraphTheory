@@ -528,10 +528,48 @@ struct Kruskal1View: View {
     
     var body: some View {
         KruskalView(graph: kruskalViewModel.getGraph())
-            .onAppear {
-                for vertex in kruskalViewModel.getAllVertices() {
-                    kruskalViewModel.setVertexLabelColor(vertexID: vertex.id, color: colorScheme == .light ? .white : .black)
-                }
-            }
+    }
+}
+
+struct ChinesePostman1 {
+    var graph: Graph
+    
+    init() {
+        var a = Vertex(position: CGPoint(x: 0.2, y: 0.3))
+        a.label = "A"
+        var b = Vertex(position: CGPoint(x: 0.8, y: 0.3))
+        b.label = "B"
+        var c = Vertex(position: CGPoint(x: 0.8, y: 0.7))
+        c.label = "C"
+        var d = Vertex(position: CGPoint(x: 0.2, y: 0.7))
+        d.label = "D"
+        var e = Vertex(position: CGPoint(x: 0.5, y: 0.5))
+        e.label = "E"
+        var edgeAB = Edge(startVertexID: a.id, endVertexID: b.id)
+        edgeAB.weight = 9
+        var edgeAD = Edge(startVertexID: a.id, endVertexID: d.id)
+        edgeAD.weight = 6
+        var edgeAE = Edge(startVertexID: a.id, endVertexID: e.id)
+        edgeAE.weight = 3
+        var edgeBC = Edge(startVertexID: b.id, endVertexID: c.id)
+        edgeBC.weight = 8
+        var edgeBE = Edge(startVertexID: b.id, endVertexID: e.id)
+        edgeBE.weight = 5
+        var edgeCD = Edge(startVertexID: c.id, endVertexID: d.id)
+        edgeCD.weight = 7
+        var edgeCE = Edge(startVertexID: c.id, endVertexID: e.id)
+        edgeCE.weight = 4
+        var edgeDE = Edge(startVertexID: d.id, endVertexID: e.id)
+        edgeDE.weight = 2
+        self.graph = Graph(vertices: [a, b, c, d, e], edges: [edgeAB, edgeAD, edgeAE, edgeBC, edgeBE, edgeCD, edgeCE, edgeDE])
+    }
+}
+
+struct ChinesePostman1View: View {
+    @Environment(\.colorScheme) var colorScheme
+    @StateObject private var chinesePostmanViewModel = ChinesePostmanViewModel(graph: ChinesePostman1().graph)
+    
+    var body: some View {
+        ChinesePostmanView(graph: ChinesePostman1().graph)
     }
 }

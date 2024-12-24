@@ -47,6 +47,8 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                     NavigationLink("Prim's Table Algorithm", destination: Prim1View())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Chinese Postman Problem", destination: ChinesePostman1View())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
             }
             .foregroundStyle(themeViewModel.theme!.primaryColor)

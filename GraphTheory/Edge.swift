@@ -82,21 +82,21 @@ class EdgeViewModel: ObservableObject {
                         if gradient < 0 {
                             sign = 0
                         } else {
-                            sign = 0
+                            sign = 1
                         }
                     }
                 } else {
                     if p1X > p2X {
                         if gradient > 0 {
-                            sign = 0
-                        } else {
                             sign = 1
+                        } else {
+                            sign = 0
                         }
                     } else if p1X < p2X {
                         if gradient < 0 {
                             sign = 0
                         } else {
-                            sign = 0
+                            sign = 1
                         }
                     }
                 }
@@ -135,21 +135,21 @@ class EdgeViewModel: ObservableObject {
                         if gradient < 0 {
                             sign = 1
                         } else {
-                            sign = 1
+                            sign = 0
                         }
                     }
                 } else {
                     if p1X > p2X {
                         if gradient > 0 {
-                            sign = 1
-                        } else {
                             sign = 0
+                        } else {
+                            sign = 1
                         }
                     } else if p1X < p2X {
                         if gradient < 0 {
                             sign = 1
                         } else {
-                            sign = 1
+                            sign = 0
                         }
                     }
                 }
@@ -376,32 +376,36 @@ struct EdgeView: View {
     }
     
     var body: some View {
-            edgeViewModel.edgePath.makePath(size: size)
-            #if os(macOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 5)
-            #elseif os(iOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 15)
-            #endif
-                .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
-                .onTapGesture(count: 2) {
-                    if edgeViewModel.getGraphMode() == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
-                            graphViewModel.selectedEdge = nil
-                        }
-                        edgeViewModel.removeEdgeFromGraph()
-                    }
-                }
-                .onTapGesture(count: 1) {
+        edgeViewModel.edgePath.makePath(size: size)
+#if os(macOS)
+            .stroke(edgeViewModel.getColor(), lineWidth: 5)
+#elseif os(iOS)
+            .stroke(edgeViewModel.getColor(), lineWidth: 15)
+#endif
+            .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
+            .onTapGesture(count: 2) {
+                if edgeViewModel.getGraphMode() == .edit {
                     if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
                         graphViewModel.selectedEdge = nil
-                    } else {
-                        graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
                     }
+                    edgeViewModel.removeEdgeFromGraph()
                 }
+            }
+            .onTapGesture(count: 1) {
+                if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    graphViewModel.selectedEdge = nil
+                } else {
+                    graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
+                }
+            }
         
         if edgeViewModel.directed == .forward || edgeViewModel.directed == .bidirectional {
             edgeViewModel.forwardArrow
+#if os(macOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 4)
+#elseif os(iOS)
+                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+#endif
                 .frame(width: 40, height: 40)
                 .position(CGPoint(x: forwardArrowPoint.x * size.width, y: forwardArrowPoint.y * size.height))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
@@ -415,7 +419,11 @@ struct EdgeView: View {
         
         if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {
             edgeViewModel.reverseArrow
+#if os(macOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 4)
+#elseif os(iOS)
+                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+#endif
                 .frame(width: 40, height: 40)
                 .position(CGPoint(x: reverseArrowPoint.x * size.width, y: reverseArrowPoint.y * size.height))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
@@ -445,12 +453,12 @@ struct EdgeView: View {
                         .stroke(Color.black, lineWidth: 3)
                         .position(adjustedControlPoint1)
                         .frame(width: 10, height: 10)
-                    #if os(iOS)
+#if os(iOS)
                     Color.clear
                         .contentShape(Circle())
                         .position(adjustedControlPoint1)
                         .frame(width: 50, height: 50)
-                    #endif
+#endif
                 }
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
@@ -474,12 +482,12 @@ struct EdgeView: View {
                         .stroke(Color.black, lineWidth: 3)
                         .position(adjustedControlPoint2)
                         .frame(width: 10, height: 10)
-                    #if os(iOS)
+#if os(iOS)
                     Color.clear
                         .contentShape(Circle())
                         .position(adjustedControlPoint2)
                         .frame(width: 50, height: 50)
-                    #endif
+#endif
                 }
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
@@ -505,62 +513,62 @@ struct EdgeView: View {
                     TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() ?? 0.0 }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
-                    #if os(macOS)
+#if os(macOS)
                         .frame(width: 50, height: 10)
-                    #elseif os(iOS)
+#elseif os(iOS)
                         .focused($isTextFieldFocused)
                         .frame(width: 50, height: 20)
-                        //.keyboardType(.decimalPad)
-                    #endif
+                    //.keyboardType(.decimalPad)
+#endif
                         .onSubmit {
                             isTextFieldFocused = false
                             edittingWeight = false
                         }
-                    #if os(iOS)
+#if os(iOS)
                     Color.clear
                         .opacity(0.25)
                         .contentShape(Rectangle())
                         .frame(width: 50, height: 50)
-                    #endif
+#endif
                 }
                 .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
-                    .gesture(
-                        DragGesture()
-                            .onChanged { drag in
-                                tempWeightPositionOffset = drag.translation
-                            }
-                            .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
-                                tempWeightPositionOffset = .zero
-                            })
+                .gesture(
+                    DragGesture()
+                        .onChanged { drag in
+                            tempWeightPositionOffset = drag.translation
+                        }
+                        .onEnded { _ in
+                            edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
+                            tempWeightPositionOffset = .zero
+                        })
             } else {
                 Group {
                     Text("\(edgeViewModel.getEdgeWeight()?.formatted() ?? "0")")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
                         .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
-                    #if os(iOS)
+#if os(iOS)
                     Color.clear
                         .opacity(0.25)
                         .contentShape(Rectangle())
                         .frame(width: 50, height: 50)
-                    #endif
-
+#endif
+                    
                 }
                 .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
-                    .gesture(
-                        DragGesture()
-                            .onChanged { drag in
-                                tempWeightPositionOffset = drag.translation
-                            }
-                            .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
-                                tempWeightPositionOffset = .zero
-                            })
-                    .onTapGesture(count: 1) {
-                        isTextFieldFocused = true
-                        edittingWeight = true
-                    }
+                .gesture(
+                    DragGesture()
+                        .onChanged { drag in
+                            tempWeightPositionOffset = drag.translation
+                        }
+                        .onEnded { _ in
+                            edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
+                            tempWeightPositionOffset = .zero
+                        })
+                .onTapGesture(count: 1) {
+                    isTextFieldFocused = true
+                    edittingWeight = true
+                }
             }
         }
     }
@@ -597,7 +605,7 @@ struct EdgePath {
         let controlPoint2 = controlPoint2
         let controlPoint1Offset = controlPoint1Offset
         let controlPoint2Offset = controlPoint2Offset
-
+        
         let path = Path { path in
             let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
             let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
@@ -618,38 +626,38 @@ struct EdgePath {
         let dy = p1.y - p2.y
         return dx * dx + dy * dy
     }
-
+    
     // Function to calculate the squared distance between a point and a Bézier point
     func distanceSquared(t: CGFloat, externalPoint: CGPoint, p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGFloat {
         let bezierPoint = pointOnBezierCurve(t: t, p0: p0, p1: p1, p2: p2, p3: p3)
         return squaredDistance(bezierPoint, externalPoint)
     }
-
+    
     // Find the parameter t for the closest point on the Bézier curve using numerical optimization
     func closestParameterToPoint(externalPoint: CGPoint, p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> CGFloat {
         let tolerance: CGFloat = 1e-6
         var lowerBound: CGFloat = 0.0
         var upperBound: CGFloat = 1.0
         var mid: CGFloat
-
+        
         while upperBound - lowerBound > tolerance {
             let t1 = lowerBound + (upperBound - lowerBound) / 3
             let t2 = upperBound - (upperBound - lowerBound) / 3
-
+            
             let d1 = distanceSquared(t: t1, externalPoint: externalPoint, p0: p0, p1: p1, p2: p2, p3: p3)
             let d2 = distanceSquared(t: t2, externalPoint: externalPoint, p0: p0, p1: p1, p2: p2, p3: p3)
-
+            
             if d1 < d2 {
                 upperBound = t2
             } else {
                 lowerBound = t1
             }
         }
-
+        
         mid = (lowerBound + upperBound) / 2
         return mid
     }
-
+    
     // Calculate the closest point on the Bézier curve and the distance to the external point
     func closestParameterAndDistance(externalPoint: CGPoint, p0: CGPoint, p1: CGPoint, p2: CGPoint, p3: CGPoint) -> (CGFloat, CGFloat) {
         // Find the parameter t for the closest point

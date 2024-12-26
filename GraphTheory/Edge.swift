@@ -56,11 +56,12 @@ class EdgeViewModel: ObservableObject {
     lazy var forwardArrow = Arrow(angle: forwardAngle)
     lazy var reverseArrow = Arrow(angle: reverseAngle)
     var forwardAngle: CGFloat {
-        var angle: CGFloat
+        var angle = CGFloat(0)
         if let startPosition = getStartVertexPosition(),
-           let startOffset = getStartOffset(),
-           let endPosition = getEndVertexPosition(),
-           let endOffset = getEndOffset() {
+        let startOffset = getStartOffset(),
+        let endPosition = getEndVertexPosition(),
+        let endOffset = getEndOffset(),
+        let arrowParameter = graphViewModel.getEdgeForwardArrowParameter(edge: edge) {
             let p0X = startPosition.x + startOffset.width / size.width
             let p0Y = startPosition.y + startOffset.height / size.height
             let p1X = getControlPoints().0.x + getControlPointOffsets().0.width / size.width
@@ -69,51 +70,36 @@ class EdgeViewModel: ObservableObject {
             let p2Y = getControlPoints().1.y + getControlPointOffsets().1.height / size.height
             let p3X = endPosition.x + endOffset.width / size.width
             let p3Y = endPosition.y + endOffset.height / size.height
+            let arrowPosition = edgePath.pointOnBezierCurve(t: arrowParameter, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            let nextArrowPosition = edgePath.pointOnBezierCurve(t: min(arrowParameter + 0.01, 1), p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            let dx = nextArrowPosition.x - arrowPosition.x
+            let dy = nextArrowPosition.y - arrowPosition.y
             if let gradient = edgePath.bezierTangentGradient(t: graphViewModel.getGraph().edgeForwardArrowParameters[edge.id] ?? 0.5, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y)) {
-                var sign = CGFloat(0)
-                if p1Y > p2Y {
-                    if p1X > p2X {
-                        if gradient > 0 {
-                            sign = 1
-                        } else {
-                            sign = 0
-                        }
-                    } else if p1X < p2X {
-                        if gradient < 0 {
-                            sign = 0
-                        } else {
-                            sign = 1
-                        }
-                    }
+                if dx > 0 {
+                    angle = atan(gradient)
+                } else if dx < 0 {
+                    angle = CGFloat.pi + atan(gradient)
                 } else {
-                    if p1X > p2X {
-                        if gradient > 0 {
-                            sign = 1
-                        } else {
-                            sign = 0
-                        }
-                    } else if p1X < p2X {
-                        if gradient < 0 {
-                            sign = 0
-                        } else {
-                            sign = 1
-                        }
-                    }
+                    angle = CGFloat.pi / 2 * (dy >= 0 ? 1 : -1)
                 }
-                angle = atan(gradient) + CGFloat.pi * sign
-            } else {
-                angle = CGFloat.pi / 2 * (p0Y >= p1Y ? 1 : -1)
+            } else { // If the gradient is undefined
+                if dy > 0 {
+                    angle = -CGFloat.pi / 2
+                } else {
+                    angle = CGFloat.pi / 2
+                }
             }
-            return angle
         }
-        return 0
+
+        return angle
     }
     var reverseAngle: CGFloat {
-        var angle: CGFloat
+        var angle = CGFloat(0)
         if let startPosition = getStartVertexPosition(),
-           let startOffset = getStartOffset(),
-           let endPosition = getEndVertexPosition(),
-           let endOffset = getEndOffset() {
+        let startOffset = getStartOffset(),
+        let endPosition = getEndVertexPosition(),
+        let endOffset = getEndOffset(),
+        let arrowParameter = graphViewModel.getEdgeReverseArrowParameter(edge: edge) {
             let p0X = startPosition.x + startOffset.width / size.width
             let p0Y = startPosition.y + startOffset.height / size.height
             let p1X = getControlPoints().0.x + getControlPointOffsets().0.width / size.width
@@ -122,44 +108,28 @@ class EdgeViewModel: ObservableObject {
             let p2Y = getControlPoints().1.y + getControlPointOffsets().1.height / size.height
             let p3X = endPosition.x + endOffset.width / size.width
             let p3Y = endPosition.y + endOffset.height / size.height
+            let arrowPosition = edgePath.pointOnBezierCurve(t: arrowParameter, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            let nextArrowPosition = edgePath.pointOnBezierCurve(t: max(arrowParameter - 0.01, 0), p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y))
+            let dx = nextArrowPosition.x - arrowPosition.x
+            let dy = nextArrowPosition.y - arrowPosition.y
             if let gradient = edgePath.bezierTangentGradient(t: graphViewModel.getGraph().edgeReverseArrowParameters[edge.id] ?? 0.5, p0: CGPoint(x: p0X, y: p0Y), p1: CGPoint(x: p1X, y: p1Y), p2: CGPoint(x: p2X, y: p2Y), p3: CGPoint(x: p3X, y: p3Y)) {
-                var sign = CGFloat(0)
-                if p1Y > p2Y {
-                    if p1X > p2X {
-                        if gradient > 0 {
-                            sign = 0
-                        } else {
-                            sign = 1
-                        }
-                    } else if p1X < p2X {
-                        if gradient < 0 {
-                            sign = 1
-                        } else {
-                            sign = 0
-                        }
-                    }
+                if dx > 0 {
+                    angle = atan(gradient)
+                } else if dx < 0 {
+                    angle = CGFloat.pi + atan(gradient)
                 } else {
-                    if p1X > p2X {
-                        if gradient > 0 {
-                            sign = 0
-                        } else {
-                            sign = 1
-                        }
-                    } else if p1X < p2X {
-                        if gradient < 0 {
-                            sign = 1
-                        } else {
-                            sign = 0
-                        }
-                    }
+                    angle = CGFloat.pi / 2 * (dy > 0 ? 1 : -1)
                 }
-                angle = atan(gradient) + CGFloat.pi * sign
-            } else {
-                angle = CGFloat.pi / 2 * (p0Y >= p1Y ? 1 : -1)
+            } else { // If the gradient is undefined
+                if dy > 0 {
+                    angle = -CGFloat.pi / 2
+                } else {
+                    angle = CGFloat.pi / 2
+                }
             }
-            return angle
         }
-        return 0
+        
+        return angle
     }
     lazy var edgePath: EdgePath = EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)!.position, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)!.position, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID)!, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID)!, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1)
     var directed: Edge.Directed {
@@ -171,9 +141,9 @@ class EdgeViewModel: ObservableObject {
     }
     
     init(edge: Edge, size: CGSize, graphViewModel: GraphViewModel) {
+        self.graphViewModel = graphViewModel
         self.edge = edge
         self.size = size
-        self.graphViewModel = graphViewModel
         self.forwardArrow = Arrow(angle: forwardAngle)
         self.reverseArrow = Arrow(angle: reverseAngle)
     }

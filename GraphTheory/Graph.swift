@@ -55,6 +55,8 @@ struct Graph: Identifiable, Codable {
             setControlPoint1Offset(for: edge, translation: .zero)
             setControlPoint2Offset(for: edge, translation: .zero)
             initWeightPosition(for: edge)
+            edgeForwardArrowParameters[edge.id] = 0.75
+            edgeReverseArrowParameters[edge.id] = 0.25
         }
         
         originalVertices = self.vertices
@@ -125,6 +127,8 @@ struct Graph: Identifiable, Codable {
         setControlPoint1Offset(for: edge, translation: .zero)
         setControlPoint2Offset(for: edge, translation: .zero)
         initWeightPosition(for: edge)
+        edgeForwardArrowParameters[edge.id] = 0.75
+        edgeReverseArrowParameters[edge.id] = 0.25
     }
     
     mutating func removeEdge(_ edge: Edge) {
@@ -618,6 +622,14 @@ class GraphViewModel: ObservableObject {
         graph.edges[edge.id]?.directed = direction
     }
     
+    func getEdgeForwardArrowParameter(edge: Edge) -> CGFloat? {
+        graph.edgeForwardArrowParameters[edge.id]
+    }
+    
+    func getEdgeReverseArrowParameter(edge: Edge) -> CGFloat? {
+        graph.edgeReverseArrowParameters[edge.id]
+    }
+    
     func setEdgeForwardArrowParameter(id: UUID, parameter: CGFloat) {
         graph.edgeForwardArrowParameters[id] = parameter
     }
@@ -885,9 +897,12 @@ class GraphViewModel: ObservableObject {
     }
     
     func getControlPointOffsets(for edge: Edge) -> (CGSize, CGSize) {
-        let controlPoint1Offsets = graph.edgeControlPoint1Offsets[edge.id]!
-        let controlPoint2Offsets = graph.edgeControlPoint2Offsets[edge.id]!
-        return (controlPoint1Offsets, controlPoint2Offsets)
+        if let controlPoint1Offsets = graph.edgeControlPoint1Offsets[edge.id],
+           let controlPoint2Offsets = graph.edgeControlPoint2Offsets[edge.id] {
+            return (controlPoint1Offsets, controlPoint2Offsets)
+        } else {
+            return (CGSize.zero, CGSize.zero)
+        }
     }
     
     func setControlPoint1Offset(for edge: Edge, translation: CGSize) {

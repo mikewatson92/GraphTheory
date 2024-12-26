@@ -378,6 +378,18 @@ struct Graph: Identifiable, Codable {
         return isCycle() && vertices.count == edges.count
     }
     
+    func isHamiltonion() -> Bool {
+        guard vertices.count > 0 else { return false }
+        let cycles = getAllPathsBetween(vertices.first!.value, vertices.first!.value)
+        for cycle in cycles {
+            let newGraph = Graph(vertices: Array(vertices.values), edges: cycle)
+            if newGraph.isHamiltonianCycle() {
+                return true
+            }
+        }
+        return false
+    }
+    
     func hasCycle() -> Bool {
         for vertexID in vertices.keys {
             var newVertices: [UUID] = []
@@ -1168,9 +1180,10 @@ struct GraphView: View {
                     NavigationLink(destination: PrimView(graph: graphViewModel.getGraph())) {
                         Text("Prim")
                     }
+                    /*
                     NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.getGraph())) {
                         Text("Chinese Postman Problem")
-                    }
+                    }*/
                 } label: {
                     Image(systemName: "flask")
                         .tint(themeViewModel.theme!.accentColor)

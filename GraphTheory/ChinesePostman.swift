@@ -43,15 +43,23 @@ struct ChinesePostman {
                 }
             }
         }
-        getAllPerfectMatchingsInT()
+        if graph.isConnected() {
+            getAllPerfectMatchingsInT()
+        }
     }
     
     func getAllNonAdjacentEdgesInT(to edges: [Edge]) -> [Edge] {
         var nonAdjacentEdges: [Edge] = Array(tJoinCompleteGraph.edges.values)
+        guard nonAdjacentEdges.count > 0 else { return [] }
+        print("The adjacent edges are:")
+        for edge in nonAdjacentEdges {
+            print(graph.edgeDescription(edge))
+        }
         // Remove any adjacent edges
         for tJoinEdge in Array(tJoinCompleteGraph.edges.values) {
             for givenEdge in edges {
                 if givenEdge.startVertexID == tJoinEdge.startVertexID || givenEdge.startVertexID == tJoinEdge.endVertexID || givenEdge.endVertexID == tJoinEdge.startVertexID || givenEdge.endVertexID == tJoinEdge.endVertexID {
+
                     nonAdjacentEdges.removeAll(where: { $0.id == tJoinEdge.id })
                 }
             }
@@ -105,7 +113,11 @@ struct ChinesePostman {
     }
     
     mutating func getAllPerfectMatchingsInT(currentMatching: [Edge] = []) {
-        guard tJoinCompleteGraph.edges.count != 0 else { return }
+        guard tJoinCompleteGraph.isConnected() else { return }
+        guard tJoinCompleteGraph.edges.count > 0 else { return }
+        guard tJoinCompleteGraph.vertices.count % 2 == 0 else { return }
+        guard tJoinCompleteGraph.isHamiltonion() else { return }
+        guard graph.isHamiltonion() else { return }
         // If we have found all of the perfect matchings
         if perfectMatchings.count == DoubleFactorial().doubleFactorial(n: oddVertices.count - 1) {
             print("Here are all perfect matchings:")

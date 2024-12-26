@@ -113,89 +113,50 @@ struct ChinesePostman {
     }
     
     mutating func getAllPerfectMatchingsInT(currentMatching: [Edge] = []) {
-        guard tJoinCompleteGraph.isConnected() else { return }
         guard tJoinCompleteGraph.edges.count > 0 else { return }
         guard tJoinCompleteGraph.vertices.count % 2 == 0 else { return }
-        guard tJoinCompleteGraph.isHamiltonion() else { return }
-        guard graph.isHamiltonion() else { return }
         guard graph.isConnected() else { return }
-        // If we have found all of the perfect matchings
-        if perfectMatchings.count == DoubleFactorial().doubleFactorial(n: oddVertices.count - 1) {
+
+        // Check if all perfect matchings are found
+        let expectedMatchings = DoubleFactorial.doubleFactorial(n: oddVertices.count - 1)
+        if perfectMatchings.count == expectedMatchings {
             print("Here are all perfect matchings:")
-            for matching in perfectMatchings {
-                print("Matching #\(perfectMatchings.firstIndex(of: matching)!):")
+            for (index, matching) in perfectMatchings.enumerated() {
+                print("Matching #\(index):")
                 for edge in matching {
                     print(graph.edgeDescription(edge))
                 }
             }
             return
-        } else if currentMatching.count == oddVertices.count / 2 {
-            // If the current matching is a perfect matching
-            // If the current matching is not currently in currentPerfectMatchings
-            var isUnique = true
-            for perfectMatching in perfectMatchings {
-                if areMatchingsEqual(perfectMatching, currentMatching) {
-                    isUnique = false
-                    break
-                }
-            }
-            if isUnique {
+        }
+
+        // Check if current matching is complete
+        if currentMatching.count == oddVertices.count / 2 {
+            // Check if the current matching is unique
+            if !perfectMatchings.contains(where: { areMatchingsEqual($0, currentMatching) }) {
                 print("Found a unique perfect matching:")
                 for edge in currentMatching {
                     print(graph.edgeDescription(edge))
                 }
                 perfectMatchings.append(currentMatching)
-                for perfectMatching in perfectMatchings {
-                    for edge in perfectMatching {
-                        if numberOfTimesEdgeAppearsInMatchings(edge, matchings: perfectMatchings) == DoubleFactorial().doubleFactorial(n: oddVertices.count - 2 - 1) {
-                            maxedOutEdges.append(edge)
-                        }
-                    }
-                }
-                getAllPerfectMatchingsInT()
-            } else { // If the matching is not unique
-                for perfectMatching in perfectMatchings {
-                    for edge in perfectMatching {
-                        if numberOfTimesEdgeAppearsInMatchings(edge, matchings: perfectMatchings) == DoubleFactorial().doubleFactorial(n: oddVertices.count - 2 - 1) {
-                            maxedOutEdges.append(edge)
-                        }
-                    }
-                }
-                getAllPerfectMatchingsInT()
             }
-        } else { // If we get here, the currentMatching is not yet a perfect matching
-            var availableAdjacentEdges = getAllNonAdjacentEdgesInT(to: currentMatching)
-            for edge in maxedOutEdges {
-                availableAdjacentEdges.removeAll(where: { $0.id == edge.id })
-            }
-            for perfectMatching in perfectMatchings {
-                for edge in perfectMatching {
-                    if numberOfTimesEdgeAppearsInMatchings(edge, matchings: perfectMatchings) == DoubleFactorial().doubleFactorial(n: oddVertices.count - 2 - 1) {
-                        maxedOutEdges.append(edge)
-                        availableAdjacentEdges.removeAll(where: { $0.id == edge.id })
-                    }
-                }
-            }
+            return
+        }
+
+        // Get available edges
+        var availableEdges = getAllNonAdjacentEdgesInT(to: currentMatching)
+        availableEdges.removeAll(where: { edge in maxedOutEdges.contains(where: { $0.id == edge.id }) })
+
+        if availableEdges.isEmpty {
+            return // No valid edges left
+        }
+
+        // Iterate through available edges
+        for edge in availableEdges {
             var newMatching = currentMatching
-            if availableAdjacentEdges.count == 0 {
-                return
-            }
-            newMatching.append(availableAdjacentEdges[0])
-            print("Still working on building a perfect matching for:")
-            for edge in newMatching {
-                print(graph.edgeDescription(edge))
-            }
-            
-            if perfectMatchings.count == DoubleFactorial().doubleFactorial(n: oddVertices.count - 1) {
-                print("Here are all perfect matchings:")
-                for matching in perfectMatchings {
-                    print("Matching #\(perfectMatchings.firstIndex(of: matching)!):")
-                    for edge in matching {
-                        print(graph.edgeDescription(edge))
-                    }
-                }
-                return
-            }
+            newMatching.append(edge)
+
+            // Recursive call
             getAllPerfectMatchingsInT(currentMatching: newMatching)
         }
     }
@@ -274,16 +235,16 @@ class ChinesePostmanViewModel: ObservableObject {
             for tJoin in possibleTJoins {
                 for tJoinEdge in tJoin {
                     print("Checking T-join edge")
-                    let shortestPaths = chinesePostman.graph.shortestPaths(from: chinesePostman.graph.vertices[tJoinEdge.startVertexID]!, to: chinesePostman.graph.vertices[tJoinEdge.endVertexID]!)
-                    print("There " + (shortestPaths.count == 1 ? "is " : "are ") + "\(shortestPaths.count) " + (shortestPaths.count == 1 ? "edge " : "edges ") + "for \(chinesePostman.graph.edgeDescription(tJoinEdge))")
-                    for path in shortestPaths {
-                        print("Path #\(shortestPaths.firstIndex(of: path)!):")
-                        for edge in path {
+                    let shortestTrails = chinesePostman.graph.shortestTrails(from: chinesePostman.graph.vertices[tJoinEdge.startVertexID]!, to: chinesePostman.graph.vertices[tJoinEdge.endVertexID]!)
+                    print("There " + (shortestTrails.count == 1 ? "is " : "are ") + "\(shortestTrails.count) " + (shortestTrails.count == 1 ? "edge " : "edges ") + "for \(chinesePostman.graph.edgeDescription(tJoinEdge))")
+                    for trail in shortestTrails {
+                        print("Trail #\(shortestTrails.firstIndex(of: trail)!):")
+                        for edge in trail {
                             print(chinesePostman.graph.edgeDescription(edge))
                         }
                     }
-                    for path in shortestPaths {
-                        if path.contains(where: {$0.id == edge.id}) {
+                    for trail in shortestTrails {
+                        if trail.contains(where: {$0.id == edge.id}) {
                             chosenEdges.append(edge)
                             currentVertex = chinesePostman.graph.vertices[edge.traverse(from: currentVertex!.id)!]
                             checkForCompletion()
@@ -304,17 +265,17 @@ class ChinesePostmanViewModel: ObservableObject {
     func checkForCompletion() {
         guard possibleTJoins.count == 1 else { return }
         let tJoin = possibleTJoins[0]
-        var tJoinEdgeToGraphPath: [UUID: [Edge]] = [:]
+        var tJoinEdgeToGraphTrail: [UUID: [Edge]] = [:]
         for tJoinEdge in tJoin {
-            let shortestPaths = chinesePostman.graph.shortestPaths(from: chinesePostman.graph.vertices[tJoinEdge.startVertexID]!, to: chinesePostman.graph.vertices[tJoinEdge.endVertexID]!)
+            let shortestTrails = chinesePostman.graph.shortestTrails(from: chinesePostman.graph.vertices[tJoinEdge.startVertexID]!, to: chinesePostman.graph.vertices[tJoinEdge.endVertexID]!)
             var tJoinTravelledTwice = false
-            for path in shortestPaths {
-                for edge in path {
+            for trail in shortestTrails {
+                for edge in trail {
                     if chosenEdges.count(where: {$0.id == edge.id}) != 2 {
                         break
-                    } else if edge.id == path.last?.id {
+                    } else if edge.id == trail.last?.id {
                         tJoinTravelledTwice = true
-                        tJoinEdgeToGraphPath[tJoinEdge.id] = path
+                        tJoinEdgeToGraphTrail[tJoinEdge.id] = trail
                     }
                 }
             }
@@ -328,7 +289,7 @@ class ChinesePostmanViewModel: ObservableObject {
         // Remove all edges that are part of a path represented by a T-Join edge
         for edge in Array(chinesePostman.graph.edges.values) {
             for tJoinEdge in tJoin {
-                if tJoinEdgeToGraphPath[tJoinEdge.id]!.contains(where: { $0.id == edge.id }) {
+                if tJoinEdgeToGraphTrail[tJoinEdge.id]!.contains(where: { $0.id == edge.id }) {
                     nonTJoinEdges.removeAll(where: { $0.id == edge.id })
                     break
                 }

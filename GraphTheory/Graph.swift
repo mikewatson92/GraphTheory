@@ -147,77 +147,76 @@ struct Graph: Identifiable, Codable {
         return "Edge\(vertices[edge.startVertexID]!.label)\(vertices[edge.endVertexID]!.label)"
     }
     
-    func getAllPathsBetween(_ startVertex: Vertex, _ endVertex: Vertex) -> [[Edge]] {
-        var allPaths: [[Edge]] = []
-        let connectedEdges = getConnectedEdges(to: startVertex.id)
-        for edge in connectedEdges {
-            let path: [Edge] = [edge]
-            let currentVertexID = edge.traverse(from: startVertex.id)!
-            getAllPathsBasedOn(startVertex, endVertex, currentVertex: vertices[currentVertexID]!, currentPath: path)
-        }
+    func getAllTrailsBetween(_ startVertex: Vertex, _ endVertex: Vertex) -> [[Edge]] {
+        var allTrails: [[Edge]] = []
+        var currentTrail: [Edge] = []
         
-        func getAllPathsBasedOn(_ startVertex: Vertex, _ endVertex: Vertex, currentVertex: Vertex, currentPath: [Edge]) {
+        func dfs(currentVertex: Vertex) {
             if currentVertex.id == endVertex.id {
-                allPaths.append(currentPath)
-                return
-            }
-            
-            var newConnectedEdges = getConnectedEdges(to: currentVertex.id)
-            for edge in currentPath {
-                newConnectedEdges.removeAll(where: { $0.id == edge.id })
-            }
-            for edge in newConnectedEdges {
-                let currentVertexID = edge.traverse(from: currentVertex.id)!
-                var newPath = currentPath
-                newPath.append(edge)
-                getAllPathsBasedOn(startVertex, endVertex, currentVertex: vertices[currentVertexID]!, currentPath: newPath)
+                allTrails.append(currentTrail)
+            } else {
+                var newConnectedEdges = getConnectedEdges(to: currentVertex.id)
+                // Remove any edges already traversed
+                for edge in currentTrail {
+                    newConnectedEdges.removeAll(where: { $0.id == edge.id })
+                }
+                for edge in newConnectedEdges {
+                    currentTrail.append(edge)
+                    let nextVertexID = edge.traverse(from: currentVertex.id)!
+                    let nextVertex = vertices[nextVertexID]!
+                    // Recursion
+                    dfs(currentVertex: nextVertex)
+                    // Backtrack
+                    currentTrail.removeLast()
+                }
             }
         }
-        return allPaths
+        dfs(currentVertex: startVertex)
+        return allTrails
     }
     
     func smallestDistance(from startVertex: Vertex, to endVertex: Vertex) -> Double? {
         guard areVerticesConnected(startVertex.id, endVertex.id) else { return nil }
-        let paths = getAllPathsBetween(startVertex, endVertex)
-        print("There are \(paths.count) paths from \(startVertex.label) to \(endVertex.label)")
-        for path in paths {
-            print("Path:")
-            for edge in path {
+        let trails = getAllTrailsBetween(startVertex, endVertex)
+        print("There are \(trails.count) trails from \(startVertex.label) to \(endVertex.label)")
+        for trail in trails {
+            print("Trail:")
+            for edge in trail {
                 print(edgeDescription(edge))
             }
         }
-        var pathWeights: [Double] = []
-        for path in paths {
-            var pathWeight = 0.0
-            for edge in path {
-                pathWeight += edge.weight
+        var trailWeights: [Double] = []
+        for trail in trails {
+            var trailWeight = 0.0
+            for edge in trail {
+                trailWeight += edge.weight
             }
-            pathWeights.append(pathWeight)
+            trailWeights.append(trailWeight)
         }
-        return pathWeights.min()
+        return trailWeights.min()
     }
     
-    func shortestPaths(from startVertex: Vertex, to endVertex: Vertex) -> [[Edge]] {
-        let paths = getAllPathsBetween(startVertex, endVertex)
-        guard !paths.isEmpty else { return [] }
+    func shortestTrails(from startVertex: Vertex, to endVertex: Vertex) -> [[Edge]] {
+        let trails = getAllTrailsBetween(startVertex, endVertex)
+        guard !trails.isEmpty else { return [] }
         let smallestDistance = smallestDistance(from: startVertex, to: endVertex)
-        var shortestPaths: [[Edge]] = []
+        var shortestTrails: [[Edge]] = []
         
-        for path in paths {
-            if pathWeight(path) == smallestDistance {
-                shortestPaths.append(path)
+        for trail in trails {
+            if walkWeight(trail) == smallestDistance {
+                shortestTrails.append(trail)
             }
         }
-        for path in shortestPaths {
+        for trail in shortestTrails {
             print("Getting shortest paths between vertices.")
-            for edge in path {
+            for edge in trail {
                 print("Edge\(vertices[edge.startVertexID]!.label)\(vertices[edge.endVertexID]!.label)")
             }
         }
-        return shortestPaths
+        return shortestTrails
     }
     
-    func pathWeight(_ edges: [Edge]) -> Double? {
+    func walkWeight(_ edges: [Edge]) -> Double? {
         guard !edges.isEmpty else { return nil }
         var weight = 0.0
         for edge in edges {
@@ -380,7 +379,7 @@ struct Graph: Identifiable, Codable {
     
     func isHamiltonion() -> Bool {
         guard vertices.count > 0 else { return false }
-        let cycles = getAllPathsBetween(vertices.first!.value, vertices.first!.value)
+        let cycles = getAllTrailsBetween(vertices.first!.value, vertices.first!.value)
         for cycle in cycles {
             let newGraph = Graph(vertices: Array(vertices.values), edges: cycle)
             if newGraph.isHamiltonianCycle() {

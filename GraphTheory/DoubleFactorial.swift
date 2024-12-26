@@ -8,7 +8,7 @@
 import Foundation
 
 struct DoubleFactorial {
-    private func evenDoubleFactorial(n: Int) -> Int {
+    private static func evenDoubleFactorial(n: Int) -> Int {
         if n == 2 {
             return 2
         } else {
@@ -16,7 +16,7 @@ struct DoubleFactorial {
         }
     }
     
-    private func oddDoubleFactorial(n: Int) -> Int {
+    private static func oddDoubleFactorial(n: Int) -> Int {
         if n == 1 {
             return 1
         } else {
@@ -24,7 +24,7 @@ struct DoubleFactorial {
         }
     }
     
-    func doubleFactorial(n: Int) -> Int? {
+    static func doubleFactorial(n: Int) -> Int? {
         guard n > 0 else { return nil }
         if n % 2 == 0 {
             return evenDoubleFactorial(n: n)

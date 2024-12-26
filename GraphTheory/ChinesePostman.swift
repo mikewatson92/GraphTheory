@@ -105,6 +105,7 @@ struct ChinesePostman {
     }
     
     mutating func getAllPerfectMatchingsInT(currentMatching: [Edge] = []) {
+        guard tJoinCompleteGraph.edges.count != 0 else { return }
         // If we have found all of the perfect matchings
         if perfectMatchings.count == DoubleFactorial().doubleFactorial(n: oddVertices.count - 1) {
             print("Here are all perfect matchings:")
@@ -354,11 +355,13 @@ struct ChinesePostmanView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var chinesePostmanViewModel: ChinesePostmanViewModel
+    @ObservedObject var graphViewModel = GraphViewModel(graph: Graph())
     @State private var edgeError: Edge?
     @State private var edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0.3673055172, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1))]
     
     init(graph: Graph) {
         self.chinesePostmanViewModel = ChinesePostmanViewModel(graph: graph)
+        self.graphViewModel = chinesePostmanViewModel.graphViewModel
     }
     
     var body: some View {
@@ -377,14 +380,19 @@ struct ChinesePostmanView: View {
                                             if edge.id == error.id {
                                                 chinesePostmanViewModel.errorStatus = .none
                                                 edgeError = nil
+                                                edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                                 chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         } else {
-                                            chinesePostmanViewModel.chooseEdge(edge)
+                                            withAnimation {
+                                                chinesePostmanViewModel.chooseEdge(edge)
+                                            }
                                             if chinesePostmanViewModel.errorStatus != .none {
                                                 edgeError = edge
+                                                edgeViewModel.setColor(.red)
                                                 chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: .red)
                                             } else {
+                                                edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                                 chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         }

@@ -1168,6 +1168,9 @@ struct GraphView: View {
                     NavigationLink(destination: PrimView(graph: graphViewModel.getGraph())) {
                         Text("Prim")
                     }
+                    NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.getGraph())) {
+                        Text("Chinese Postman Problem")
+                    }
                 } label: {
                     Image(systemName: "flask")
                         .tint(themeViewModel.theme!.accentColor)

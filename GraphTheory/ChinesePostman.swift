@@ -118,6 +118,7 @@ struct ChinesePostman {
         guard tJoinCompleteGraph.vertices.count % 2 == 0 else { return }
         guard tJoinCompleteGraph.isHamiltonion() else { return }
         guard graph.isHamiltonion() else { return }
+        guard graph.isConnected() else { return }
         // If we have found all of the perfect matchings
         if perfectMatchings.count == DoubleFactorial().doubleFactorial(n: oddVertices.count - 1) {
             print("Here are all perfect matchings:")
@@ -233,13 +234,11 @@ class ChinesePostmanViewModel: ObservableObject {
     @Published var chosenEdges: [Edge] = []
     @Published var errorStatus: ErrorStatus = .none
     @Published var step: Step = .chooseVertex
-    @Published var graphViewModel: GraphViewModel
     @Published var currentVertex: Vertex?
     var possibleTJoins: [[Edge]] = []
     
     init(graph: Graph) {
         self.chinesePostman = ChinesePostman(graph: graph)
-        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
         for tJoin in chinesePostman.getMinimumWeightPerfectMatchings() {
             possibleTJoins.append(tJoin)
         }
@@ -366,24 +365,24 @@ class ChinesePostmanViewModel: ObservableObject {
 struct ChinesePostmanView: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    @ObservedObject var chinesePostmanViewModel: ChinesePostmanViewModel
-    @ObservedObject var graphViewModel = GraphViewModel(graph: Graph())
+    @StateObject var chinesePostmanViewModel: ChinesePostmanViewModel
+    @StateObject var graphViewModel = GraphViewModel(graph: Graph())
     @State private var edgeError: Edge?
     @State private var edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0.3673055172, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1))]
     
     init(graph: Graph) {
-        self.chinesePostmanViewModel = ChinesePostmanViewModel(graph: graph)
-        self.graphViewModel = chinesePostmanViewModel.graphViewModel
+        self._chinesePostmanViewModel = StateObject(wrappedValue: ChinesePostmanViewModel(graph: graph))
+        self._graphViewModel = StateObject(wrappedValue: GraphViewModel(graph: graph, showWeights: true))
     }
     
     var body: some View {
-        if !chinesePostmanViewModel.graphViewModel.getGraph().isConnected() {
+        if !graphViewModel.getGraph().isConnected() {
             Text("This graph is not connected, so the Chinese Postman problem has no solution.")
         } else {
             ZStack {
                 GeometryReader{ geometry in
-                    ForEach(chinesePostmanViewModel.graphViewModel.getEdges()) { edge in
-                        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: chinesePostmanViewModel.graphViewModel)
+                    ForEach(graphViewModel.getEdges()) { edge in
+                        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                         EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
@@ -393,7 +392,7 @@ struct ChinesePostmanView: View {
                                                 chinesePostmanViewModel.errorStatus = .none
                                                 edgeError = nil
                                                 edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
-                                                chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
+                                                graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         } else {
                                             withAnimation {
@@ -402,17 +401,17 @@ struct ChinesePostmanView: View {
                                             if chinesePostmanViewModel.errorStatus != .none {
                                                 edgeError = edge
                                                 edgeViewModel.setColor(.red)
-                                                chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: .red)
+                                                graphViewModel.setColorForEdge(edge: edge, color: .red)
                                             } else {
                                                 edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
-                                                chinesePostmanViewModel.graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
+                                                graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         }
                                     }
                                 })
                     }
-                    ForEach(chinesePostmanViewModel.graphViewModel.getVertices()) { vertex in
-                        let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: chinesePostmanViewModel.graphViewModel)
+                    ForEach(graphViewModel.getVertices()) { vertex in
+                        let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                             .shadow(color: (chinesePostmanViewModel.currentVertex?.id == vertex.id ? .green : .clear), radius: 10)
                             .highPriorityGesture(TapGesture(count: 1)

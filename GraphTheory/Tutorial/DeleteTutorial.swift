@@ -53,7 +53,7 @@ struct DeleteTutorial: View {
                     GeometryReader { geometry in
                         ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                            EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                            EdgeView(edgeViewModel: edgeViewModel)
                                 .onTapGesture(count: 2) {
                                     graphViewModel.removeEdge(edge)
                                 }

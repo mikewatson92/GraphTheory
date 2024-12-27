@@ -60,7 +60,7 @@ struct AddEdgeTutorial: View {
                     GeometryReader { geometry in
                         ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                            EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                            EdgeView(edgeViewModel: edgeViewModel)
                         }
                         ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)

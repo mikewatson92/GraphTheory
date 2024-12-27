@@ -342,9 +342,9 @@ struct ChinesePostmanView: View {
         } else {
             ZStack {
                 GeometryReader{ geometry in
-                    ForEach(graphViewModel.getEdges()) { edge in
+                    ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                        EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                        EdgeView(edgeViewModel: edgeViewModel)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
                                     if chinesePostmanViewModel.step == .selectEdges {

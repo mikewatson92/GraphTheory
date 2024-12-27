@@ -54,7 +54,7 @@ struct ColorTutorial: View {
                     GeometryReader { geometry in
                         ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                            EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                            EdgeView(edgeViewModel: edgeViewModel)
                                 .onTapGesture(count: 1) {
                                     if let selectedEdge = graphViewModel.selectedEdge {
                                         if selectedEdge.id == edge.id {

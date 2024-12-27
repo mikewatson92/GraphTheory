@@ -19,8 +19,8 @@ struct StraightenTutorial: View {
         let vertex2 = Vertex(position: CGPoint(x: 0.5, y: 0.8))
         let edge = Edge(startVertexID: vertex1.id, endVertexID: vertex2.id)
         var graph = Graph(vertices: [vertex1, vertex2], edges: [edge])
-        graph.edgeControlPoints1[edge.id] = CGPoint(x: 0.2, y: 0.35)
-        graph.edgeControlPoints2[edge.id] = CGPoint(x: 0.8, y: 0.65)
+        graph.edges[edge.id]?.controlPoint1 = CGPoint(x: 0.2, y: 0.35)
+        graph.edges[edge.id]?.controlPoint2 = CGPoint(x: 0.8, y: 0.65)
         _graphViewModel = StateObject(wrappedValue: GraphViewModel(graph: graph))
     }
     
@@ -63,7 +63,7 @@ struct StraightenTutorial: View {
                     GeometryReader { geometry in
                         ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                            EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                            EdgeView(edgeViewModel: edgeViewModel)
                                 .onLongPressGesture {
                                     graphViewModel.resetControlPointsAndOffsets(for: edge)
                                     withAnimation {

@@ -16,23 +16,11 @@ struct Graph: Identifiable, Codable {
     let id: UUID
     var vertices: [UUID: Vertex] = [:]
     var edges: [UUID: Edge] = [:]
-    var edgeWeightPositions: [UUID: CGPoint] = [:]
-    var edgeControlPoints1: [UUID: CGPoint] = [:]
-    var edgeControlPoints2: [UUID: CGPoint] = [:]
-    var edgeControlPoint1Offsets: [UUID: CGSize] = [:]
-    var edgeControlPoint2Offsets: [UUID: CGSize] = [:]
-    var edgeForwardArrowParameters: [UUID: CGFloat] = [:]
-    var edgeReverseArrowParameters: [UUID: CGFloat] = [:]
+
     // Default values saved when the graph is initially constructed.
     // Used for restoring to defaults.
     var originalVertices: [UUID: Vertex] = [:]
     var originalEdges: [UUID: Edge] = [:]
-    var originalEdgeControlPoints1: [UUID: CGPoint] = [:]
-    var originalEdgeControlPoints2: [UUID: CGPoint] = [:]
-    var originalEdgeControlPoint1Offsets: [UUID: CGSize] = [:]
-    var originalEdgeControlPoint2Offsets: [UUID: CGSize] = [:]
-    var originalEdgeForwardArrowParameters: [UUID: CGFloat] = [:]
-    var originalEdgeReverseArrowParameters: [UUID: CGFloat] = [:]
     //
     var resetMethod: ResetFunction = .resetToZero
     var mode: Mode = .edit
@@ -54,19 +42,10 @@ struct Graph: Identifiable, Codable {
             setControlPoints(for: edge)
             setControlPoint1Offset(for: edge, translation: .zero)
             setControlPoint2Offset(for: edge, translation: .zero)
-            initWeightPosition(for: edge)
-            edgeForwardArrowParameters[edge.id] = 0.75
-            edgeReverseArrowParameters[edge.id] = 0.25
         }
         
         originalVertices = self.vertices
         originalEdges = self.edges
-        originalEdgeControlPoints1 = self.edgeControlPoints1
-        originalEdgeControlPoints2 = self.edgeControlPoints2
-        originalEdgeControlPoint1Offsets = self.edgeControlPoint1Offsets
-        originalEdgeControlPoint2Offsets = self.edgeControlPoint2Offsets
-        originalEdgeForwardArrowParameters = self.edgeForwardArrowParameters
-        originalEdgeReverseArrowParameters = self.edgeReverseArrowParameters
     }
     
     enum Algorithm: String, Codable, CaseIterable, Identifiable {
@@ -98,19 +77,11 @@ struct Graph: Identifiable, Codable {
     mutating func resetToZero() {
         vertices = [:]
         edges = [:]
-        edgeControlPoints1.removeAll()
-        edgeControlPoints2.removeAll()
-        edgeControlPoint1Offsets.removeAll()
-        edgeControlPoint2Offsets.removeAll()
     }
     
     mutating func restoreToOriginal() {
         vertices = originalVertices
         edges = originalEdges
-        edgeControlPoints1 = originalEdgeControlPoints1
-        edgeControlPoints2 = originalEdgeControlPoints2
-        edgeControlPoint1Offsets = originalEdgeControlPoint1Offsets
-        edgeControlPoint2Offsets = originalEdgeControlPoint2Offsets
     }
     
     mutating func addVertex(_ vertex: Vertex) {
@@ -118,6 +89,9 @@ struct Graph: Identifiable, Codable {
     }
     
     mutating func removeVertex(_ vertex: Vertex) {
+        for edge in getConnectedEdges(to: vertex.id) {
+            removeEdge(edge)
+        }
         vertices.removeValue(forKey: vertex.id)
     }
     
@@ -126,9 +100,6 @@ struct Graph: Identifiable, Codable {
         setControlPoints(for: edge)
         setControlPoint1Offset(for: edge, translation: .zero)
         setControlPoint2Offset(for: edge, translation: .zero)
-        initWeightPosition(for: edge)
-        edgeForwardArrowParameters[edge.id] = 0.75
-        edgeReverseArrowParameters[edge.id] = 0.25
     }
     
     mutating func removeEdge(_ edge: Edge) {
@@ -239,14 +210,6 @@ struct Graph: Identifiable, Codable {
     
     func getOffsetByID(_ id: UUID) -> CGSize? {
         return getVertexByID(id)?.offset
-    }
-    
-    func getEdgeWeightPositionByID(_ id: UUID) -> CGPoint? {
-        edgeWeightPositions[id]
-    }
-    
-    mutating func setEdgeWeightPositionByID(id: UUID, position: CGPoint) {
-        edgeWeightPositions[id] = position
     }
     
     func getEdgeWeightOffsetByID(_ id: UUID) -> CGSize? {
@@ -428,6 +391,26 @@ struct Graph: Identifiable, Codable {
         return false
     }
     
+    // Determines if the graph has the Euclidean property:
+    // the direct edge between any two vertices is the shortest distance.
+    func isEuclidean() -> Bool {
+        for edge in Array(edges.values) {
+            let startVertexID = edge.startVertexID
+            let startVertex = vertices[startVertexID]!
+            let endVertexID = edge.endVertexID
+            let endVertex = vertices[endVertexID]!
+            let shortestTrails = shortestTrails(from: startVertex, to: endVertex)
+            var shortestTrailWeight = 0.0
+            for edge in shortestTrails[0] {
+                shortestTrailWeight += edge.weight
+            }
+            if edge.weight > shortestTrailWeight {
+                return false
+            }
+        }
+        return true
+    }
+    
     // Return an array of edges that are connect to vertex v
     func getConnectedEdges(to v: UUID) -> [Edge] {
         var connectedEdges: [Edge] = []
@@ -440,56 +423,38 @@ struct Graph: Identifiable, Codable {
     }
     
     func getEdgeControlPoints(for edge: Edge) -> (CGPoint, CGPoint) {
-        let controlPoint1 = edgeControlPoints1[edge.id]!
-        let controlPoint2 = edgeControlPoints2[edge.id]!
+        let controlPoint1 = edges[edge.id]!.controlPoint1
+        let controlPoint2 = edges[edge.id]!.controlPoint2
         return (controlPoint1, controlPoint2)
     }
     
     func getEdgeControlPointOffsets(for edge: Edge) -> (CGSize, CGSize) {
-        let controlPoint1Offset = edgeControlPoint1Offsets[edge.id]!
-        let controlPoint2Offset = edgeControlPoint2Offsets[edge.id]!
+        let controlPoint1Offset = edges[edge.id]!.controlPoint1Offset
+        let controlPoint2Offset = edges[edge.id]!.controlPoint2Offset
         return (controlPoint1Offset, controlPoint2Offset)
-    }
-    
-    mutating func initWeightPosition(for edge: Edge) {
-        let edgePath = EdgePath(startVertexPosition: getVertexByID(edge.startVertexID)!.position, endVertexPosition: getVertexByID(edge.endVertexID)!.position, startOffset: CGSize.zero, endOffset: CGSize.zero, controlPoint1: getEdgeControlPoints(for: edge).0, controlPoint2: getEdgeControlPoints(for: edge).1, controlPoint1Offset: getEdgeControlPointOffsets(for: edge).0, controlPoint2Offset: getEdgeControlPointOffsets(for: edge).1)
-        let midPoint = edgePath.midpoint()
-        
-        if let perpendicularGradient = edgePath.perpendicularGradient() {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: midPoint, perpendicularGradient: perpendicularGradient, distance: CGFloat(edge.sign) * Edge.DEFAULT_WEIGHT_DISTANCE)
-            edgeWeightPositions[edge.id] = CGPoint(
-                x: pointOnPerpendicular.x,
-                y: pointOnPerpendicular.y
-            )
-        } else {
-            edgeWeightPositions[edge.id] = CGPoint(
-                x: midPoint.x,
-                y: midPoint.y + (edge.sign == 1 ? Edge.DEFAULT_WEIGHT_DISTANCE : -Edge.DEFAULT_WEIGHT_DISTANCE)
-            )
-        }
     }
     
     mutating func setControlPoints(for edge: Edge) {
         let controlPoint1 = calculateControlPoint(for: edge, distance: 0.3)
         let controlPoint2 = calculateControlPoint(for: edge, distance: 0.7)
-        edgeControlPoints1[edge.id] = controlPoint1
-        edgeControlPoints2[edge.id] = controlPoint2
+        edges[edge.id]?.controlPoint1 = controlPoint1
+        edges[edge.id]?.controlPoint2 = controlPoint2
     }
     
     mutating func setControlPoint1(for edge: Edge, at point: CGPoint) {
-        edgeControlPoints1[edge.id] = point
+        edges[edge.id]?.controlPoint1 = point
     }
     
     mutating func setControlPoint2(for edge: Edge, at point: CGPoint) {
-        edgeControlPoints2[edge.id] = point
+        edges[edge.id]?.controlPoint2 = point
     }
     
     mutating func setControlPoint1Offset(for edge: Edge, translation: CGSize) {
-        edgeControlPoint1Offsets[edge.id] = translation
+        edges[edge.id]?.controlPoint1Offset = translation
     }
     
     mutating func setControlPoint2Offset(for edge: Edge, translation: CGSize) {
-        edgeControlPoint2Offsets[edge.id] = translation
+        edges[edge.id]?.controlPoint2Offset = translation
     }
     
     func calculateControlPoint(for edge: Edge, distance: CGFloat) -> CGPoint {
@@ -509,13 +474,17 @@ struct Graph: Identifiable, Codable {
     }
     
     mutating func updateControlPoint1(for edge: Edge, translation: CGSize) {
-        edgeControlPoints1[edge.id] = CGPoint(x: edgeControlPoints1[edge.id]!.x + translation.width,
-                                              y: edgeControlPoints1[edge.id]!.y + translation.height)
+        if let originalControlPoint1 = edges[edge.id]?.controlPoint1 {
+            edges[edge.id]?.controlPoint1 = CGPoint(x: originalControlPoint1.x + translation.width,
+                                                    y: originalControlPoint1.y + translation.height)
+        }
     }
     
     mutating func updateControlPoint2(for edge: Edge, translation: CGSize) {
-        edgeControlPoints2[edge.id] = CGPoint(x: edgeControlPoints2[edge.id]!.x + translation.width,
-                                              y: edgeControlPoints2[edge.id]!.y + translation.height)
+        if let originalControlPoint2 = edges[edge.id]?.controlPoint2 {
+            edges[edge.id]?.controlPoint2 = CGPoint(x: originalControlPoint2.x + translation.width,
+                                                    y: originalControlPoint2.y + translation.height)
+        }
     }
     
     func yIntercept(of edge: Edge) -> CGFloat? {
@@ -614,6 +583,14 @@ class GraphViewModel: ObservableObject {
         graph.edges[edge.id]?.color = color
     }
     
+    func setEdgeStrokeStyle(edge: Edge, strokeStyle: Edge.StrokeStyle) {
+        graph.edges[edge.id]?.strokeStyle = strokeStyle
+    }
+    
+    func setVertexOpacity(vertex: Vertex, opacity: Double) {
+        graph.vertices[vertex.id]?.opacity = max(0, min(1, opacity))
+    }
+    
     func getEdgeDirection(_ edge: Edge) -> Edge.Directed {
         graph.edges[edge.id]?.directed ?? .none
     }
@@ -623,24 +600,32 @@ class GraphViewModel: ObservableObject {
     }
     
     func getEdgeForwardArrowParameter(edge: Edge) -> CGFloat? {
-        graph.edgeForwardArrowParameters[edge.id]
+        graph.edges[edge.id]?.forwardArrowParameter
     }
     
     func getEdgeReverseArrowParameter(edge: Edge) -> CGFloat? {
-        graph.edgeReverseArrowParameters[edge.id]
+        graph.edges[edge.id]?.reverseArrowParameter
     }
     
     func setEdgeForwardArrowParameter(id: UUID, parameter: CGFloat) {
-        graph.edgeForwardArrowParameters[id] = parameter
+        graph.edges[id]?.forwardArrowParameter = parameter
     }
     
     func setEdgeReverseArrowParameter(id: UUID, parameter: CGFloat) {
-        graph.edgeReverseArrowParameters[id] = parameter
+        graph.edges[id]?.reverseArrowParameter = parameter
+    }
+    
+    func setEdgeWeightPositionParameterT(id: UUID, t: CGFloat) {
+        graph.edges[id]?.weightPositionParameterT = t
+    }
+    
+    func setEdgeWeightPositionDistance(id: UUID, distance: CGFloat) {
+        graph.edges[id]?.weightPositionDistance = distance
     }
     
     // Used for storing an initial copy of a vertex before
     // changes occur.
-    func vertexWillMove(_ vertex: Vertex) {
+    func vertexWillMove(_ vertex: Vertex, size: CGSize) {
         if !vertexWillMove.keys.contains(where: { $0 == vertex.id }) {
             vertexWillMove[vertex.id] = vertex
             let connectedEdges = getConnectedEdges(to: vertex.id)
@@ -652,8 +637,10 @@ class GraphViewModel: ObservableObject {
                 }
                 // Calculate the relative positions of the weights
                 if let startVertex = graph.getVertexByID(edge.startVertexID), let endVertex = graph.getVertexByID(edge.endVertexID) {
-                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: .zero, endOffset: .zero, controlPoint1: getControlPoints(for: edge).0, controlPoint2: getControlPoints(for: edge).1, controlPoint1Offset: getControlPointOffsets(for: edge).0, controlPoint2Offset: getControlPointOffsets(for: edge).1)
-                    let (t, distance) = edgePath.closestParameterAndDistance(externalPoint: getWeightPosition(for: edge) ?? CGPoint.zero, p0: startVertex.position, p1: getControlPoints(for: edge).0, p2: getControlPoints(for: edge).1, p3: endVertex.position)
+                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: .zero, endOffset: .zero, controlPoint1: getControlPoints(for: edge).0, controlPoint2: getControlPoints(for: edge).1, controlPoint1Offset: getControlPointOffsets(for: edge).0, controlPoint2Offset: getControlPointOffsets(for: edge).1, size: size)
+                    let edgeViewModel = EdgeViewModel(edge: edge, size: size, graphViewModel: self)
+                    let weightPosition = edgeViewModel.weightPosition
+                    let (t, distance) = edgePath.closestParameterAndDistance(externalPoint: weightPosition)
                     if let index = edgesWillMove.firstIndex(where: {$0.id == edge.id}) {
                         edgesWillMove[index].weightPositionParameterT = t
                         edgesWillMove[index].weightPositionDistance = distance
@@ -866,18 +853,17 @@ class GraphViewModel: ObservableObject {
         graph.edges[edge.id]?.weight = weight
     }
     
-    func getWeightPosition(for edge: Edge) -> CGPoint? {
-        return graph.getEdgeWeightPositionByID(edge.id)
-    }
-    
-    func setWeightPosition(for edge: Edge, position: CGPoint) {
-        graph.setEdgeWeightPositionByID(id: edge.id, position: position)
-    }
-    
     func getWeightPositionOffset(for edge: Edge) -> CGSize? {
         return graph.getEdgeWeightOffsetByID(edge.id)
     }
     
+    func setWeightPosition(for edge: Edge, position: CGPoint, size: CGSize) {
+        let edgeViewModel = EdgeViewModel(edge: edge, size: size, graphViewModel: self)
+        let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: position)
+        graph.edges[edge.id]?.weightPositionParameterT = t
+        graph.edges[edge.id]?.weightPositionDistance = distance
+    }
+        
     func setWeightPositionOffset(for edge: Edge, offset: CGSize) {
         graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
     }
@@ -891,26 +877,26 @@ class GraphViewModel: ObservableObject {
     }
     
     func getControlPoints(for edge: Edge) -> (CGPoint, CGPoint) {
-        let controlPoint1 = graph.edgeControlPoints1[edge.id] ?? CGPoint.zero
-        let controlPoint2 = graph.edgeControlPoints2[edge.id] ?? CGPoint.zero
+        let controlPoint1 = graph.edges[edge.id]?.controlPoint1 ?? CGPoint.zero
+        let controlPoint2 = graph.edges[edge.id]?.controlPoint2 ?? CGPoint.zero
         return (controlPoint1, controlPoint2)
     }
     
     func getControlPointOffsets(for edge: Edge) -> (CGSize, CGSize) {
-        if let controlPoint1Offsets = graph.edgeControlPoint1Offsets[edge.id],
-           let controlPoint2Offsets = graph.edgeControlPoint2Offsets[edge.id] {
-            return (controlPoint1Offsets, controlPoint2Offsets)
+        if let controlPoint1Offset = graph.edges[edge.id]?.controlPoint1Offset,
+           let controlPoint2Offset = graph.edges[edge.id]?.controlPoint2Offset {
+            return (controlPoint1Offset, controlPoint2Offset)
         } else {
             return (CGSize.zero, CGSize.zero)
         }
     }
     
     func setControlPoint1Offset(for edge: Edge, translation: CGSize) {
-        graph.edgeControlPoint1Offsets[edge.id] = translation
+        graph.edges[edge.id]?.controlPoint1Offset = translation
     }
     
     func setControlPoint2Offset(for edge: Edge, translation: CGSize) {
-        graph.edgeControlPoint2Offsets[edge.id] = translation
+        graph.edges[edge.id]?.controlPoint2Offset = translation
     }
     
     func getMode() -> Graph.Mode {
@@ -954,10 +940,6 @@ struct GraphView: View {
     
     func clear() {
         graphViewModel.clear()
-    }
-    
-    func edgePath(edgeViewModel: EdgeViewModel) -> EdgePath {
-        EdgePath(startVertexPosition: edgeViewModel.getStartVertexPosition()!, endVertexPosition: edgeViewModel.getEndVertexPosition()!, startOffset: edgeViewModel.getStartOffset()!, endOffset: edgeViewModel.getEndOffset()!, controlPoint1: edgeViewModel.getControlPoints().0, controlPoint2: edgeViewModel.getControlPoints().1, controlPoint1Offset: edgeViewModel.getControlPointOffsets().0, controlPoint2Offset: edgeViewModel.getControlPointOffsets().1)
     }
     
     func convertToColor(from cgColor: CGColor) -> Color {
@@ -1030,7 +1012,7 @@ struct GraphView: View {
         GeometryReader{ geometry in
             ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                 let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                EdgeView(edgeViewModel: edgeViewModel)
                     .onTapGesture(count: 2) {
                         handleEdgeDoubleClickGesture(for: edge)
                     }
@@ -1061,7 +1043,7 @@ struct GraphView: View {
                                 // Notify the model to store copies of
                                 // the vertex and connected edges in
                                 // their original states.
-                                graphViewModel.vertexWillMove(vertex)
+                                graphViewModel.vertexWillMove(vertex, size: geometry.size)
                                 //Update the control points and control point offsets for every edge connected to a moving vertex
                                 let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
                                 for edge in connectedEdges {
@@ -1069,7 +1051,7 @@ struct GraphView: View {
                                     // vertices connected by edge.
                                     let otherVertexID = edge.traverse(from: vertex.id)!
                                     let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
-                                    graphViewModel.vertexWillMove(otherVertex)
+                                    graphViewModel.vertexWillMove(otherVertex, size: geometry.size)
                                     // Update the control point
                                     // offsets for edge
                                     graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation, geometrySize: geometry.size)
@@ -1090,10 +1072,10 @@ struct GraphView: View {
                                     graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
                                     // Reposition the weight
                                     if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.getVertexByID(edge.startVertexID), let endVertex = graphViewModel.getVertexByID(edge.endVertexID) {
-                                        let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1)
-                                        let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t, p0: startVertex.position, p1: graphViewModel.getControlPoints(for: edge).0, p2: graphViewModel.getControlPoints(for: edge).1, p3: endVertex.position)
+                                        let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometry.size)
+                                        let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t)
                                         var newWeightPosition: CGPoint
-                                        if let bezierGradient = edgePath.bezierTangentGradient(t: t, p0: startVertex.position, p1: graphViewModel.getControlPoints(for: edge).0, p2: graphViewModel.getControlPoints(for: edge).1, p3: endVertex.position) {
+                                        if let bezierGradient = edgePath.bezierTangentGradient(t: t) {
                                             if bezierGradient != 0 {
                                                 newWeightPosition = edgePath.pointOnPerpendicular(point: pointOnBezierCurve, perpendicularGradient: 1 / bezierGradient, distance: distance).0
                                             } else {
@@ -1104,7 +1086,7 @@ struct GraphView: View {
                                             let x = pointOnBezierCurve.x + distance
                                             newWeightPosition = CGPoint(x: x, y: y)
                                         }
-                                        graphViewModel.setWeightPosition(for: edge, position: newWeightPosition)
+                                        graphViewModel.setWeightPosition(for: edge, position: newWeightPosition, size: geometry.size)
                                         
                                     }
                                     graphViewModel.resetVertexEdgeChanges()

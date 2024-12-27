@@ -53,7 +53,7 @@ struct MoveTutorial: View {
                     GeometryReader { geometry in
                         ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                            EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                            EdgeView(edgeViewModel: edgeViewModel)
 
                         }
                         ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
@@ -67,7 +67,7 @@ struct MoveTutorial: View {
                                             // Notify the model to store copies of
                                             // the vertex and connected edges in
                                             // their original states.
-                                            graphViewModel.vertexWillMove(vertex)
+                                            graphViewModel.vertexWillMove(vertex, size: geometry.size)
                                             //Update the control points and control point offsets for every edge connected to a moving vertex
                                             let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
                                             for edge in connectedEdges {
@@ -75,7 +75,7 @@ struct MoveTutorial: View {
                                                 // vertices connected by edge.
                                                 let otherVertexID = edge.traverse(from: vertex.id)!
                                                 let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
-                                                graphViewModel.vertexWillMove(otherVertex)
+                                                graphViewModel.vertexWillMove(otherVertex, size: geometry.size)
                                                 // Update the control point
                                                 // offsets for edge
                                                 graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation, geometrySize: geometry.size)
@@ -99,10 +99,10 @@ struct MoveTutorial: View {
                                                 graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
                                                 // Reposition the weight
                                                 if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.getVertexByID(edge.startVertexID), let endVertex = graphViewModel.getVertexByID(edge.endVertexID) {
-                                                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1)
-                                                    let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t, p0: startVertex.position, p1: graphViewModel.getControlPoints(for: edge).0, p2: graphViewModel.getControlPoints(for: edge).1, p3: endVertex.position)
+                                                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometry.size)
+                                                    let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t)
                                                     var newWeightPosition: CGPoint
-                                                    if let bezierGradient = edgePath.bezierTangentGradient(t: t, p0: startVertex.position, p1: graphViewModel.getControlPoints(for: edge).0, p2: graphViewModel.getControlPoints(for: edge).1, p3: endVertex.position) {
+                                                    if let bezierGradient = edgePath.bezierTangentGradient(t: t) {
                                                         if bezierGradient != 0 {
                                                             newWeightPosition = edgePath.pointOnPerpendicular(point: pointOnBezierCurve, perpendicularGradient: 1 / bezierGradient, distance: distance).0
                                                         } else {
@@ -113,7 +113,7 @@ struct MoveTutorial: View {
                                                         let x = pointOnBezierCurve.x + distance
                                                         newWeightPosition = CGPoint(x: x, y: y)
                                                     }
-                                                    graphViewModel.setWeightPosition(for: edge, position: newWeightPosition)
+                                                    graphViewModel.setWeightPosition(for: edge, position: newWeightPosition, size: geometry.size)
                                                     
                                                 }
                                                 graphViewModel.resetVertexEdgeChanges()

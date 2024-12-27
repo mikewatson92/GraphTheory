@@ -15,6 +15,7 @@ struct Vertex: Identifiable, Codable {
     var strokeColor: Color = Color.secondary
     var label: String = ""
     var labelColor: LabelColor?
+    var opacity = 1.0
     
     init() {
         self.id = UUID()
@@ -49,6 +50,13 @@ class VertexViewModel: ObservableObject {
     @Published private var vertex: Vertex
     @Published var graphViewModel: GraphViewModel
     var mode: [Mode]
+    var opacity: Double {
+        get {
+            vertex.opacity
+        } set {
+            vertex.opacity = newValue
+        }
+    }
     
     init(vertex: Vertex, graphViewModel: GraphViewModel, mode: [Mode] = [.editLabels, .showLabels])
     {
@@ -174,6 +182,7 @@ struct VertexView: View {
                         .frame(width: 40, height: 40)
 #endif
                         .foregroundStyle(vertexViewModel.color ?? (colorScheme == .light ? .black : .white))
+                        .opacity(vertexViewModel.opacity)
                     
                     Circle()
                         .stroke(vertexViewModel.strokeColor)
@@ -183,6 +192,7 @@ struct VertexView: View {
 #elseif os(iOS)
                         .frame(width: 40, height: 40)
 #endif
+                        .opacity(vertexViewModel.opacity)
                 }
                 .onLongPressGesture {
                     if mode.contains(.editLabels) {
@@ -194,6 +204,7 @@ struct VertexView: View {
                 if !edittingLabel && mode.contains(.showLabels) {
                     #if os(macOS)
                     StrokeText(text: vertexViewModel.getLabel(), color: labelColor)
+                        .opacity(vertexViewModel.opacity)
                         .frame(width: size.width, height: size.height, alignment: .center)
                         .position(x: vertexViewModel.getPosition()!.x * size.width + vertexViewModel.getOffset()!.width, y: vertexViewModel.getPosition()!.y * size.height + vertexViewModel.getOffset()!.height)
                         .onLongPressGesture {
@@ -202,6 +213,7 @@ struct VertexView: View {
                         }
                     #elseif os(iOS)
                     LaTeXView(latex: colorLatexString, size: $latexSize)
+                        .opacity(vertexViewModel.opacity)
                         .frame(width: size.width, height: size.height, alignment: .center)
                         .offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
                         .onLongPressGesture {

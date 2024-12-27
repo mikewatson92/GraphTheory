@@ -120,9 +120,23 @@ struct CurveEdgeTutorialView: View {
     @ObservedObject var graphViewModel: GraphViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var edittingWeight = false
+    @State private var tempForwardArrowPosition = CGPoint.zero
+    @State private var tempReverseArrowPosition = CGPoint.zero
+    @State private var forwardArrowOffset = CGSize.zero {
+        willSet {
+            edgeViewModel.forwardArrowParameter = (edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: tempForwardArrowPosition.x + forwardArrowOffset.width / size.width, y: tempForwardArrowPosition.y + forwardArrowOffset.height / size.height)))
+        }
+    }
+    @State private var reverseArrowOffset = CGSize.zero {
+        willSet {
+            edgeViewModel.reverseArrowParameter = (edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: tempReverseArrowPosition.x + reverseArrowOffset.width / size.width, y: tempReverseArrowPosition.y + reverseArrowOffset.height / size.height)))
+        }
+    }
     @State private var tempWeightPosition: CGPoint {
         willSet {
-            edgeViewModel.setEdgeWeightPosition(position: newValue)
+            let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: newValue)
+            edgeViewModel.weightPositionParameterT = t
+            edgeViewModel.weightPositionDistance = distance
         }
     }
     @State private var tempWeightPositionOffset: CGSize = .zero {
@@ -131,18 +145,44 @@ struct CurveEdgeTutorialView: View {
         }
     }
     var size: CGSize
+    var forwardArrowPoint: CGPoint {
+        get {
+            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
+            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
+            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
+            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
+            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
+            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
+            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.forwardArrowParameter)
+            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+        }
+    }
+    var reverseArrowPoint: CGPoint {
+        get {
+            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
+            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
+            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
+            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
+            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
+            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
+            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.reverseArrowParameter)
+            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+        }
+    }
     var curveDidHappen: () -> Void
     
     init(edgeViewModel: EdgeViewModel, size: CGSize, curveDidHappen: @escaping () -> Void) {
         self.edgeViewModel = edgeViewModel
         self.graphViewModel = edgeViewModel.graphViewModel
-        self.tempWeightPosition = edgeViewModel.getEdgeWeightPosition() ?? edgeViewModel.initWeightPosition()
+        self.tempWeightPosition = edgeViewModel.weightPosition
         self.size = size
         self.curveDidHappen = curveDidHappen
+        self._tempForwardArrowPosition = .init(wrappedValue: forwardArrowPoint)
+        self._tempReverseArrowPosition = .init(wrappedValue: reverseArrowPoint)
     }
     
     var body: some View {
-            edgeViewModel.edgePath.makePath(size: size)
+            edgeViewModel.edgePath.makePath()
             #if os(macOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 5)
             #elseif os(iOS)
@@ -263,14 +303,14 @@ struct CurveEdgeTutorialView: View {
                         .frame(width: 50, height: 50)
                     #endif
                 }
-                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
+                .position(CGPoint(x: (edgeViewModel.weightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.weightPosition.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
                             .onChanged { drag in
                                 tempWeightPositionOffset = drag.translation
                             }
                             .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
+                                edgeViewModel.weightPosition = CGPoint(x: edgeViewModel.weightPosition.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.weightPosition.y + tempWeightPositionOffset.height / size.height)
                                 tempWeightPositionOffset = .zero
                             })
             } else {
@@ -287,14 +327,14 @@ struct CurveEdgeTutorialView: View {
                     #endif
 
                 }
-                .position(CGPoint(x: (edgeViewModel.getEdgeWeightPosition()!.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.getEdgeWeightPosition()!.y) * size.height + tempWeightPositionOffset.height))
+                .position(CGPoint(x: (edgeViewModel.weightPosition.x) * size.width + tempWeightPositionOffset.width, y: (edgeViewModel.weightPosition.y) * size.height + tempWeightPositionOffset.height))
                     .gesture(
                         DragGesture()
                             .onChanged { drag in
                                 tempWeightPositionOffset = drag.translation
                             }
                             .onEnded { _ in
-                                edgeViewModel.setEdgeWeightPosition(position: CGPoint(x: edgeViewModel.getEdgeWeightPosition()!.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.getEdgeWeightPosition()!.y + tempWeightPositionOffset.height / size.height))
+                                edgeViewModel.weightPosition = CGPoint(x: edgeViewModel.weightPosition.x + tempWeightPositionOffset.width / size.width, y: edgeViewModel.weightPosition.y + tempWeightPositionOffset.height / size.height)
                                 tempWeightPositionOffset = .zero
                             })
                     .onTapGesture(count: 1) {

@@ -192,13 +192,13 @@ struct KruskalView: View {
     var body: some View {
         ZStack {
             GeometryReader { geometry in
-                ForEach(kruskalViewModel.getAllEdges()) { edge in
+                ForEach(kruskalViewModel.getAllEdges(), id: \.id) { edge in
                     let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
-                    EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                    EdgeView(edgeViewModel: edgeViewModel)
                         .highPriorityGesture(TapGesture(count: 1)
                             .onEnded {
-                            handleTap(forEdge: edge)
-                        })
+                                handleTap(forEdge: edge)
+                            })
                 }
                 
                 ForEach(kruskalViewModel.getAllVertices()) { vertex in

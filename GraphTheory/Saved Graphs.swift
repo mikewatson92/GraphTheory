@@ -573,3 +573,57 @@ struct ChinesePostman1View: View {
         ChinesePostmanView(graph: ChinesePostman1().graph)
     }
 }
+
+struct ClassicalTSP1 {
+    var graph: Graph
+    
+    init() {
+        var a = Vertex(position: CGPoint(x: 0.5, y: 0.2))
+        a.label = "A"
+        var b = Vertex(position: CGPoint(x: 0.8, y: 0.2))
+        b.label = "B"
+        var c = Vertex(position: CGPoint(x: 0.8, y: 0.8))
+        c.label = "C"
+        var d = Vertex(position: CGPoint(x: 0.5, y: 0.8))
+        d.label = "D"
+        var e = Vertex(position: CGPoint(x: 0.2, y: 0.5))
+        e.label = "E"
+        var edgeAB = Edge(startVertexID: a.id, endVertexID: b.id)
+        edgeAB.weight = 10
+        edgeAB.sign = -1
+        var edgeAC = Edge(startVertexID: a.id, endVertexID: c.id)
+        edgeAC.weight = 5
+        edgeAC.weightPositionParameterT = 0.7
+        var edgeAD = Edge(startVertexID: a.id, endVertexID: d.id)
+        edgeAD.weight = 8
+        edgeAD.sign = -1
+        var edgeAE = Edge(startVertexID: a.id, endVertexID: e.id)
+        edgeAE.weight = 7
+        edgeAE.sign = -1
+        var edgeBC = Edge(startVertexID: b.id, endVertexID: c.id)
+        edgeBC.weight = 8
+        var edgeBD = Edge(startVertexID: b.id, endVertexID: d.id)
+        edgeBD.weight = 6
+        edgeBD.weightPositionParameterT = 0.3
+        var edgeBE = Edge(startVertexID: b.id, endVertexID: e.id)
+        edgeBE.weight = 6
+        edgeBE.weightPositionParameterT = 0.7
+        var edgeCD = Edge(startVertexID: c.id, endVertexID: d.id)
+        edgeCD.weight = 9
+        var edgeCE = Edge(startVertexID: c.id, endVertexID: e.id)
+        edgeCE.weight = 7
+        edgeCE.weightPositionParameterT = 0.3
+        var edgeDE = Edge(startVertexID: d.id, endVertexID: e.id)
+        edgeDE.weight = 4
+        edgeDE.sign = -1
+        self.graph = Graph(vertices: [a, b, c, d, e], edges: [edgeAB, edgeAC, edgeAD, edgeAE, edgeBC, edgeBD, edgeBE, edgeCD, edgeCE, edgeDE])
+    }
+}
+
+struct ClassicalTSP1View: View {
+    @StateObject private var classicalTSPViewModel = ClassicalTSPViewModel(graph: ClassicalTSP1().graph)
+    
+    var body: some View {
+        ClassicalTSPView(classicalTSPViewModel: classicalTSPViewModel)
+    }
+}

@@ -253,7 +253,7 @@ struct IcosianView: View {
             ForEach(Array(icosian.graph.edges.values.enumerated()), id: \.1.id) { index, value in
                 let edge = value
                 let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: GraphViewModel(graph: icosian.graph))
-                EdgeView(edgeViewModel: edgeViewModel, size: geometry.size)
+                EdgeView(edgeViewModel: edgeViewModel)
                     .highPriorityGesture(
                         TapGesture(count: 1)
                             .onEnded {

@@ -134,7 +134,7 @@ class EdgeViewModel: ObservableObject {
         var angle = CGFloat(0)
             let arrowParameter = edge.forwardArrowParameter
             let arrowPosition = edgePath.pointOnBezierCurve(t: arrowParameter)
-            let nextArrowPosition = edgePath.pointOnBezierCurve(t: min(arrowParameter + 0.01, 1))
+            let nextArrowPosition = edgePath.pointOnBezierCurve(t: min(arrowParameter + 1e-10, 1))
             let dx = nextArrowPosition.x - arrowPosition.x
             let dy = nextArrowPosition.y - arrowPosition.y
             if let gradient = edgePath.bezierTangentGradient(t: edge.forwardArrowParameter) {
@@ -143,13 +143,13 @@ class EdgeViewModel: ObservableObject {
                 } else if dx < 0 {
                     angle = CGFloat.pi + atan(gradient)
                 } else {
-                    angle = CGFloat.pi / 2 * (dy >= 0 ? 1 : -1)
+                    angle = CGFloat.pi / 2 * (dy > 0 ? 1 : -1)
                 }
             } else { // If the gradient is undefined
                 if dy > 0 {
-                    angle = -CGFloat.pi / 2
-                } else {
                     angle = CGFloat.pi / 2
+                } else {
+                    angle = -CGFloat.pi / 2
                 }
             }
         return angle
@@ -158,7 +158,7 @@ class EdgeViewModel: ObservableObject {
         var angle = CGFloat(0)
             let arrowParameter = edge.reverseArrowParameter
             let arrowPosition = edgePath.pointOnBezierCurve(t: arrowParameter)
-            let nextArrowPosition = edgePath.pointOnBezierCurve(t: max(arrowParameter - 0.01, 0))
+            let nextArrowPosition = edgePath.pointOnBezierCurve(t: max(arrowParameter - 1e-10, 0))
             let dx = nextArrowPosition.x - arrowPosition.x
             let dy = nextArrowPosition.y - arrowPosition.y
             if let gradient = edgePath.bezierTangentGradient(t: edge.reverseArrowParameter) {
@@ -171,9 +171,9 @@ class EdgeViewModel: ObservableObject {
                 }
             } else { // If the gradient is undefined
                 if dy > 0 {
-                    angle = -CGFloat.pi / 2
-                } else {
                     angle = CGFloat.pi / 2
+                } else {
+                    angle = -CGFloat.pi / 2
                 }
             }
         return angle
@@ -199,24 +199,6 @@ class EdgeViewModel: ObservableObject {
     
     func removeEdgeFromGraph() {
         graphViewModel.removeEdge(edge)
-    }
-    
-    func initWeightPosition() -> CGPoint {
-        let point = edgePath.pointOnBezierCurve(t: edge.weightPositionParameterT)
-        let offset = getEdgeWeightOffset()
-        
-        if let perpendicularGradient = edgePath.perpendicularGradient(t: edge.weightPositionParameterT) {
-            let (pointOnPerpendicular, _) = edgePath.pointOnPerpendicular(point: point, perpendicularGradient: perpendicularGradient, distance: edge.weightPositionDistance)
-            return CGPoint(
-                x: pointOnPerpendicular.x,
-                y: pointOnPerpendicular.y
-            )
-        }
-        
-        return CGPoint(
-            x: point.x * size.width + offset.width,
-            y: (point.y + edge.weightPositionDistance) * size.height + offset.height
-        )
     }
     
     func getID() -> UUID {
@@ -326,14 +308,12 @@ struct EdgeView: View {
     var size: CGSize
     var forwardArrowPoint: CGPoint {
         get {
-            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.forwardArrowParameter)
-            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+            return edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.forwardArrowParameter)
         }
     }
     var reverseArrowPoint: CGPoint {
         get {
-            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.reverseArrowParameter)
-            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+            return edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.reverseArrowParameter)
         }
     }
     
@@ -404,8 +384,10 @@ struct EdgeView: View {
 #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
 #endif
-                .frame(width: 40, height: 40)
-                .position(CGPoint(x: forwardArrowPoint.x * size.width, y: forwardArrowPoint.y * size.height))
+                .border(Color.teal)
+                .frame(width: Arrow.dimension, height: Arrow.dimension)
+                .position(CGPoint(x: forwardArrowPoint.x * size.width - Arrow.dimension * cos(edgeViewModel.forwardAngle) / 2,
+                                  y: forwardArrowPoint.y * size.height - Arrow.dimension * sin(edgeViewModel.forwardAngle) / 2))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
                         forwardArrowOffset = drag.translation
@@ -413,6 +395,10 @@ struct EdgeView: View {
                         forwardArrowOffset = .zero
                         tempForwardArrowPosition = forwardArrowPoint
                     })
+            Circle()
+                .frame(width: 5, height: 5)
+                .foregroundStyle(Color.teal)
+                .position(CGPoint(x: forwardArrowPoint.x * size.width, y: forwardArrowPoint.y * size.height))
         }
         
         if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {
@@ -422,8 +408,9 @@ struct EdgeView: View {
 #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
 #endif
-                .frame(width: 40, height: 40)
-                .position(CGPoint(x: reverseArrowPoint.x * size.width, y: reverseArrowPoint.y * size.height))
+                .frame(width: Arrow.dimension, height: Arrow.dimension)
+                .position(CGPoint(x: reverseArrowPoint.x * size.width - Arrow.dimension * cos(edgeViewModel.reverseAngle) / 2,
+                                  y: reverseArrowPoint.y * size.height - Arrow.dimension * sin(edgeViewModel.reverseAngle) / 2))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
                         reverseArrowOffset = drag.translation
@@ -740,6 +727,7 @@ struct EdgePath {
 
 struct Arrow: Shape {
     let angle: CGFloat
+    static let dimension = CGFloat(40)
     
     func path(in rect: CGRect) -> Path {
         var path = Path { path in

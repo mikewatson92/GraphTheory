@@ -190,7 +190,10 @@ struct ClassicalTSPView: View {
     @State private var showKruskalInstructions = true
     
     var body: some View {
-        if classicalTSPViewModel.step == .findingMinimumSpanningTree && !kruskalComplete {
+        if !classicalTSPViewModel.graphViewModel.graph.isComplete() || !classicalTSPViewModel.graphViewModel.graph.isEuclidean() {
+            Text("In order to apply the classical travelling salesman problem, the graph must be both complete and have the Euclidean property.")
+                .padding()
+        } else if classicalTSPViewModel.step == .findingMinimumSpanningTree && !kruskalComplete {
             ZStack {
                 KruskalView(kruskalViewModel: classicalTSPViewModel.kruskalViewModel, completion: $kruskalComplete)
                 if showKruskalInstructions {

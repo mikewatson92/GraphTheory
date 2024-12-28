@@ -410,6 +410,24 @@ struct Graph: Identifiable, Codable {
         return true
     }
     
+    func isComplete() -> Bool {
+        checkVertex: for vertex in Array(vertices.values) {
+            var otherVertices = Array(vertices.values)
+            otherVertices.removeAll(where: { $0.id == vertex.id })
+            let connectedEdges = getConnectedEdges(to: vertex.id)
+            for otherVertex in otherVertices {
+                for edge in connectedEdges {
+                    if edge.startVertexID == otherVertex.id || edge.endVertexID == otherVertex.id {
+                        continue checkVertex
+                    }
+                }
+                // If there is no edge connecting vertex to otherVertex
+                return false
+            }
+        }
+        return true
+    }
+    
     // Return an array of edges that are connect to vertex v
     func getConnectedEdges(to v: UUID) -> [Edge] {
         var connectedEdges: [Edge] = []
@@ -519,7 +537,7 @@ struct Graph: Identifiable, Codable {
 }
 
 class GraphViewModel: ObservableObject {
-    @Published private var graph: Graph
+    @Published private(set) var graph: Graph
     @Published var timesEdgeSelected: [UUID: Int]
     @Published var showWeights: Bool
     @Published var selectedVertex: Vertex?
@@ -1177,6 +1195,9 @@ struct GraphView: View {
                     }
                     NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.getGraph())) {
                         Text("Chinese Postman Problem")
+                    }
+                    NavigationLink(destination: ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))) {
+                        Text("Classical TSP")
                     }
                 } label: {
                     Image(systemName: "flask")

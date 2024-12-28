@@ -666,7 +666,12 @@ struct EdgePath {
         let closestPoint = pointOnBezierCurve(t: tClosest)
         
         // Compute the distance from the external point to the closest point on the curve
-        let distance = sqrt(squaredDistance(closestPoint, externalPoint))
+        var distance = sqrt(squaredDistance(closestPoint, externalPoint))
+        if let _ = perpendicularGradient(t: tClosest) {
+            distance *= externalPoint.x >= closestPoint.x ? 1 : -1
+        } else {
+            distance *= externalPoint.y >= closestPoint.y ? 1 : -1
+        }
         
         // Return the parameter t and the distance
         return (tClosest, distance)

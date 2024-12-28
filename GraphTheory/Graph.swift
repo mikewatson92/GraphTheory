@@ -16,7 +16,6 @@ struct Graph: Identifiable, Codable {
     let id: UUID
     var vertices: [UUID: Vertex] = [:]
     var edges: [UUID: Edge] = [:]
-
     // Default values saved when the graph is initially constructed.
     // Used for restoring to defaults.
     var originalVertices: [UUID: Vertex] = [:]

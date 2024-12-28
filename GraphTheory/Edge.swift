@@ -179,7 +179,7 @@ class EdgeViewModel: ObservableObject {
         return angle
     }
     var edgePath: EdgePath {
-        EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)!.position, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)!.position, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID)!, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID)!, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: size)
+        EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)?.position ?? CGPoint.zero, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)?.position ?? CGPoint.zero, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID) ?? CGSize.zero, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID) ?? CGSize.zero, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: size)
     }
     var directed: Edge.Directed {
         get {

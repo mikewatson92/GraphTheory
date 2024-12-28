@@ -230,12 +230,8 @@ struct EdgeView: View {
     @State private var edittingWeight = false
     @State private var forwardArrowOffset = CGSize.zero
     @State private var reverseArrowOffset = CGSize.zero
-    var forwardArrow: Arrow {
-        Arrow(angle: forwardAngle)
-    }
-    var reverseArrow: Arrow {
-        Arrow(angle: reverseAngle)
-    }
+    var forwardArrow = Arrow()
+    var reverseArrow = Arrow()
     @State private var tempWeightPosition: CGPoint {
         willSet {
             let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: newValue)
@@ -253,7 +249,7 @@ struct EdgeView: View {
     var size: CGSize
     var forwardAngle: CGFloat {
         var angle = CGFloat(0)
-        let arrowParameter = edgeViewModel.edgePath.closestParameterToPoint(externalPoint: forwardArrowPosition())
+        let arrowParameter = edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: forwardArrowPoint.x + forwardArrowOffset.width / size.width, y: forwardArrowPoint.y + forwardArrowOffset.height / size.height))
         let arrowPosition = edgeViewModel.edgePath.pointOnBezierCurve(t: arrowParameter)
         let nextArrowPosition = edgeViewModel.edgePath.pointOnBezierCurve(t: min(arrowParameter + 1e-10, 1))
         let dx = nextArrowPosition.x - arrowPosition.x
@@ -277,7 +273,7 @@ struct EdgeView: View {
     }
     var reverseAngle: CGFloat {
         var angle = CGFloat(0)
-        let arrowParameter = edgeViewModel.edgePath.closestParameterToPoint(externalPoint: reverseArrowPosition())
+        let arrowParameter = edgeViewModel.edgePath.closestParameterToPoint(externalPoint: CGPoint(x: reverseArrowPoint.x + reverseArrowOffset.width / size.width, y: reverseArrowPoint.y + reverseArrowOffset.height / size.height))
         let arrowPosition = edgeViewModel.edgePath.pointOnBezierCurve(t: arrowParameter)
         let nextArrowPosition = edgeViewModel.edgePath.pointOnBezierCurve(t: max(arrowParameter - 1e-10, 0))
         let dx = nextArrowPosition.x - arrowPosition.x
@@ -387,9 +383,10 @@ struct EdgeView: View {
 #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
 #endif
+                .rotationEffect(Angle(radians: forwardAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)
-                .position(CGPoint(x: forwardArrowPosition().x * size.width - Arrow.dimension * cos(forwardAngle) / 2,
-                                  y: forwardArrowPosition().y * size.height - Arrow.dimension * sin(forwardAngle) / 2))
+                .position(CGPoint(x: forwardArrowPosition().x * size.width - Arrow.dimension / 2,
+                                  y: forwardArrowPosition().y * size.height))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
                         forwardArrowOffset = drag.translation
@@ -407,9 +404,10 @@ struct EdgeView: View {
 #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
 #endif
+                .rotationEffect(Angle(radians: reverseAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)
-                .position(CGPoint(x: reverseArrowPosition().x * size.width - Arrow.dimension * cos(reverseAngle) / 2,
-                                  y: reverseArrowPosition().y * size.height - Arrow.dimension * sin(reverseAngle) / 2))
+                .position(CGPoint(x: reverseArrowPosition().x * size.width - Arrow.dimension / 2,
+                                  y: reverseArrowPosition().y * size.height))
                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                     .onChanged({ drag in
                         reverseArrowOffset = drag.translation
@@ -726,7 +724,6 @@ struct EdgePath {
 }
 
 struct Arrow: Shape {
-    let angle: CGFloat
     static let dimension = CGFloat(40)
     
     func path(in rect: CGRect) -> Path {
@@ -738,9 +735,6 @@ struct Arrow: Shape {
             path.addLine(to: point)
             path.addLine(to: end)
         }
-        path = path.applying(CGAffineTransform.init(translationX: -rect.width / 2, y: -rect.height / 2))
-        path = path.applying(CGAffineTransform.init(rotationAngle: angle))
-        path = path.applying(CGAffineTransform.init(translationX: rect.width / 2, y: rect.height / 2))
         return path
     }
 }

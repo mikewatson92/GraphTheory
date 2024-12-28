@@ -314,6 +314,8 @@ struct EdgeView: View {
             let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: newValue)
             edgeViewModel.weightPositionParameterT = t
             edgeViewModel.weightPositionDistance = distance
+            graphViewModel.setEdgeWeightPositionParameterT(id: edgeViewModel.getID(), t: t)
+            graphViewModel.setEdgeWeightPositionDistance(id: edgeViewModel.getID(), distance: distance)
         }
     }
     @State private var tempWeightPositionOffset: CGSize = .zero {

@@ -374,7 +374,7 @@ struct EdgeView: View {
                 .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
                 .foregroundStyle(edgeViewModel.getColor())
     #elseif os(iOS)
-                .stroke(style: StrokeStyle(lineWidth: 15, lineCap: .round, dash: [5, 10]))
+                .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
                 .foregroundStyle(edgeViewModel.getColor())
     #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)

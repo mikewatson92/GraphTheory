@@ -384,7 +384,6 @@ struct EdgeView: View {
 #elseif os(iOS)
                 .stroke(edgeViewModel.getColor(), lineWidth: 15)
 #endif
-                .border(Color.teal)
                 .frame(width: Arrow.dimension, height: Arrow.dimension)
                 .position(CGPoint(x: forwardArrowPoint.x * size.width - Arrow.dimension * cos(edgeViewModel.forwardAngle) / 2,
                                   y: forwardArrowPoint.y * size.height - Arrow.dimension * sin(edgeViewModel.forwardAngle) / 2))
@@ -395,10 +394,6 @@ struct EdgeView: View {
                         forwardArrowOffset = .zero
                         tempForwardArrowPosition = forwardArrowPoint
                     })
-            Circle()
-                .frame(width: 5, height: 5)
-                .foregroundStyle(Color.teal)
-                .position(CGPoint(x: forwardArrowPoint.x * size.width, y: forwardArrowPoint.y * size.height))
         }
         
         if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {

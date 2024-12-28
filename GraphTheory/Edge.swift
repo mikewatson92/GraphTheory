@@ -230,6 +230,7 @@ struct EdgeView: View {
     @State private var edittingWeight = false
     @State private var forwardArrowOffset = CGSize.zero
     @State private var reverseArrowOffset = CGSize.zero
+    let onWeightChange: () -> Void
     var forwardArrow = Arrow()
     var reverseArrow = Arrow()
     @State private var tempWeightPosition: CGPoint {
@@ -306,11 +307,12 @@ struct EdgeView: View {
         }
     }
     
-    init(edgeViewModel: EdgeViewModel) {
+    init(edgeViewModel: EdgeViewModel, onWeightChange: @escaping () -> Void = {}) {
         self.edgeViewModel = edgeViewModel
         self.graphViewModel = edgeViewModel.graphViewModel
         self.tempWeightPosition = edgeViewModel.weightPosition
         self.size = edgeViewModel.size
+        self.onWeightChange = onWeightChange
     }
     
     func forwardArrowPosition() -> CGPoint {
@@ -506,6 +508,7 @@ struct EdgeView: View {
                         .onSubmit {
                             isTextFieldFocused = false
                             edittingWeight = false
+                            onWeightChange()
                         }
 #if os(iOS)
                     Color.clear
@@ -727,7 +730,7 @@ struct Arrow: Shape {
     static let dimension = CGFloat(40)
     
     func path(in rect: CGRect) -> Path {
-        var path = Path { path in
+        let path = Path { path in
             let start = CGPoint(x: rect.midX, y: rect.minY)
             let point = CGPoint(x: rect.maxX, y: rect.midY)
             let end = CGPoint(x: rect.midX, y: rect.maxY)

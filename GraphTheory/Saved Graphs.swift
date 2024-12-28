@@ -621,9 +621,47 @@ struct ClassicalTSP1 {
 }
 
 struct ClassicalTSP1View: View {
-    @StateObject private var classicalTSPViewModel = ClassicalTSPViewModel(graph: ClassicalTSP1().graph)
+    @StateObject var classicalTSPViewModel = ClassicalTSPViewModel(graph: ClassicalTSP1().graph)
     
     var body: some View {
         ClassicalTSPView(classicalTSPViewModel: classicalTSPViewModel)
+    }
+}
+
+struct PracticalTSP1 {
+    let graph: Graph
+    
+    init() {
+        var a = Vertex(position: CGPoint(x: 0.25, y: 0.2))
+        a.label = "A"
+        var b = Vertex(position: CGPoint(x: 0.7, y: 0.3))
+        b.label = "B"
+        var c = Vertex(position: CGPoint(x: 0.5, y: 0.5))
+        c.label = "C"
+        var d = Vertex(position: CGPoint(x: 0.6, y: 0.8))
+        d.label = "D"
+        var e = Vertex(position: CGPoint(x: 0.3, y: 0.65))
+        e.label = "E"
+        var edgeAB = Edge(startVertexID: a.id, endVertexID: b.id)
+        edgeAB.weight = 30
+        var edgeAC = Edge(startVertexID: a.id, endVertexID: c.id)
+        edgeAC.weight = 45
+        var edgeBC = Edge(startVertexID: b.id, endVertexID: c.id)
+        edgeBC.weight = 35
+        var edgeCD = Edge(startVertexID: c.id, endVertexID: d.id)
+        edgeCD.weight = 60
+        var edgeCE = Edge(startVertexID: c.id, endVertexID: e.id)
+        edgeCE.weight = 25
+        var edgeDE = Edge(startVertexID: d.id, endVertexID: e.id)
+        edgeDE.weight = 30
+        graph = Graph(vertices: [a, b, c, d, e], edges: [edgeAB, edgeAC, edgeBC, edgeCD, edgeCE, edgeDE])
+    }
+}
+
+struct PracticalTSP1View: View {
+    @StateObject private var practicalTSPViewModel = PracticalTSPViewModel(graph: PracticalTSP1().graph)
+    
+    var body: some View {
+        PracticalTSPView(practicalTSPViewModel: practicalTSPViewModel, graphViewModel: practicalTSPViewModel.graphViewModel)
     }
 }

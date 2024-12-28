@@ -51,6 +51,8 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                     NavigationLink("Classical Travelling Salesman Problem", destination: ClassicalTSP1View())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Practical Travelling Salesman Problem", destination: PracticalTSP1View())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
             }
             .foregroundStyle(themeViewModel.theme!.primaryColor)

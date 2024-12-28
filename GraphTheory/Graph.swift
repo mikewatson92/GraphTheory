@@ -428,6 +428,19 @@ struct Graph: Identifiable, Codable {
         return true
     }
     
+    func getEdgesBetween(_ vertex1ID: UUID, _ vertex2ID: UUID) -> [Edge] {
+        var result: [Edge] = []
+        if doesEdgeExist(vertex1ID, vertex2ID) {
+            let connectedEdges = getConnectedEdges(to: vertex1ID)
+            for edge in connectedEdges {
+                if edge.startVertexID == vertex2ID || edge.endVertexID == vertex2ID {
+                    result.append(edge)
+                }
+            }
+        }
+        return result
+    }
+    
     // Return an array of edges that are connect to vertex v
     func getConnectedEdges(to v: UUID) -> [Edge] {
         var connectedEdges: [Edge] = []
@@ -1198,6 +1211,9 @@ struct GraphView: View {
                     }
                     NavigationLink(destination: ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))) {
                         Text("Classical TSP")
+                    }
+                    NavigationLink(destination: PracticalTSPView(practicalTSPViewModel: PracticalTSPViewModel(graph: graphViewModel.graph), graphViewModel: graphViewModel)) {
+                        Text("Practical TSP")
                     }
                 } label: {
                     Image(systemName: "flask")

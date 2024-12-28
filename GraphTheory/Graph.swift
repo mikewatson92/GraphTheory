@@ -1170,7 +1170,7 @@ struct GraphView: View {
             ToolbarItem(placement: .automatic) {
                 Menu {
                     Text("Algorithm:")
-                    NavigationLink(destination: KruskalView(graph: graphViewModel.getGraph())) {
+                    NavigationLink(destination: KruskalView(kruskalViewModel: KruskalViewModel(graph: graphViewModel.getGraph()), completion: .constant(false))) {
                         Text("Kruskal")
                     }
                     NavigationLink(destination: PrimView(graph: graphViewModel.getGraph())) {

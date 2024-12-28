@@ -16,13 +16,11 @@ struct ClassicalTSP {
     var deletedVertex: Vertex?
     var deletedEdges: [Edge] = []
     var addBackEdges: [Edge] = []
-    var deletedVertexGraph: Graph
     var upperBound = 0.0
     var lowerBound = 0.0
     
     init(graph: Graph) {
         self.graph = graph
-        self.deletedVertexGraph = graph
     }
     
     enum Step {
@@ -38,13 +36,16 @@ struct ClassicalTSP {
 class ClassicalTSPViewModel: ObservableObject {
     @Published private var classicalTSP: ClassicalTSP
     @Published var graphViewModel: GraphViewModel
-    @Published var kruskalViewModel: KruskalViewModel?
     @Published var edgeError: Edge?
     @Published var nearestNeighborCurrentVertex: Vertex?
+    @Published var kruskalViewModel: KruskalViewModel
+    var deletedVertexGraph: Graph
     
     var step: ClassicalTSP.Step {
         get {
             classicalTSP.step
+        } set {
+            classicalTSP.step = newValue
         }
     }
     var upperBound: Double {
@@ -61,6 +62,8 @@ class ClassicalTSPViewModel: ObservableObject {
     init(graph: Graph) {
         self.classicalTSP = ClassicalTSP(graph: graph)
         self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
+        self.deletedVertexGraph = graph
+        self.kruskalViewModel = KruskalViewModel(graph: graph)
     }
     
     func chooseVertex(_ vertex: Vertex) {
@@ -77,21 +80,9 @@ class ClassicalTSPViewModel: ObservableObject {
                 classicalTSP.deletedEdges.append(edge)
             }
             // Remove the deleted vertex and all connected edges from the subgraph
-            classicalTSP.deletedVertexGraph.removeVertex(vertex)
-            kruskalViewModel = KruskalViewModel(graph: classicalTSP.deletedVertexGraph)
+            deletedVertexGraph.removeVertex(vertex)
             classicalTSP.step = .findingMinimumSpanningTree
-            printKruskalGraphDescription()
-        }
-    }
-    
-    func printKruskalGraphDescription() {
-        print("The vertices are: ")
-        for vertex in kruskalViewModel!.getAllVertices() {
-            print(vertex.label)
-        }
-        print("The edges are: ")
-        for edge in kruskalViewModel!.getAllEdges() {
-            print(graphViewModel.getGraph().edgeDescription(edge))
+            kruskalViewModel = KruskalViewModel(graph: deletedVertexGraph)
         }
     }
     
@@ -150,21 +141,12 @@ class ClassicalTSPViewModel: ObservableObject {
                 }
             }
         } else if classicalTSP.step == .findingMinimumSpanningTree {
-            if classicalTSP.deletedVertexGraph.edges.values.contains(where: { $0.id == edge.id }) {
-                if kruskalViewModel!.edgeIsValid(edge) && !kruskalViewModel!.hasEdgeBeenSelected(edge) {
-                    kruskalViewModel!.addEdge(edge)
+            if deletedVertexGraph.edges.values.contains(where: { $0.id == edge.id }) {
+                kruskalViewModel.chooseEdge(edge)
+                if kruskalViewModel.errorStatus == .none {
                     classicalTSP.lowerBound += edge.weight
-                    graphViewModel.setColorForEdge(edge: edge, color: .green)
-                    let startVertex = classicalTSP.graph.vertices[edge.startVertexID]!
-                    let endVertex = classicalTSP.graph.vertices[edge.endVertexID]!
-                    graphViewModel.setColor(vertex: startVertex, color: .green)
-                    graphViewModel.setColor(vertex: endVertex, color: .green)
-                } else if !kruskalViewModel!.hasEdgeBeenSelected(edge) {
-                    edgeError = edge
-                    graphViewModel.setColorForEdge(edge: edge, color: .red)
                 }
-                if kruskalViewModel!.isComplete() {
-                    kruskalViewModel!.completionStatus = .completed
+                if kruskalViewModel.completionStatus == .completed {
                     classicalTSP.step = .addBackEdges
                 }
             }
@@ -196,7 +178,7 @@ class ClassicalTSPViewModel: ObservableObject {
     }
     
     func computeLowerBound() {
-        classicalTSP.lowerBound = kruskalViewModel!.getTreeWeight()
+        classicalTSP.lowerBound = kruskalViewModel.getTreeWeight()
     }
 }
 
@@ -204,92 +186,126 @@ struct ClassicalTSPView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject var classicalTSPViewModel: ClassicalTSPViewModel
     @State private var showBanner = true
+    @State private var kruskalComplete = false
+    @State private var showKruskalInstructions = true
     
     var body: some View {
-        ZStack {
-            GeometryReader { geometry in
-                ForEach(classicalTSPViewModel.graphViewModel.getEdges(), id: \.id) { edge in
-                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: classicalTSPViewModel.graphViewModel)
-                    EdgeView(edgeViewModel: edgeViewModel)
-                        .highPriorityGesture(TapGesture(count: 1).onEnded({ _ in
-                            let previousStep = classicalTSPViewModel.step
-                            classicalTSPViewModel.chooseEdge(edge)
-                            let currentStep = classicalTSPViewModel.step
-                            if previousStep != currentStep {
-                                showBanner = true
-                            }
-                        }))
-                }
-                ForEach(classicalTSPViewModel.graphViewModel.getVertices()) { vertex in
-                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: classicalTSPViewModel.graphViewModel)
-                    VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                        .shadow(color: (vertex.id == classicalTSPViewModel.nearestNeighborCurrentVertex?.id ? Color.green : Color.clear), radius: 10)
-                        .highPriorityGesture(TapGesture(count: 1).onEnded({ _ in
-                            let previousStep = classicalTSPViewModel.step
-                            classicalTSPViewModel.chooseVertex(vertex)
-                            let currentStep = classicalTSPViewModel.step
-                            if previousStep != currentStep {
-                                showBanner = true
-                            }
-                        }))
-                }
-            }
-            if showBanner {
-                VStack {
-                    if classicalTSPViewModel.step == .choosingStartVertex {
-                        Text("Choose a starting vertex.")
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else if classicalTSPViewModel.step == .findingUpperBound {
-                        Text("Apply the nearest neighbor algorithm.")
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else if classicalTSPViewModel.step == .deletingVertex {
-                        Text("Tap a vertex to delete it.")
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else if classicalTSPViewModel.step == .findingMinimumSpanningTree {
+        if classicalTSPViewModel.step == .findingMinimumSpanningTree && !kruskalComplete {
+            ZStack {
+                KruskalView(kruskalViewModel: classicalTSPViewModel.kruskalViewModel, completion: $kruskalComplete)
+                if showKruskalInstructions {
+                    VStack {
                         Text("Apply Kruskal's algorithm to find a minimum spanning tree.")
                             .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                             .background(themeViewModel.theme!.secondaryColor)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else if classicalTSPViewModel.step == .addBackEdges {
-                        Text("Add back the two smallest weight edges that were deleted.")
+                        Button {
+                            withAnimation {
+                                showKruskalInstructions = false
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                        Spacer()
+                    }
+                    .padding([.top], 25)
+                    .zIndex(1)
+                    .transition(.move(edge: .top))
+                }
+            }
+        } else {
+            ZStack {
+                GeometryReader { geometry in
+                    ForEach(classicalTSPViewModel.graphViewModel.getEdges(), id: \.id) { edge in
+                        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: classicalTSPViewModel.graphViewModel)
+                        EdgeView(edgeViewModel: edgeViewModel)
+                            .highPriorityGesture(TapGesture(count: 1).onEnded({ _ in
+                                let previousStep = classicalTSPViewModel.step
+                                classicalTSPViewModel.chooseEdge(edge)
+                                let currentStep = classicalTSPViewModel.step
+                                if previousStep != currentStep {
+                                    showBanner = true
+                                }
+                            }))
+                    }
+                    ForEach(classicalTSPViewModel.graphViewModel.getVertices()) { vertex in
+                        let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: classicalTSPViewModel.graphViewModel)
+                        VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
+                            .shadow(color: (vertex.id == classicalTSPViewModel.nearestNeighborCurrentVertex?.id ? Color.green : Color.clear), radius: 10)
+                            .highPriorityGesture(TapGesture(count: 1).onEnded({ _ in
+                                let previousStep = classicalTSPViewModel.step
+                                classicalTSPViewModel.chooseVertex(vertex)
+                                let currentStep = classicalTSPViewModel.step
+                                if previousStep != currentStep {
+                                    showBanner = true
+                                }
+                            }))
+                    }
+                }
+                if showBanner {
+                    VStack {
+                        if classicalTSPViewModel.step == .choosingStartVertex {
+                            Text("Choose a starting vertex.")
+                                .foregroundColor(themeViewModel.theme!.primaryColor)
+                                .padding()
+                                .background(themeViewModel.theme!.secondaryColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        } else if classicalTSPViewModel.step == .findingUpperBound {
+                            Text("Apply the nearest neighbor algorithm.")
+                                .foregroundColor(themeViewModel.theme!.primaryColor)
+                                .padding()
+                                .background(themeViewModel.theme!.secondaryColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        } else if classicalTSPViewModel.step == .deletingVertex {
+                            Text("Tap a vertex to delete it.")
+                                .foregroundColor(themeViewModel.theme!.primaryColor)
+                                .padding()
+                                .background(themeViewModel.theme!.secondaryColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        } else if classicalTSPViewModel.step == .findingMinimumSpanningTree {
+                            Text("Apply Kruskal's algorithm to find a minimum spanning tree.")
+                                .foregroundColor(themeViewModel.theme!.primaryColor)
+                                .padding()
+                                .background(themeViewModel.theme!.secondaryColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        } else if classicalTSPViewModel.step == .addBackEdges {
+                            Text("Add back the two smallest weight edges that were deleted.")
+                                .foregroundColor(themeViewModel.theme!.primaryColor)
+                                .padding()
+                                .background(themeViewModel.theme!.secondaryColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                        } else if classicalTSPViewModel.step == .finished {
+                            Group {
+                                Text("The upper bound is: \(classicalTSPViewModel.upperBound.formatted())")
+                                Text("The lower bound is: \(classicalTSPViewModel.lowerBound.formatted())")
+                            }
                             .foregroundColor(themeViewModel.theme!.primaryColor)
                             .padding()
                             .background(themeViewModel.theme!.secondaryColor)
                             .clipShape(RoundedRectangle(cornerRadius: 20))
-                    } else if classicalTSPViewModel.step == .finished {
-                        Group {
-                            Text("The upper bound is: \(classicalTSPViewModel.upperBound.formatted())")
-                            Text("The lower bound is: \(classicalTSPViewModel.lowerBound.formatted())")
                         }
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    }
-                    
-                    Button {
-                        withAnimation {
-                            showBanner = false
+                        
+                        Button {
+                            withAnimation {
+                                showBanner = false
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
                         }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
+                        Spacer()
                     }
-                    Spacer()
+                    .padding([.top], 25)
+                    .zIndex(1)
+                    .transition(.move(edge: .top))
                 }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
+            }
+            .onAppear {
+                if classicalTSPViewModel.step == .findingMinimumSpanningTree && classicalTSPViewModel.kruskalViewModel.completionStatus == .completed {
+                    classicalTSPViewModel.step = .addBackEdges
+                }
             }
         }
     }

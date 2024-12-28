@@ -37,12 +37,15 @@ struct Kruskal {
 
 class KruskalViewModel: ObservableObject {
     @Published private var kruskal: Kruskal
+    @Published var graphViewModel: GraphViewModel
     @Published var errorStatus = ErrorStatus.none
     @Published var completionStatus = CompletionStatus.inProgress
+    @Published var errorEdge: Edge?
     var selectedEdge: Edge?
     
     init(graph: Graph) {
         self.kruskal = Kruskal(graph: graph)
+        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
     }
     
     enum ErrorStatus {
@@ -58,10 +61,6 @@ class KruskalViewModel: ObservableObject {
     
     func getGraph() -> Graph {
         kruskal.graph
-    }
-    
-    func addEdge(_ edge: Edge) {
-        kruskal.subGraph.edges[edge.id] = edge
     }
     
     func hasEdgeBeenSelected(_ edge: Edge) -> Bool {
@@ -93,116 +92,81 @@ class KruskalViewModel: ObservableObject {
         return false
     }
     
-    func setVertexColor(vertexID: UUID, color: Color) {
-        kruskal.graph.vertices[vertexID]?.color = color
-    }
-    
-    func setVertexLabelColor(vertexID: UUID, color: Vertex.LabelColor) {
-        kruskal.graph.vertices[vertexID]?.labelColor = color
-    }
-    
-    func setEdgeColor(edgeID: UUID, color: Color) {
-        kruskal.graph.edges[edgeID]?.color = color
-    }
-    
-    func getAllEdges() -> [Edge] {
-        Array(kruskal.graph.edges.values)
-    }
-    
-    func getAllVertices() -> [Vertex] {
-        Array(kruskal.graph.vertices.values)
-    }
-    
-    func edgeIsValid(_ edge: Edge) -> Bool {
-        guard kruskal.validEdges.count > 0 else { return false }
+    func chooseEdge(_ edge: Edge) {
+        guard kruskal.validEdges.count > 0 else { return }
+        guard completionStatus == .inProgress else { return }
+        if let error = errorEdge {
+            if edge.id == error.id {
+                errorEdge = nil
+                errorStatus = .none
+                graphViewModel.setColorForEdge(edge: edge, color: Color.primary)
+            }
+            return
+        }
         
         kruskal.removeEdgesFormingCycles()
         kruskal.sortEdges()
-        
         var newSubGraph = kruskal.subGraph
         newSubGraph.edges[edge.id] = edge
         
         if newSubGraph.hasCycle() {
             withAnimation {
                 errorStatus = .cycleError
+                graphViewModel.setColorForEdge(edge: edge, color: .red)
+                errorEdge = edge
             }
-            return false
+            return
         }
         
         if edge.weight > kruskal.validEdges[0].weight {
             withAnimation {
                 errorStatus = .notLowestWeightError
+                graphViewModel.setColorForEdge(edge: edge, color: .red)
+                errorEdge = edge
             }
-            return false
+            return
         }
         
+        kruskal.subGraph.edges[edge.id] = edge
+
         if isComplete() {
+            print("Kruskal complete!")
             completionStatus = .completed
         }
         kruskal.validEdges.removeAll { $0.id == edge.id }
-        setVertexColor(vertexID: edge.startVertexID, color: .green)
-        setVertexColor(vertexID: edge.endVertexID, color: .green)
-        return true
+        graphViewModel.setColorForEdge(edge: edge, color: .green)
+        graphViewModel.setColor(vertex: kruskal.graph.vertices[edge.startVertexID]!, color: .green)
+        graphViewModel.setColor(vertex: kruskal.graph.vertices[edge.endVertexID]!, color: .green)
+        return
     }
 }
 
 struct KruskalView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var kruskalViewModel: KruskalViewModel
-    var graphViewModel: GraphViewModel
-    @State private var errorEdge: Edge? = nil
     @State private var showBanner = false
-    
-    init(graph: Graph) {
-        self.kruskalViewModel = KruskalViewModel(graph: graph)
-        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true, showModeMenu: false, showAlgorithms: false)
-    }
-    
-    func handleTap(forEdge edge: Edge) {
-        if kruskalViewModel.completionStatus == .inProgress {
-            if errorEdge == nil { // If there are no errors yet
-                if kruskalViewModel.edgeIsValid(edge) { // and the edge is a correct selection
-                    if !kruskalViewModel.hasEdgeBeenSelected(edge) {
-                        kruskalViewModel.addEdge(edge)
-                        kruskalViewModel.setEdgeColor(edgeID: edge.id, color: Color.green)
-                        if kruskalViewModel.isComplete() {
-                            withAnimation {
-                                showBanner = true
-                                kruskalViewModel.completionStatus = .completed
-                            }
-                        }
-                    }
-                } else {
-                    kruskalViewModel.setEdgeColor(edgeID: edge.id, color: Color.red)
-                    errorEdge = edge
-                }
-            } else { // If there is an edge error
-                if edge.id == errorEdge?.id {
-                    // and the user selects the error edge
-                    kruskalViewModel.setEdgeColor(edgeID: edge.id, color: Color.primary)
-                    errorEdge = nil
-                    withAnimation {
-                        kruskalViewModel.errorStatus = .none
-                    }
-                }
-            }
-        }
-    }
+    @Binding var completion: Bool
     
     var body: some View {
         ZStack {
             GeometryReader { geometry in
-                ForEach(kruskalViewModel.getAllEdges(), id: \.id) { edge in
-                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
+                ForEach(kruskalViewModel.graphViewModel.getEdges(), id: \.id) { edge in
+                    let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: kruskalViewModel.graphViewModel)
                     EdgeView(edgeViewModel: edgeViewModel)
                         .highPriorityGesture(TapGesture(count: 1)
                             .onEnded {
-                                handleTap(forEdge: edge)
+                                kruskalViewModel.chooseEdge(edge)
+                                if kruskalViewModel.completionStatus == .completed {
+                                    withAnimation {
+                                        completion = true
+                                        showBanner = true
+                                    }
+                                }
                             })
                 }
                 
-                ForEach(kruskalViewModel.getAllVertices()) { vertex in
-                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel, mode: [.showLabels, .noEditLabels])
+                ForEach(kruskalViewModel.graphViewModel.getVertices()) { vertex in
+                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: kruskalViewModel.graphViewModel, mode: [.showLabels, .noEditLabels])
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                 }
             }

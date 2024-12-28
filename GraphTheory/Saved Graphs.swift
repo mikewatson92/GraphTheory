@@ -527,7 +527,7 @@ struct Kruskal1View: View {
     @StateObject private var kruskalViewModel = KruskalViewModel(graph: Kruskal1().graph)
     
     var body: some View {
-        KruskalView(graph: kruskalViewModel.getGraph())
+        KruskalView(kruskalViewModel: kruskalViewModel, completion: .constant(false))
     }
 }
 

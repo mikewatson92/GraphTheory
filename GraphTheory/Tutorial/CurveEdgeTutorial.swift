@@ -147,26 +147,12 @@ struct CurveEdgeTutorialView: View {
     var size: CGSize
     var forwardArrowPoint: CGPoint {
         get {
-            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
-            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
-            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
-            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
-            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
-            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
-            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.forwardArrowParameter)
-            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+            return edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.forwardArrowParameter)
         }
     }
     var reverseArrowPoint: CGPoint {
         get {
-            let startPosition = edgeViewModel.getStartVertexPosition() ?? CGPoint.zero
-            let startOffset = edgeViewModel.getStartOffset() ?? CGSize.zero
-            let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
-            let (control1Offset, control2Offset) = edgeViewModel.getControlPointOffsets()
-            let endPosition = edgeViewModel.getEndVertexPosition() ?? CGPoint.zero
-            let endOffset = edgeViewModel.getEndOffset() ?? CGSize.zero
-            let pointOnCurve = edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.reverseArrowParameter)
-            return CGPoint(x: pointOnCurve.x, y: pointOnCurve.y)
+            return edgeViewModel.edgePath.pointOnBezierCurve(t: edgeViewModel.reverseArrowParameter)
         }
     }
     var curveDidHappen: () -> Void

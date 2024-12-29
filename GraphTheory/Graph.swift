@@ -411,18 +411,13 @@ struct Graph: Identifiable, Codable {
     }
     
     func isComplete() -> Bool {
-        checkVertex: for vertex in Array(vertices.values) {
+        for vertex in vertices.values {
             var otherVertices = Array(vertices.values)
-            otherVertices.removeAll(where: { $0.id == vertex.id })
-            let connectedEdges = getConnectedEdges(to: vertex.id)
+            otherVertices.removeAll(where: { $0.id == vertex.id})
             for otherVertex in otherVertices {
-                for edge in connectedEdges {
-                    if edge.startVertexID == otherVertex.id || edge.endVertexID == otherVertex.id {
-                        continue checkVertex
-                    }
+                if !doesEdgeExist(vertex.id, otherVertex.id) {
+                    return false
                 }
-                // If there is no edge connecting vertex to otherVertex
-                return false
             }
         }
         return true

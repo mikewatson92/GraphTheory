@@ -129,7 +129,6 @@ class KruskalViewModel: ObservableObject {
         kruskal.subGraph.edges[edge.id] = edge
 
         if isComplete() {
-            print("Kruskal complete!")
             completionStatus = .completed
         }
         kruskal.validEdges.removeAll { $0.id == edge.id }

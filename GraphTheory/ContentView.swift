@@ -22,7 +22,7 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Create")) {
-                    NavigationLink("Canvas", destination: Canvas(graphViewModel: canvasGraphViewModel))
+                    NavigationLink("Graph", destination: Canvas(graphViewModel: canvasGraphViewModel))
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                     NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)

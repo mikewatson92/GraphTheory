@@ -90,13 +90,6 @@ struct Graph: Identifiable, Codable {
     func smallestDistance(from startVertex: Vertex, to endVertex: Vertex) -> Double? {
         guard areVerticesConnected(startVertex.id, endVertex.id) else { return nil }
         let trails = getAllTrailsBetween(startVertex, endVertex)
-        print("There are \(trails.count) trails from \(startVertex.label) to \(endVertex.label)")
-        for trail in trails {
-            print("Trail:")
-            for edge in trail {
-                print(edgeDescription(edge))
-            }
-        }
         var trailWeights: [Double] = []
         for trail in trails {
             var trailWeight = 0.0
@@ -117,12 +110,6 @@ struct Graph: Identifiable, Codable {
         for trail in trails {
             if walkWeight(trail) == smallestDistance {
                 shortestTrails.append(trail)
-            }
-        }
-        for trail in shortestTrails {
-            print("Getting shortest paths between vertices.")
-            for edge in trail {
-                print("Edge\(vertices[edge.startVertexID]!.label)\(vertices[edge.endVertexID]!.label)")
             }
         }
         return shortestTrails

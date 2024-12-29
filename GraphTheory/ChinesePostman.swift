@@ -35,10 +35,8 @@ struct ChinesePostman {
                 for otherVertex in otherVertices {
                     var edge = Edge(startVertexID: vertex.id, endVertexID: otherVertex.id)
                     edge.weight = graph.smallestDistance(from: vertex, to: otherVertex) ?? 0
-                    print("The shortest weight for \(graph.edgeDescription(edge)) is \(edge.weight).")
                     if !Array(tJoinCompleteGraph.edges.values).contains(where: { ($0.startVertexID == edge.startVertexID && $0.endVertexID == edge.endVertexID) || ($0.startVertexID == edge.endVertexID && $0.endVertexID == edge.startVertexID) }) {
                         tJoinCompleteGraph.edges[edge.id] = edge
-                        print("Adding edge to T-join: \(graph.edgeDescription(edge))")
                     }
                 }
             }
@@ -51,10 +49,7 @@ struct ChinesePostman {
     func getAllNonAdjacentEdgesInT(to edges: [Edge]) -> [Edge] {
         var nonAdjacentEdges: [Edge] = Array(tJoinCompleteGraph.edges.values)
         guard nonAdjacentEdges.count > 0 else { return [] }
-        print("The adjacent edges are:")
-        for edge in nonAdjacentEdges {
-            print(graph.edgeDescription(edge))
-        }
+
         // Remove any adjacent edges
         for tJoinEdge in Array(tJoinCompleteGraph.edges.values) {
             for givenEdge in edges {
@@ -63,14 +58,6 @@ struct ChinesePostman {
                     nonAdjacentEdges.removeAll(where: { $0.id == tJoinEdge.id })
                 }
             }
-        }
-        print("Getting non-adjacent edges to matching: ")
-        for edge in edges {
-            print(graph.edgeDescription(edge))
-        }
-        print("The non-adjacent edges are:")
-        for edge in nonAdjacentEdges {
-            print(graph.edgeDescription(edge))
         }
         return nonAdjacentEdges
     }
@@ -120,13 +107,6 @@ struct ChinesePostman {
         // Check if all perfect matchings are found
         let expectedMatchings = DoubleFactorial.doubleFactorial(n: oddVertices.count - 1)
         if perfectMatchings.count == expectedMatchings {
-            print("Here are all perfect matchings:")
-            for (index, matching) in perfectMatchings.enumerated() {
-                print("Matching #\(index):")
-                for edge in matching {
-                    print(graph.edgeDescription(edge))
-                }
-            }
             return
         }
 
@@ -134,10 +114,6 @@ struct ChinesePostman {
         if currentMatching.count == oddVertices.count / 2 {
             // Check if the current matching is unique
             if !perfectMatchings.contains(where: { areMatchingsEqual($0, currentMatching) }) {
-                print("Found a unique perfect matching:")
-                for edge in currentMatching {
-                    print(graph.edgeDescription(edge))
-                }
                 perfectMatchings.append(currentMatching)
             }
             return
@@ -203,7 +179,6 @@ class ChinesePostmanViewModel: ObservableObject {
         for tJoin in chinesePostman.getMinimumWeightPerfectMatchings() {
             possibleTJoins.append(tJoin)
         }
-        print("The number of T-joins is \(possibleTJoins.count)")
     }
     
     enum ErrorStatus: String {
@@ -234,15 +209,7 @@ class ChinesePostmanViewModel: ObservableObject {
             // Check to see if the chosen edge is part of a T-Join.
             for tJoin in possibleTJoins {
                 for tJoinEdge in tJoin {
-                    print("Checking T-join edge")
                     let shortestTrails = chinesePostman.graph.shortestTrails(from: chinesePostman.graph.vertices[tJoinEdge.startVertexID]!, to: chinesePostman.graph.vertices[tJoinEdge.endVertexID]!)
-                    print("There " + (shortestTrails.count == 1 ? "is " : "are ") + "\(shortestTrails.count) " + (shortestTrails.count == 1 ? "edge " : "edges ") + "for \(chinesePostman.graph.edgeDescription(tJoinEdge))")
-                    for trail in shortestTrails {
-                        print("Trail #\(shortestTrails.firstIndex(of: trail)!):")
-                        for edge in trail {
-                            print(chinesePostman.graph.edgeDescription(edge))
-                        }
-                    }
                     for trail in shortestTrails {
                         if trail.contains(where: {$0.id == edge.id}) {
                             chosenEdges.append(edge)

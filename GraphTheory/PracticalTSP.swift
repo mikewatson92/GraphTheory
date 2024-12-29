@@ -65,7 +65,7 @@ class PracticalTSPViewModel: ObservableObject {
         let startVertex = graphViewModel.graph.vertices[edge.startVertexID]!
         let endVertex = graphViewModel.graph.vertices[edge.endVertexID]!
         let shortestDistance = practicalTSP.originalGraph.smallestDistance(from: startVertex, to: endVertex)!
-        print("The smallest distance is \(shortestDistance)")
+
         if edge.weight < shortestDistance {
             error = .cannotAddSmallerWeight
         } else if edge.weight > shortestDistance {

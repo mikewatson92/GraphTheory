@@ -55,27 +55,16 @@ struct PrimTable {
     }
     
     mutating func chooseWeight(row: Int, column: Int) -> Bool {
-        print("Choosing weight at (\(row), \(column))")
-        guard matrix.indexIsValid(row: row, column: column) else {
-            print("Index invalid!")
-            print("The number of items is: \(matrix.numberOfItems)")
-            return false }
-        guard availableWeightPositions.contains(where: { ($0.0, $0.1) == (row, column) }) else {
-            print("Weight not available")
-            return false }
+        guard matrix.indexIsValid(row: row, column: column) else { return false }
+        guard availableWeightPositions.contains(where: { ($0.0, $0.1) == (row, column) }) else { return false }
         guard !availableWeights.isEmpty else { return false }
-        guard availableWeights.sorted(by: { $0 <= $1 })[0] == matrix[row, column] else {
-            print("Not smallest weight.")
-            return false }
-        guard matrix[row, column] != nil else {
-            print("Weight is nil")
-            return false }
-        guard step == .selectWeights else {
-            print("It's not time for that now.")
-            return false }
+        guard availableWeights.sorted(by: { $0 <= $1 })[0] == matrix[row, column] else { return false }
+        guard matrix[row, column] != nil else { return false }
+        guard step == .selectWeights else { return false }
         sumOfWeights += matrix[row, column]!
         deleteRow(index: row)
         numSelectedWeights += 1
+        
         if numSelectedWeights == Int(matrix.numberOfItems) - 1 {
             step = .finished
         }

@@ -14,7 +14,6 @@ struct Kruskal {
     
     init(graph: Graph) {
         self.graph = graph
-        self.graph.mode = .algorithm
         self.subGraph = Graph(vertices: Array(graph.vertices.values), edges: [])
         self.validEdges = Array(graph.edges.values)
     }
@@ -43,9 +42,9 @@ class KruskalViewModel: ObservableObject {
     @Published var errorEdge: Edge?
     var selectedEdge: Edge?
     
-    init(graph: Graph) {
-        self.kruskal = Kruskal(graph: graph)
-        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
+    init(graphViewModel: GraphViewModel) {
+        self.kruskal = Kruskal(graph: graphViewModel.graph)
+        self.graphViewModel = graphViewModel
     }
     
     enum ErrorStatus {
@@ -135,8 +134,8 @@ class KruskalViewModel: ObservableObject {
         }
         kruskal.validEdges.removeAll { $0.id == edge.id }
         graphViewModel.setColorForEdge(edge: edge, color: .green)
-        graphViewModel.setColor(vertex: kruskal.graph.vertices[edge.startVertexID]!, color: .green)
-        graphViewModel.setColor(vertex: kruskal.graph.vertices[edge.endVertexID]!, color: .green)
+        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.startVertexID]!, color: .green)
+        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.endVertexID]!, color: .green)
         return
     }
 }

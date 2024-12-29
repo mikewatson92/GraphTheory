@@ -23,7 +23,6 @@ struct Graph: Identifiable, Codable {
     //
     var resetMethod: ResetFunction = .resetToZero
     var mode: Mode = .edit
-    var algorithm: Algorithm = .none
     
     init() {
         id = UUID()
@@ -38,19 +37,9 @@ struct Graph: Identifiable, Codable {
         
         for edge in edges {
             self.edges[edge.id] = edge
-            setControlPoints(for: edge)
-            setControlPoint1Offset(for: edge, translation: .zero)
-            setControlPoint2Offset(for: edge, translation: .zero)
         }
-        
         originalVertices = self.vertices
         originalEdges = self.edges
-    }
-    
-    enum Algorithm: String, Codable, CaseIterable, Identifiable {
-        case none = "No Algorithm"
-        case kruskal = "Kruskal"
-        var id: String { self.rawValue }
     }
     
     enum ResetFunction: Codable {
@@ -60,57 +49,6 @@ struct Graph: Identifiable, Codable {
     enum Mode: String, Codable {
         case edit = "Edit"
         case explore = "Explore"
-        case icosian = "Icosian"
-        case algorithm = "Algorithm"
-    }
-    
-    mutating func clear() {
-        switch resetMethod {
-        case .resetToZero:
-            resetToZero()
-        case .restoreToOriginal:
-            restoreToOriginal()
-        }
-    }
-    
-    mutating func resetToZero() {
-        vertices = [:]
-        edges = [:]
-    }
-    
-    mutating func restoreToOriginal() {
-        vertices = originalVertices
-        edges = originalEdges
-    }
-    
-    mutating func addVertex(_ vertex: Vertex) {
-        vertices[vertex.id] = vertex
-    }
-    
-    mutating func removeVertex(_ vertex: Vertex) {
-        for edge in getConnectedEdges(to: vertex.id) {
-            removeEdge(edge)
-        }
-        vertices.removeValue(forKey: vertex.id)
-    }
-    
-    mutating func addEdge(_ edge: Edge) {
-        edges[edge.id] = edge
-        setControlPoints(for: edge)
-        setControlPoint1Offset(for: edge, translation: .zero)
-        setControlPoint2Offset(for: edge, translation: .zero)
-    }
-    
-    mutating func removeEdge(_ edge: Edge) {
-        edges.removeValue(forKey: edge.id)
-    }
-    
-    mutating func removeEdgesConnected(to vertexID: UUID) {
-        for edge in edges.values {
-            if edge.startVertexID == vertexID || edge.endVertexID == vertexID {
-                removeEdge(edge)
-            }
-        }
     }
     
     func degree(_ vertex: Vertex) -> Int {
@@ -197,51 +135,6 @@ struct Graph: Identifiable, Codable {
             weight += edge.weight
         }
         return weight
-    }
-    
-    func getVertexByID(_ id: UUID) -> Vertex? {
-        return vertices[id]
-    }
-    
-    func getEdgeByID(_ id: UUID) -> Edge? {
-        edges[id]
-    }
-    
-    func getOffsetByID(_ id: UUID) -> CGSize? {
-        return getVertexByID(id)?.offset
-    }
-    
-    func getEdgeWeightOffsetByID(_ id: UUID) -> CGSize? {
-        if let edge = edges[id] {
-            return edge.weightPositionOffset
-        }
-        return nil
-    }
-    
-    mutating func setEdgeWeightOffsetByID(id: UUID, offset: CGSize) {
-        edges[id]?.weightPositionOffset = offset
-    }
-    
-    mutating func setVertexPosition(forID id: UUID, position: CGPoint) {
-        if var vertex = vertices[id] {
-            vertex.position = position
-            vertices[id] = vertex
-        }
-    }
-    
-    mutating func setVertexOffset(forID id: UUID, size: CGSize) {
-        if var vertex = vertices[id] {
-            vertex.offset = size
-            vertices[id] = vertex
-        }
-    }
-    
-    mutating func setVertexColor(forID id: UUID, color: Color?) {
-        vertices[id]?.color = color
-    }
-    
-    mutating func setEdgeColor(edgeID: UUID, color: Color) {
-        edges[edgeID]?.color = color
     }
     
     // Return true if the graph contains an edge connecting v1 and v2.
@@ -423,6 +316,7 @@ struct Graph: Identifiable, Codable {
         return true
     }
     
+    // Returns an array of all direct edges between two vertices.
     func getEdgesBetween(_ vertex1ID: UUID, _ vertex2ID: UUID) -> [Edge] {
         var result: [Edge] = []
         if doesEdgeExist(vertex1ID, vertex2ID) {
@@ -447,75 +341,10 @@ struct Graph: Identifiable, Codable {
         return connectedEdges
     }
     
-    func getEdgeControlPoints(for edge: Edge) -> (CGPoint, CGPoint) {
-        let controlPoint1 = edges[edge.id]!.controlPoint1
-        let controlPoint2 = edges[edge.id]!.controlPoint2
-        return (controlPoint1, controlPoint2)
-    }
-    
-    func getEdgeControlPointOffsets(for edge: Edge) -> (CGSize, CGSize) {
-        let controlPoint1Offset = edges[edge.id]!.controlPoint1Offset
-        let controlPoint2Offset = edges[edge.id]!.controlPoint2Offset
-        return (controlPoint1Offset, controlPoint2Offset)
-    }
-    
-    mutating func setControlPoints(for edge: Edge) {
-        let controlPoint1 = calculateControlPoint(for: edge, distance: 0.3)
-        let controlPoint2 = calculateControlPoint(for: edge, distance: 0.7)
-        edges[edge.id]?.controlPoint1 = controlPoint1
-        edges[edge.id]?.controlPoint2 = controlPoint2
-    }
-    
-    mutating func setControlPoint1(for edge: Edge, at point: CGPoint) {
-        edges[edge.id]?.controlPoint1 = point
-    }
-    
-    mutating func setControlPoint2(for edge: Edge, at point: CGPoint) {
-        edges[edge.id]?.controlPoint2 = point
-    }
-    
-    mutating func setControlPoint1Offset(for edge: Edge, translation: CGSize) {
-        edges[edge.id]?.controlPoint1Offset = translation
-    }
-    
-    mutating func setControlPoint2Offset(for edge: Edge, translation: CGSize) {
-        edges[edge.id]?.controlPoint2Offset = translation
-    }
-    
-    func calculateControlPoint(for edge: Edge, distance: CGFloat) -> CGPoint {
-        let startPoint = getVertexByID(edge.startVertexID)!.position
-        let endPoint = getVertexByID(edge.endVertexID)!.position
-        
-        // If the edge is not a vertical line, calculate the control point.
-        if let yIntercept = yIntercept(of: edge), let gradient = gradient(of: edge) {
-            let newX = startPoint.x + distance * (endPoint.x - startPoint.x)
-            let newY = gradient * newX + yIntercept
-            return CGPoint(x: newX, y: newY)
-        }
-        // If the edge is a vertical line, calculate the control point.
-        let newX = startPoint.x
-        let newY = startPoint.y + distance * (endPoint.y - startPoint.y)
-        return CGPoint(x: newX, y: newY)
-    }
-    
-    mutating func updateControlPoint1(for edge: Edge, translation: CGSize) {
-        if let originalControlPoint1 = edges[edge.id]?.controlPoint1 {
-            edges[edge.id]?.controlPoint1 = CGPoint(x: originalControlPoint1.x + translation.width,
-                                                    y: originalControlPoint1.y + translation.height)
-        }
-    }
-    
-    mutating func updateControlPoint2(for edge: Edge, translation: CGSize) {
-        if let originalControlPoint2 = edges[edge.id]?.controlPoint2 {
-            edges[edge.id]?.controlPoint2 = CGPoint(x: originalControlPoint2.x + translation.width,
-                                                    y: originalControlPoint2.y + translation.height)
-        }
-    }
-    
     func yIntercept(of edge: Edge) -> CGFloat? {
-        let startPoint = getVertexByID(edge.startVertexID)?.position
-        let y = startPoint!.y
-        let x = startPoint!.x
+        let startPoint = vertices[edge.startVertexID]!.position
+        let y = startPoint.y
+        let x = startPoint.x
         if let m = gradient(of: edge) {
             return y - m * x
         }
@@ -523,24 +352,18 @@ struct Graph: Identifiable, Codable {
     }
     
     func gradient(of edge: Edge) -> CGFloat? {
-        let endVertex = getVertexByID(edge.endVertexID)
-        let startVertex = getVertexByID(edge.startVertexID)
-        let y2 = endVertex!.position.y
-        let y1 = startVertex!.position.y
-        let x2 = endVertex!.position.x
-        let x1 = startVertex!.position.x
+        let endVertex = vertices[edge.endVertexID]!
+        let startVertex = vertices[edge.startVertexID]!
+        let y2 = endVertex.position.y
+        let y1 = startVertex.position.y
+        let x2 = endVertex.position.x
+        let x1 = startVertex.position.x
         let dy = y2 - y1
         let dx = x2 - x1
         
         if dx == 0 { return nil }
         
         return dy / dx
-    }
-    
-    mutating func resetControlPointsAndOffsets(for edge: Edge) {
-        setControlPoints(for: edge)
-        setControlPoint1Offset(for: edge, translation: .zero)
-        setControlPoint2Offset(for: edge, translation: .zero)
     }
 }
 
@@ -557,26 +380,43 @@ class GraphViewModel: ObservableObject {
     var edgesDidMove: [Edge] = []
     var vertexWillMove: [UUID: Vertex] = [:]
     var vertexDidMove: [UUID: Vertex] = [:]
-    var showModeMenu: Bool
-    var showAlgorithms: Bool
+    var mode: Graph.Mode {
+        get {
+            graph.mode
+        } set {
+            graph.mode = newValue
+        }
+    }
     
-    init(graph: Graph, showWeights: Bool = false, showModeMenu: Bool = true, showAlgorithms: Bool = false) {
+    init(graph: Graph, showWeights: Bool = false) {
         self.graph = graph
         self.showWeights = showWeights
-        self.showModeMenu = showModeMenu
-        self.showAlgorithms = showAlgorithms
         timesEdgeSelected = [:]
         for id in graph.edges.keys {
             timesEdgeSelected[id] = 0
         }
+        for edge in graph.edges.values {
+            let (controlPoint1, controlPoint2) = initControlPointsFor(edge: edge)
+            if edge.controlPoint1 == .zero {
+                setControlPoint1(for: edge, at: controlPoint1)
+                self.graph.originalEdges[edge.id]?.controlPoint1 = controlPoint1
+            }
+            if edge.controlPoint2 == .zero {
+                setControlPoint2(for: edge, at: controlPoint2)
+                self.graph.originalEdges[edge.id]?.controlPoint2 = controlPoint2
+            }
+        }
     }
     
     func addVertex(_ vertex: Vertex) {
-        graph.addVertex(vertex)
+        graph.vertices[vertex.id] = vertex
     }
     
     func removeVertex(_ vertex: Vertex) {
-        graph.removeVertex(vertex)
+        for edge in graph.getConnectedEdges(to: vertex.id) {
+            graph.edges.removeValue(forKey: edge.id)
+        }
+        graph.vertices.removeValue(forKey: vertex.id)
     }
     
     func getVertices() -> [Vertex] {
@@ -584,24 +424,71 @@ class GraphViewModel: ObservableObject {
     }
     
     func addEdge(_ edge: Edge) {
-        graph.addEdge(edge)
+        var edge = edge
+        if edge.controlPoint1 == .zero || edge.controlPoint2 == .zero {
+            let (controlPoint1, controlPoint2) = initControlPointsFor(edge: edge)
+            edge.controlPoint1 = controlPoint1
+            edge.controlPoint2 = controlPoint2
+        }
+        graph.edges[edge.id] = edge
         timesEdgeSelected[edge.id] = 0
     }
     
     func removeEdge(_ edge: Edge) {
-        graph.removeEdge(edge)
+        graph.edges.removeValue(forKey: edge.id)
     }
     
     func removeEdgesConnected(to vertexID: UUID) {
-        graph.removeEdgesConnected(to: vertexID)
+        for edge in graph.edges.values {
+            if edge.startVertexID == vertexID || edge.endVertexID == vertexID {
+                graph.edges.removeValue(forKey: edge.id)
+            }
+        }
     }
     
     func getEdges() -> [Edge] {
         return Array(graph.edges.values)
     }
     
-    func getConnectedEdges(to v: UUID) -> [Edge] {
-        return graph.getConnectedEdges(to: v)
+    private func resetToZero() {
+        graph.vertices = [:]
+        graph.edges = [:]
+    }
+    
+    private func restoreToOriginal() {
+        graph.vertices = graph.originalVertices
+        graph.edges = graph.originalEdges
+    }
+    
+    func clear() {
+        switch graph.resetMethod {
+        case .resetToZero:
+            resetToZero()
+        case .restoreToOriginal:
+            restoreToOriginal()
+        }
+    }
+    
+    func calculateControlPointFor(edge: Edge, distance: CGFloat) -> CGPoint {
+        let startPoint = graph.vertices[edge.startVertexID]!.position
+        let endPoint = graph.vertices[edge.endVertexID]!.position
+        
+        // If the edge is not a vertical line, calculate the control point.
+        if let yIntercept = graph.yIntercept(of: edge), let gradient = graph.gradient(of: edge) {
+            let newX = startPoint.x + distance * (endPoint.x - startPoint.x)
+            let newY = gradient * newX + yIntercept
+            return CGPoint(x: newX, y: newY)
+        }
+        // If the edge is a vertical line, calculate the control point.
+        let newX = startPoint.x
+        let newY = startPoint.y + distance * (endPoint.y - startPoint.y)
+        return CGPoint(x: newX, y: newY)
+    }
+    
+    func initControlPointsFor(edge: Edge) -> (CGPoint, CGPoint){
+        let controlPoint1 = calculateControlPointFor(edge: edge, distance: 0.3)
+        let controlPoint2 = calculateControlPointFor(edge: edge, distance: 0.7)
+        return (controlPoint1, controlPoint2)
     }
     
     func setColorForEdge(edge: Edge, color: Color) {
@@ -653,7 +540,7 @@ class GraphViewModel: ObservableObject {
     func vertexWillMove(_ vertex: Vertex, size: CGSize) {
         if !vertexWillMove.keys.contains(where: { $0 == vertex.id }) {
             vertexWillMove[vertex.id] = vertex
-            let connectedEdges = getConnectedEdges(to: vertex.id)
+            let connectedEdges = graph.getConnectedEdges(to: vertex.id)
             for edge in connectedEdges {
                 // Used for storing an initial copy of an edge before
                 // changes occur.
@@ -661,7 +548,7 @@ class GraphViewModel: ObservableObject {
                     edgesWillMove.append(edge)
                 }
                 // Calculate the relative positions of the weights
-                if let startVertex = graph.getVertexByID(edge.startVertexID), let endVertex = graph.getVertexByID(edge.endVertexID) {
+                if let startVertex = graph.vertices[edge.startVertexID], let endVertex = graph.vertices[edge.endVertexID] {
                     let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: .zero, endOffset: .zero, controlPoint1: getControlPoints(for: edge).0, controlPoint2: getControlPoints(for: edge).1, controlPoint1Offset: getControlPointOffsets(for: edge).0, controlPoint2Offset: getControlPointOffsets(for: edge).1, size: size)
                     let edgeViewModel = EdgeViewModel(edge: edge, size: size, graphViewModel: self)
                     let weightPosition = edgeViewModel.weightPosition
@@ -680,7 +567,7 @@ class GraphViewModel: ObservableObject {
     // Used for storing copies of a vertex after a change occurs.
     func vertexDidMove(_ vertex: Vertex) {
         vertexWillMove[vertex.id] = vertex
-        let connectedEdges = getConnectedEdges(to: vertex.id)
+        let connectedEdges = graph.getConnectedEdges(to: vertex.id)
         for edge in connectedEdges {
             edgesDidMove.removeAll { $0.id == edge.id }
             edgesDidMove.append(edge)
@@ -728,8 +615,8 @@ class GraphViewModel: ObservableObject {
         let y1 = originalControlPoint1.y + controlPoint1Offset.height / geometrySize.height
         let x2 = originalControlPoint2.x + controlPoint2Offset.width / geometrySize.width
         let y2 = originalControlPoint2.y + controlPoint2Offset.height / geometrySize.height
-        setControlPoint1(for: edge, at: CGPoint(x: x1, y: y1))
-        setControlPoint2(for: edge, at: CGPoint(x: x2, y: y2))
+        graph.edges[edge.id]?.controlPoint1 = CGPoint(x: x1, y: y1)
+        graph.edges[edge.id]?.controlPoint2 = CGPoint(x: x2, y: y2)
     }
     
     // When a vertex starts being dragged by translation,
@@ -814,22 +701,6 @@ class GraphViewModel: ObservableObject {
         }
     }
     
-    func getGraph() -> Graph {
-        return graph
-    }
-    
-    func setGraph(graph: Graph) {
-        self.graph = graph
-    }
-    
-    func getVertexByID(_ id: UUID) -> Vertex? {
-        return graph.getVertexByID(id)
-    }
-    
-    func getEdge(_ edge: Edge) -> Edge? {
-        return graph.getEdgeByID(edge.id)
-    }
-    
     func setVertexLabel(id: UUID, label: String) {
         graph.vertices[id]?.label = label
     }
@@ -839,47 +710,32 @@ class GraphViewModel: ObservableObject {
     }
     
     func setVertexPosition(vertex: Vertex, position: CGPoint) {
-        graph.setVertexPosition(forID: vertex.id, position: position)
+        graph.vertices[vertex.id]?.position = position
         objectWillChange.send()
     }
     
     func setVertexOffset(vertex: Vertex, size: CGSize) {
-        graph.setVertexOffset(forID: vertex.id, size: size)
+        graph.vertices[vertex.id]?.offset = size
     }
     
-    func setColor(vertex: Vertex, color: Color?) {
-        graph.setVertexColor(forID: vertex.id, color: color)
-    }
-    
-    func setGraph(_ newGraph: Graph) {
-        self.graph = newGraph
-        objectWillChange.send() // Notify the view of changes
-    }
-    
-    func setControlPoints(for edge: Edge) {
-        graph.setControlPoints(for: edge)
-        graph.setControlPoint1Offset(for: edge, translation: .zero)
-        graph.setControlPoint2Offset(for: edge, translation: .zero)
+    func setVertexColor(vertex: Vertex, color: Color?) {
+        graph.vertices[vertex.id]?.color = color
     }
     
     func setControlPoint1(for edge: Edge, at point: CGPoint) {
-        graph.setControlPoint1(for: edge, at: point)
+        graph.edges[edge.id]?.controlPoint1 = point
     }
     
     func setControlPoint2(for edge: Edge, at point: CGPoint) {
-        graph.setControlPoint2(for: edge, at: point)
+        graph.edges[edge.id]?.controlPoint2 = point
     }
     
-    func getWeight(edge: Edge) -> Double? {
-        graph.edges[edge.id]?.weight
+    func getWeightPositionOffset(for edge: Edge) -> CGSize? {
+        return graph.edges[edge.id]?.weightPositionOffset
     }
     
     func setWeight(edge: Edge, weight: Double) {
         graph.edges[edge.id]?.weight = weight
-    }
-    
-    func getWeightPositionOffset(for edge: Edge) -> CGSize? {
-        return graph.getEdgeWeightOffsetByID(edge.id)
     }
     
     func setWeightPosition(for edge: Edge, position: CGPoint, size: CGSize) {
@@ -890,15 +746,21 @@ class GraphViewModel: ObservableObject {
     }
         
     func setWeightPositionOffset(for edge: Edge, offset: CGSize) {
-        graph.setEdgeWeightOffsetByID(id: edge.id, offset: offset)
+        graph.edges[edge.id]?.weightPositionOffset = offset
     }
     
     func updateControlPoint1(for edge: Edge, translation: CGSize) {
-        graph.updateControlPoint1(for: edge, translation: translation)
+        if let originalControlPoint1 = graph.edges[edge.id]?.controlPoint1 {
+            graph.edges[edge.id]?.controlPoint1 = CGPoint(x: originalControlPoint1.x + translation.width,
+                                                    y: originalControlPoint1.y + translation.height)
+        }
     }
     
     func updateControlPoint2(for edge: Edge, translation: CGSize) {
-        graph.updateControlPoint2(for: edge, translation: translation)
+        if let originalControlPoint2 = graph.edges[edge.id]?.controlPoint2 {
+            graph.edges[edge.id]?.controlPoint2 = CGPoint(x: originalControlPoint2.x + translation.width,
+                                                    y: originalControlPoint2.y + translation.height)
+        }
     }
     
     func getControlPoints(for edge: Edge) -> (CGPoint, CGPoint) {
@@ -923,31 +785,6 @@ class GraphViewModel: ObservableObject {
     func setControlPoint2Offset(for edge: Edge, translation: CGSize) {
         graph.edges[edge.id]?.controlPoint2Offset = translation
     }
-    
-    func getMode() -> Graph.Mode {
-        graph.mode
-    }
-    
-    func setMode(_ mode: Graph.Mode) {
-        graph.mode = mode
-    }
-    
-    func getAlgorithm() -> Graph.Algorithm {
-        graph.algorithm
-    }
-    
-    func setAlgorithm(_ alg: Graph.Algorithm) {
-        graph.algorithm = alg
-    }
-    
-    func resetControlPointsAndOffsets(for edge: Edge) {
-        graph.resetControlPointsAndOffsets(for: edge)
-    }
-    
-    func clear() {
-        graph.clear()
-    }
-    
 }
 
 struct GraphView: View {
@@ -978,25 +815,100 @@ struct GraphView: View {
 #endif
     }
     
-    func handleVertexOnDragGesture(for vertex: Vertex, drag: DragGesture.Value, geometrySize: CGSize) {
-        
+    func handleVertexOnDragGesture(for vertexViewModel: VertexViewModel, drag: DragGesture.Value, geometrySize: CGSize) {
+        if graphViewModel.mode == .edit {
+            graphViewModel.movingVertex = vertexViewModel.vertex
+            vertexViewModel.offset = drag.translation
+            // Notify the model to store copies of
+            // the vertex and connected edges in
+            // their original states.
+            graphViewModel.vertexWillMove(vertexViewModel.vertex, size: geometrySize)
+            //Update the control points and control point offsets for every edge connected to a moving vertex
+            let connectedEdges = graphViewModel.graph.getConnectedEdges(to: vertexViewModel.id)
+            for edge in connectedEdges {
+                // Keep original copies of all
+                // vertices connected by edge.
+                let otherVertexID = edge.traverse(from: vertexViewModel.id)!
+                let otherVertex = graphViewModel.graph.vertices[otherVertexID]!
+                graphViewModel.vertexWillMove(otherVertex, size: geometrySize)
+                // Update the control point
+                // offsets for edge
+                graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation, geometrySize: geometrySize)
+            }
+        }
     }
     
-    func handleVertexEndDragGesture(for vertex: Vertex, drag: DragGesture.Value, geometrySize: CGSize) {
-        
+    func handleVertexEndDragGesture(for vertexViewModel: VertexViewModel, geometrySize: CGSize) {
+        if graphViewModel.mode == .edit {
+            let vertex = vertexViewModel.vertex
+            graphViewModel.movingVertex = nil
+            graphViewModel.vertexDidMove(vertex)
+            // Set the vertex position
+            vertexViewModel.position = CGPoint(x: vertexViewModel.position.x + vertexViewModel.offset.width / geometrySize.width, y: vertexViewModel.position.y + vertexViewModel.offset.height / geometrySize.height)
+            vertexViewModel.offset = .zero
+            
+            for edge in graphViewModel.graph.getConnectedEdges(to: vertex.id) {
+                //Update the control points and control point offsets for every edge connected to a moving vertex
+                graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometrySize)
+                graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
+                graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
+                // Reposition the weight
+                if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.graph.vertices[edge.startVertexID], let endVertex = graphViewModel.graph.vertices[edge.endVertexID] {
+                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometrySize)
+                    let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t)
+                    var newWeightPosition: CGPoint
+                    if let bezierGradient = edgePath.bezierTangentGradient(t: t) {
+                        if bezierGradient != 0 {
+                            newWeightPosition = edgePath.pointOnPerpendicular(point: pointOnBezierCurve, perpendicularGradient: 1 / bezierGradient, distance: distance).0
+                        } else {
+                            newWeightPosition = CGPoint(x: pointOnBezierCurve.x, y: pointOnBezierCurve.y + distance)
+                        }
+                    } else {
+                        let y = pointOnBezierCurve.y
+                        let x = pointOnBezierCurve.x + distance
+                        newWeightPosition = CGPoint(x: x, y: y)
+                    }
+                    graphViewModel.setWeightPosition(for: edge, position: newWeightPosition, size: geometrySize)
+                    
+                }
+                graphViewModel.resetVertexEdgeChanges()
+                
+            }
+        }
     }
     
     func handleVertexSingleClickGesture(for vertex: Vertex) {
-        
+        if graphViewModel.mode == .edit {
+            if graphViewModel.graph.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
+                graphViewModel.selectedEdge = nil
+            }
+            graphViewModel.removeEdgesConnected(to: vertex.id)
+            graphViewModel.removeVertex(vertex)
+            graphViewModel.selectedVertex = nil
+        }
     }
     
     func handleVertexDoubleClickGesture(for vertex: Vertex) {
-        
+        if graphViewModel.mode == .edit || graphViewModel.mode == .explore {
+            graphViewModel.selectedEdge = nil
+            if graphViewModel.selectedVertex == nil {
+                graphViewModel.selectedVertex = graphViewModel.graph.vertices[vertex.id]!
+            } else if graphViewModel.selectedVertex!.id == vertex.id {
+                graphViewModel.selectedVertex = nil
+            } else if graphViewModel.mode == .edit {
+                let newEdge = Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertex.id)
+                graphViewModel.addEdge(newEdge)
+                graphViewModel.setEdgeDirection(edge: newEdge, direction: edgeDirection)
+                graphViewModel.selectedVertex = nil
+            } else {
+                graphViewModel.selectedVertex = nil
+            }
+        }
     }
     
     func handleEdgeSingleClickGesture(for edge: Edge) {
         graphViewModel.selectedVertex = nil
-        switch graphViewModel.getMode() {
+        switch graphViewModel.mode {
             // Allows the user to select an edge to display the control points
         case .edit:
             if graphViewModel.selectedEdge?.id != edge.id {
@@ -1011,31 +923,29 @@ struct GraphView: View {
             graphViewModel.timesEdgeSelected[edge.id]! += 1
             let timesSelected = graphViewModel.timesEdgeSelected[edge.id]!
             graphViewModel.setColorForEdge(edge: edge, color: edgeColors[(timesSelected - 1) % edgeColors.count])
-        case .icosian:
-            graphViewModel.selectedEdge = edge
-        case .algorithm:
-            break
         }
     }
     
     func handleEdgeDoubleClickGesture(for edge: Edge) {
-        if graphViewModel.getMode() == .edit {
+        if graphViewModel.mode == .edit {
             graphViewModel.selectedEdge = nil
         }
     }
     
-    func handleEdgeLongPressGesture(for edge: Edge) {
-        if graphViewModel.getMode() == .edit {
-            graphViewModel.resetControlPointsAndOffsets(for: edge)
-        } else if graphViewModel.getMode() == .explore {
-            graphViewModel.timesEdgeSelected[edge.id] = 0
-            graphViewModel.setColorForEdge(edge: edge, color: .white)
+    func handleEdgeLongPressGesture(for edgeViewModel: EdgeViewModel) {
+        if graphViewModel.mode == .edit {
+            let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edgeViewModel.edge)
+            graphViewModel.setControlPoint1(for: edgeViewModel.edge, at: controlPoint1)
+            graphViewModel.setControlPoint2(for: edgeViewModel.edge, at: controlPoint2)
+        } else if graphViewModel.mode == .explore {
+            graphViewModel.timesEdgeSelected[edgeViewModel.id] = 0
+            graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: .white)
         }
     }
     
     var body: some View {
         GeometryReader{ geometry in
-            ForEach(graphViewModel.getEdges(), id: \.id) { edge in
+            ForEach(graphViewModel.getEdges()) { edge in
                 let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                 EdgeView(edgeViewModel: edgeViewModel)
                     .onTapGesture(count: 2) {
@@ -1045,7 +955,7 @@ struct GraphView: View {
                         handleEdgeSingleClickGesture(for: edge)
                     }
                     .onLongPressGesture {
-                        handleEdgeLongPressGesture(for: edge)
+                        handleEdgeLongPressGesture(for: edgeViewModel)
                     }
             }
             
@@ -1054,98 +964,23 @@ struct GraphView: View {
                 let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                 
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                    .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                    .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                     .onAppear {
                         if vertexViewModel.color == nil {
-                            vertexViewModel.setColor(vertexID: vertex.id, color: vertexEdgeColor)
+                            vertexViewModel.color = vertexEdgeColor
                         }
                     }
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                         .onChanged({ drag in
-                            if graphViewModel.getMode() == .edit {
-                                graphViewModel.movingVertex = vertex
-                                vertexViewModel.setOffset(size: drag.translation)
-                                // Notify the model to store copies of
-                                // the vertex and connected edges in
-                                // their original states.
-                                graphViewModel.vertexWillMove(vertex, size: geometry.size)
-                                //Update the control points and control point offsets for every edge connected to a moving vertex
-                                let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
-                                for edge in connectedEdges {
-                                    // Keep original copies of all
-                                    // vertices connected by edge.
-                                    let otherVertexID = edge.traverse(from: vertex.id)!
-                                    let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
-                                    graphViewModel.vertexWillMove(otherVertex, size: geometry.size)
-                                    // Update the control point
-                                    // offsets for edge
-                                    graphViewModel.setEdgeControlPointOffsets(edge: edge, translation: drag.translation, geometrySize: geometry.size)
-                                }
-                            }
+                            handleVertexOnDragGesture(for: vertexViewModel, drag: drag, geometrySize: geometry.size)
                         }).onEnded { _ in
-                            if graphViewModel.getMode() == .edit {
-                                graphViewModel.movingVertex = nil
-                                graphViewModel.vertexDidMove(vertex)
-                                // Set the vertex position
-                                vertexViewModel.setPosition(CGPoint(x: vertexViewModel.getPosition()!.x + vertexViewModel.getOffset()!.width / geometry.size.width, y: vertexViewModel.getPosition()!.y + vertexViewModel.getOffset()!.height / geometry.size.height))
-                                vertexViewModel.setOffset(size: .zero)
-                                
-                                for edge in graphViewModel.getConnectedEdges(to: vertex.id) {
-                                    //Update the control points and control point offsets for every edge connected to a moving vertex
-                                    graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometry.size)
-                                    graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
-                                    graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
-                                    // Reposition the weight
-                                    if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.getVertexByID(edge.startVertexID), let endVertex = graphViewModel.getVertexByID(edge.endVertexID) {
-                                        let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometry.size)
-                                        let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t)
-                                        var newWeightPosition: CGPoint
-                                        if let bezierGradient = edgePath.bezierTangentGradient(t: t) {
-                                            if bezierGradient != 0 {
-                                                newWeightPosition = edgePath.pointOnPerpendicular(point: pointOnBezierCurve, perpendicularGradient: 1 / bezierGradient, distance: distance).0
-                                            } else {
-                                                newWeightPosition = CGPoint(x: pointOnBezierCurve.x, y: pointOnBezierCurve.y + distance)
-                                            }
-                                        } else {
-                                            let y = pointOnBezierCurve.y
-                                            let x = pointOnBezierCurve.x + distance
-                                            newWeightPosition = CGPoint(x: x, y: y)
-                                        }
-                                        graphViewModel.setWeightPosition(for: edge, position: newWeightPosition, size: geometry.size)
-                                        
-                                    }
-                                    graphViewModel.resetVertexEdgeChanges()
-                                    
-                                }
-                            }
+                            handleVertexEndDragGesture(for: vertexViewModel, geometrySize: geometry.size)
                         })
                     .onTapGesture(count: 2) {
-                        if graphViewModel.getMode() == .edit {
-                            if graphViewModel.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
-                                graphViewModel.selectedEdge = nil
-                            }
-                            graphViewModel.removeEdgesConnected(to: vertexViewModel.getVertexID())
-                            graphViewModel.removeVertex(vertex)
-                            
-                            graphViewModel.selectedVertex = nil
-                        }
+                        handleVertexSingleClickGesture(for: vertex)
                     }
                     .onTapGesture(count: 1) {
-                        if graphViewModel.getMode() == .edit || graphViewModel.getMode() == .explore {
-                            graphViewModel.selectedEdge = nil
-                            if graphViewModel.selectedVertex == nil {
-                                graphViewModel.selectedVertex = graphViewModel.getVertexByID(vertexViewModel.getVertexID())
-                            } else if graphViewModel.selectedVertex!.id == vertexViewModel.getVertexID() {
-                                graphViewModel.selectedVertex = nil
-                            } else if graphViewModel.getMode() == .edit {
-                                let newEdge = Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertexViewModel.getVertexID())
-                                graphViewModel.addEdge(newEdge)
-                                graphViewModel.setEdgeDirection(edge: newEdge, direction: edgeDirection)
-                                graphViewModel.selectedVertex = nil
-                            } else {
-                                graphViewModel.selectedVertex = nil
-                            }
-                        }
+                        handleVertexDoubleClickGesture(for: vertex)
                     }
             }
         }
@@ -1169,10 +1004,10 @@ struct GraphView: View {
                         set: { newColor in
                             if let selectedEdge = graphViewModel.selectedEdge {
                                 graphViewModel.setColorForEdge(edge: selectedEdge, color: newColor)
-                                graphViewModel.selectedEdge =  graphViewModel.getGraph().edges[selectedEdge.id]
+                                graphViewModel.selectedEdge =  graphViewModel.graph.edges[selectedEdge.id]
                             } else if let selectedVertex = graphViewModel.selectedVertex {
-                                graphViewModel.setColor(vertex: selectedVertex, color: newColor)
-                                graphViewModel.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
+                                graphViewModel.setVertexColor(vertex: selectedVertex, color: newColor)
+                                graphViewModel.selectedVertex = graphViewModel.graph.vertices[selectedVertex.id]! // Sync selected vertex
                             } else {
                                 vertexEdgeColor = newColor
                             }
@@ -1195,13 +1030,13 @@ struct GraphView: View {
             ToolbarItem(placement: .automatic) {
                 Menu {
                     Text("Algorithm:")
-                    NavigationLink(destination: KruskalView(kruskalViewModel: KruskalViewModel(graph: graphViewModel.getGraph()), completion: .constant(false))) {
+                    NavigationLink(destination: KruskalView(kruskalViewModel: KruskalViewModel(graphViewModel: GraphViewModel(graph: graphViewModel.graph, showWeights: true)), completion: .constant(false))) {
                         Text("Kruskal")
                     }
-                    NavigationLink(destination: PrimView(graph: graphViewModel.getGraph())) {
+                    NavigationLink(destination: PrimView(graph: graphViewModel.graph)) {
                         Text("Prim")
                     }
-                    NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.getGraph())) {
+                    NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.graph)) {
                         Text("Chinese Postman Problem")
                     }
                     NavigationLink(destination: ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))) {
@@ -1216,36 +1051,34 @@ struct GraphView: View {
                 }
             }
             ToolbarItem(placement: .automatic) {
-                if graphViewModel.getAlgorithm() == .none {
-                    Menu {
-                        Toggle(isOn: $graphViewModel.showWeights) {
-                            Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accentColor)
-                        }
-                        Picker("Direction", systemImage: "arrow.left.and.right", selection: Binding(get: {
+                Menu {
+                    Toggle(isOn: $graphViewModel.showWeights) {
+                        Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accentColor)
+                    }
+                    Picker("Direction", systemImage: "arrow.left.and.right", selection: Binding(get: {
+                        if let selectedEdge = graphViewModel.selectedEdge {
+                            return graphViewModel.getEdgeDirection(selectedEdge)
+                        } else {
+                            return edgeDirection
+                        }}, set: { newValue in
+                            edgeDirection = newValue
                             if let selectedEdge = graphViewModel.selectedEdge {
-                                return graphViewModel.getEdgeDirection(selectedEdge)
-                            } else {
-                                return edgeDirection
-                            }}, set: { newValue in
-                                edgeDirection = newValue
-                                if let selectedEdge = graphViewModel.selectedEdge {
-                                    graphViewModel.setEdgeDirection(edge: selectedEdge, direction: newValue)
-                                }
-                            })) {
+                                graphViewModel.setEdgeDirection(edge: selectedEdge, direction: newValue)
+                            }
+                        })) {
                             ForEach(Edge.Directed.allCases, id: \.self) { direction in
                                 Text(direction.rawValue).tag(direction)
                             }
                         }
                         .tint(themeViewModel.theme!.accentColor)
-                    } label: {
-                        Image(systemName: "arrow.left.arrow.right.square")
-                            .tint(themeViewModel.theme!.accentColor)
-                    }
+                } label: {
+                    Image(systemName: "arrow.left.arrow.right.square")
+                        .tint(themeViewModel.theme!.accentColor)
                 }
             }
             ToolbarItem(placement: .automatic) {
                 Menu {
-                    Picker("Mode", selection: Binding(get: { graphViewModel.getMode() }, set: { newValue in graphViewModel.setMode(newValue)})) {
+                    Picker("Mode", selection: Binding(get: { graphViewModel.mode }, set: { newValue in graphViewModel.mode = newValue })) {
                         Text("Mode:")
                         Text("Edit").tag(Graph.Mode.edit)
                         Text("Explore").tag(Graph.Mode.explore)

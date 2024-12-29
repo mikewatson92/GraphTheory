@@ -337,7 +337,7 @@ struct ChinesePostmanView: View {
     }
     
     var body: some View {
-        if !graphViewModel.getGraph().isConnected() {
+        if !graphViewModel.graph.isConnected() {
             Text("This graph is not connected, so the Chinese Postman problem has no solution.")
         } else {
             ZStack {

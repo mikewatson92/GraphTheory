@@ -51,7 +51,7 @@ struct MoveTutorial: View {
             if showCanvas {
                 ZStack {
                     GeometryReader { geometry in
-                        ForEach(graphViewModel.getEdges(), id: \.id) { edge in
+                        ForEach(graphViewModel.getEdges()) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                             EdgeView(edgeViewModel: edgeViewModel)
 
@@ -61,20 +61,20 @@ struct MoveTutorial: View {
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                                 .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
                                     .onChanged({ drag in
-                                        if graphViewModel.getMode() == .edit {
+                                        if graphViewModel.mode == .edit {
                                             graphViewModel.movingVertex = vertex
-                                            vertexViewModel.setOffset(size: drag.translation)
+                                            vertexViewModel.offset = drag.translation
                                             // Notify the model to store copies of
                                             // the vertex and connected edges in
                                             // their original states.
                                             graphViewModel.vertexWillMove(vertex, size: geometry.size)
                                             //Update the control points and control point offsets for every edge connected to a moving vertex
-                                            let connectedEdges = graphViewModel.getConnectedEdges(to: vertex.id)
+                                            let connectedEdges = graphViewModel.graph.getConnectedEdges(to: vertex.id)
                                             for edge in connectedEdges {
                                                 // Keep original copies of all
                                                 // vertices connected by edge.
                                                 let otherVertexID = edge.traverse(from: vertex.id)!
-                                                let otherVertex = graphViewModel.getVertexByID(otherVertexID)!
+                                                let otherVertex = graphViewModel.graph.vertices[otherVertexID]!
                                                 graphViewModel.vertexWillMove(otherVertex, size: geometry.size)
                                                 // Update the control point
                                                 // offsets for edge
@@ -85,21 +85,21 @@ struct MoveTutorial: View {
                                         withAnimation {
                                             moveDidHappen = true
                                         }
-                                        if graphViewModel.getMode() == .edit {
+                                        if graphViewModel.mode == .edit {
                                             graphViewModel.movingVertex = nil
                                             graphViewModel.vertexDidMove(vertex)
                                             // Set the vertex position
-                                            vertexViewModel.setPosition(CGPoint(x: vertexViewModel.getPosition()!.x + vertexViewModel.getOffset()!.width / geometry.size.width, y: vertexViewModel.getPosition()!.y + vertexViewModel.getOffset()!.height / geometry.size.height))
-                                            vertexViewModel.setOffset(size: .zero)
+                                            vertexViewModel.position = CGPoint(x: vertexViewModel.position.x + vertexViewModel.offset.width / geometry.size.width, y: vertexViewModel.position.y + vertexViewModel.offset.height / geometry.size.height)
+                                            vertexViewModel.offset = .zero
                                             
-                                            for edge in graphViewModel.getConnectedEdges(to: vertex.id) {
+                                            for edge in graphViewModel.graph.getConnectedEdges(to: vertex.id) {
                                                 //Update the control points and control point offsets for every edge connected to a moving vertex
                                                 graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometry.size)
                                                 graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
                                                 graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
                                                 // Reposition the weight
-                                                if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.getVertexByID(edge.startVertexID), let endVertex = graphViewModel.getVertexByID(edge.endVertexID) {
-                                                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometry.size)
+                                                if let t = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionParameterT, let distance = graphViewModel.getEdges().first(where: {$0.id == edge.id})?.weightPositionDistance, let startVertex = graphViewModel.graph.vertices[edge.startVertexID], let endVertex = graphViewModel.graph.vertices[edge.endVertexID] {
+                                                    let edgePath = EdgePath(startVertexPosition: startVertex.position, endVertexPosition: endVertex.position, startOffset: startVertex.offset, endOffset: endVertex.offset, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0 , controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: geometry.size)
                                                     let pointOnBezierCurve = edgePath.pointOnBezierCurve(t: t)
                                                     var newWeightPosition: CGPoint
                                                     if let bezierGradient = edgePath.bezierTangentGradient(t: t) {

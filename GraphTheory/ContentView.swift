@@ -11,7 +11,7 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    @StateObject private var canvasGraphViewModel = GraphViewModel(graph: Graph(), showAlgorithms: true)
+    @StateObject private var canvasGraphViewModel = GraphViewModel(graph: Graph())
     @StateObject private var matrixViewModel = Matrix2DViewModel(matrix: Matrix2D(numberOfItems: 3))
 
     var body: some View {

@@ -61,7 +61,7 @@ struct VertexLabelTutorial: View {
                         ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                                .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                                .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                                 .onTapGesture(count: 1) {
                                     if let selectedVertex = graphViewModel.selectedVertex {
                                         if selectedVertex.id == vertex.id {
@@ -113,16 +113,12 @@ struct VertexLabelTutorial: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Menu {
-                    Picker("Mode", selection: Binding(get: { graphViewModel.getMode() }, set: { newValue in graphViewModel.setMode(newValue)})) {
+                    Picker("Mode", selection: Binding(get: { graphViewModel.mode }, set: { newValue in graphViewModel.mode = newValue })) {
                         Text("Mode:")
                         Text("Edit").tag(Graph.Mode.edit)
                         Text("Explore").tag(Graph.Mode.explore)
                     }
                     .foregroundStyle(themeViewModel.theme!.accentColor)
-                    
-                    if graphViewModel.showAlgorithms {
-                        
-                    }
                     
                     Picker("Label Color", selection: Binding(
                         get: {

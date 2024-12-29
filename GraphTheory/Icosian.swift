@@ -74,8 +74,6 @@ struct Icosian {
     var edgeA3E3: Edge
     // The graph
     var graph: Graph
-    // Keep track of what stage of solving the puzzle we are on
-    var step = Step.chooseVertex
     
     init() {
         // Initialize the vertex coordinates
@@ -145,27 +143,37 @@ struct Icosian {
                                  midpointAB, midpointAE, midpointBC, midpointCD, midpointDE,
                                  A3, B3, C3, D3, E3],
                       edges: [edgeA1_B1, edgeA1_A2, edgeA1_E1, edgeB1_B2, edgeB1_C1, edgeC1_C2, edgeC1_D1, edgeD1_D2, edgeD1_E1, edgeE1_E2, edgeA_MAB, edgeMAB_B, edgeB_MBC, edgeMBC_C, edgeC_MCD, edgeMCD_D, edgeD_MDE, edgeMDE_E, edgeE_MAE, edgeMAE_A, edgeMAE_A3, edgeMAB_B3, edgeMBC_C3, edgeMCD_D3, edgeMDE_E3, edgeA3B3, edgeB3C3, edgeC3D3, edgeD3E3, edgeA3E3])
-        graph.mode = .icosian
         graph.resetMethod = .restoreToOriginal
+    }
+}
+
+class IcosianViewModel: ObservableObject {
+    @Published var icosian: Icosian
+    @Published var graphViewModel: GraphViewModel
+    @Published var step = Step.chooseVertex {
+        willSet {
+            if step == .complete {
+                for vertex in graphViewModel.getVertices() {
+                    graphViewModel.setVertexColor(vertex: vertex, color: .green)
+                }
+            }
+        }
+    }
+    
+    init() {
+        self.icosian = Icosian()
+        self.graphViewModel = GraphViewModel(graph: Icosian().graph)
     }
     
     enum Step {
         case chooseVertex, selectingEdges, complete, error
     }
-    
-    mutating func setStep(_ step: Step) {
-        self.step = step
-        if step == .complete {
-            for vertex in Array(graph.vertices.values) {
-                graph.setVertexColor(forID: vertex.id, color: .green)
-            }
-        }
-    }
 }
 
 struct IcosianView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
-    @State private var icosian = Icosian()
+    @StateObject private var icosianViewModel = IcosianViewModel()
+    @ObservedObject var graphViewModel: GraphViewModel
     @State private var selectedVertex: Vertex?
     @State private var edgeError: Edge?
     @State private var chosenEdges: [Edge] = []
@@ -174,74 +182,58 @@ struct IcosianView: View {
     init() {
         selectedVertex = nil
         edgeError = nil
-    }
-    
-    func areAdjacentVertices(_ vertex1: Vertex, _ vertex2: Vertex) -> Bool {
-        guard vertex1.id != vertex2.id else { return false }
-        for edge in icosian.graph.getConnectedEdges(to: vertex1.id) {
-            if edge.startVertexID == vertex2.id || edge.endVertexID == vertex2.id {
-                return true
-            }
-        }
-        return false
-    }
-    
-    func getConnectingEdgeBetween(_ vertex1: Vertex, _ vertex2: Vertex) -> Edge? {
-        guard areAdjacentVertices(vertex1, vertex2) else { return nil }
-        for edge in icosian.graph.getConnectedEdges(to: vertex1.id) {
-            if edge.startVertexID == vertex2.id || edge.endVertexID == vertex2.id {
-                return edge
-            }
-        }
-        return nil
+        graphViewModel = IcosianViewModel().graphViewModel
     }
     
     func handleTapGesture(edge: Edge) {
-        if icosian.step == .error && edge.id == edgeError?.id {
+        if icosianViewModel.step == .error && edge.id == edgeError?.id {
             edgeError = nil
-            icosian.setStep(.selectingEdges)
-            icosian.graph.setEdgeColor(edgeID: edge.id, color: .white)
-        } else if icosian.step == .selectingEdges {
+            icosianViewModel.step = .selectingEdges
+            graphViewModel.setColorForEdge(edge: edge, color: .white)
+        } else if icosianViewModel.step == .selectingEdges {
             // Make sure the edge is connected to the selectedVertex
             if let selectedVertex = selectedVertex {
-                let connectedEdges = icosian.graph.getConnectedEdges(to: selectedVertex.id)
+                let connectedEdges = graphViewModel.graph.getConnectedEdges(to: selectedVertex.id)
                 // If the edge is connected to selectedVertex
                 if connectedEdges.contains(where: { $0.id == edge.id }) {
                     var newChosenEdges = chosenEdges
                     newChosenEdges.append(edge)
-                    let subGraph = Graph(vertices: icosian.vertices, edges: newChosenEdges)
+                    let subGraph = Graph(vertices: graphViewModel.getVertices(), edges: newChosenEdges)
                     // If the user finishes the game
                     if subGraph.isHamiltonianCycle() {
-                        icosian.setStep(.complete)
-                        self.selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex.id)!)!
-                        icosian.graph.setVertexColor(forID: selectedVertex.id, color: .green)
+                        icosianViewModel.step = .complete
+                        self.selectedVertex = graphViewModel.graph.vertices[edge.traverse(from: selectedVertex.id)!]!
+                        for vertex in graphViewModel.getVertices() {
+                            graphViewModel.setVertexColor(vertex: vertex, color: .green)
+                        }
                         for edge in newChosenEdges {
-                            icosian.graph.setEdgeColor(edgeID: edge.id, color: .green)
+                            graphViewModel.setColorForEdge(edge: edge, color: .green)
                         }
                     }
                     // If the user makes a mistake
                     else if subGraph.hasCycle() {
                         edgeError = edge
-                        icosian.setStep(.error)
-                        icosian.graph.setEdgeColor(edgeID: edge.id, color: .red)
+                        icosianViewModel.step = .error
+                        graphViewModel.setColorForEdge(edge: edge, color: .red)
                     }
                     // If the subGraph formed by the sequences of edges is not a premature cycle, and it hasn't been chosen before
                     else if !subGraph.hasCycle() && !chosenEdges.contains(where: { $0.id == edge.id }) {
                         if let nextVertexID = edge.traverse(from: selectedVertex.id) {
-                            icosian.graph.setVertexColor(forID: nextVertexID, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
+                            let nextVertex = graphViewModel.graph.vertices[nextVertexID]!
+                            graphViewModel.setVertexColor(vertex: nextVertex, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
                         }
-                        icosian.graph.setEdgeColor(edgeID: edge.id, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
+                        graphViewModel.setColorForEdge(edge: edge, color: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)))
                         chosenEdges.append(edge)
-                        self.selectedVertex = icosian.graph.getVertexByID(edge.traverse(from: selectedVertex.id)!)!
+                        self.selectedVertex = graphViewModel.graph.vertices[edge.traverse(from: selectedVertex.id)!]!
                     }
                     // If the user wants to backtrack
                     else if edge.id == chosenEdges.last?.id {
-                        icosian.graph.setVertexColor(forID: selectedVertex.id, color: icosian.graph.originalVertices[selectedVertex.id]!.color)
+                        graphViewModel.setVertexColor(vertex: selectedVertex, color: graphViewModel.graph.originalVertices[selectedVertex.id]!.color)
                         let newVertexID = edge.traverse(from: selectedVertex.id)!
-                        self.selectedVertex = icosian.graph.getVertexByID(newVertexID)
+                        self.selectedVertex = graphViewModel.graph.vertices[newVertexID]
                         visitedVertices.removeAll { $0.id == selectedVertex.id }
                         chosenEdges.removeAll { $0.id == edge.id }
-                        icosian.graph.setEdgeColor(edgeID: edge.id, color: icosian.graph.originalEdges[edge.id]!.color)
+                        graphViewModel.setColorForEdge(edge: edge, color: Color.primary)
                     }
                 }
             }
@@ -250,9 +242,8 @@ struct IcosianView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ForEach(Array(icosian.graph.edges.values.enumerated()), id: \.1.id) { index, value in
-                let edge = value
-                let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: GraphViewModel(graph: icosian.graph))
+            ForEach(graphViewModel.getEdges()) { edge in
+                let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                 EdgeView(edgeViewModel: edgeViewModel)
                     .highPriorityGesture(
                         TapGesture(count: 1)
@@ -261,39 +252,40 @@ struct IcosianView: View {
                         }
                     )
             }
-            ForEach(Array(icosian.graph.vertices.values)) { vertex in
+            ForEach(graphViewModel.getVertices()) { vertex in
                 let vertexViewModel = VertexViewModel(
-                    vertex: vertex, graphViewModel: GraphViewModel(graph: icosian.graph), mode: [VertexViewModel.Mode.noEditLabels])
+                    vertex: vertex, graphViewModel: graphViewModel, mode: [VertexViewModel.Mode.noEditLabels])
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                    .shadow(color: vertexViewModel.getVertexID() == selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                    .shadow(color: vertexViewModel.id == selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                     .onTapGesture(count: 1) {
                         // If the user hasn't started the game yet
-                        if icosian.step == .chooseVertex && visitedVertices.count == 0 {
+                        if icosianViewModel.step == .chooseVertex && visitedVertices.count == 0 {
                             selectedVertex = vertex
-                            icosian.setStep(.selectingEdges)
-                            icosian.graph.setVertexColor(forID: vertex.id, color: Color(#colorLiteral(red: 1, green: 0, blue: 0.909978807, alpha: 1)))
+                            icosianViewModel.step = .selectingEdges
+                            graphViewModel.setVertexColor(vertex: vertex, color: Color(#colorLiteral(red: 1, green: 0, blue: 0.909978807, alpha: 1)))
                         }
                         // If the user backtracks to the starting position, reset the game.
-                        else if icosian.step == .selectingEdges && chosenEdges.count == 0 && vertex.id == selectedVertex?.id {
+                        else if icosianViewModel.step == .selectingEdges && chosenEdges.count == 0 && vertex.id == selectedVertex?.id {
                             selectedVertex = nil
                             visitedVertices = []
-                            icosian.step = .chooseVertex
-                            icosian.graph.setVertexColor(forID: vertex.id, color: icosian.graph.originalVertices[vertex.id]!.color)
-                        } else if areAdjacentVertices(selectedVertex!, vertex) { // Handle tapping a vertex the same as tapping an edge
-                            if let connectingEdge = getConnectingEdgeBetween(selectedVertex!, vertex) {
-                                handleTapGesture(edge: connectingEdge)
+                            icosianViewModel.step = .chooseVertex
+                            graphViewModel.setVertexColor(vertex: vertex, color: Color.primary)
+                        } else if graphViewModel.graph.areVerticesAdjacent(selectedVertex!.id, vertex.id) {
+                            // Handle tapping a vertex the same as tapping an edge
+                            let connectingEdges = graphViewModel.graph.getEdgesBetween(selectedVertex!.id, vertex.id)
+                            if !connectingEdges.isEmpty {
+                                handleTapGesture(edge: connectingEdges[0])
                             }
-                            
                         }
                     }
             }
         }
-        .toolbar {
+         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button(action: {
                     edgeError = nil
-                    icosian.graph.restoreToOriginal()
-                    icosian.step = .chooseVertex
+                    graphViewModel.clear()
+                    icosianViewModel.step = .chooseVertex
                     selectedVertex = nil
                     chosenEdges = []
                     visitedVertices = []

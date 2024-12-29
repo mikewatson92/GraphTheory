@@ -33,6 +33,7 @@ struct K33 {
         e = Vertex(position: CGPoint(x: 0.35, y: 0.8))
         f = Vertex(position: CGPoint(x: 0.2, y: 0.5))
         
+        
         edgeAB = Edge(startVertexID: a.id, endVertexID: b.id)
         edgeBC = Edge(startVertexID: b.id, endVertexID: c.id)
         edgeCD = Edge(startVertexID: c.id, endVertexID: d.id)
@@ -524,7 +525,7 @@ struct Kruskal1 {
 
 struct Kruskal1View: View {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject private var kruskalViewModel = KruskalViewModel(graph: Kruskal1().graph)
+    @StateObject private var kruskalViewModel = KruskalViewModel(graphViewModel: GraphViewModel(graph: Kruskal1().graph))
     
     var body: some View {
         KruskalView(kruskalViewModel: kruskalViewModel, completion: .constant(false))

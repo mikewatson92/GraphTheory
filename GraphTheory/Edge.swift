@@ -61,11 +61,24 @@ struct Edge: Identifiable, Codable, Hashable {
 }
 
 class EdgeViewModel: ObservableObject {
-    @Published private var edge: Edge
+    @Published private(set) var edge: Edge
     @Published var graphViewModel: GraphViewModel
     var size: CGSize
+    var id: UUID {
+        get {
+            edge.id
+        }
+    }
     var sign: Int {
         edge.sign
+    }
+    var weight: Double {
+        get {
+            edge.weight
+        } set {
+            edge.weight = newValue
+            graphViewModel.setWeight(edge: edge, weight: newValue)
+        }
     }
     var weightPositionParameterT: CGFloat {
         get {
@@ -130,7 +143,7 @@ class EdgeViewModel: ObservableObject {
     }
     
     var edgePath: EdgePath {
-        EdgePath(startVertexPosition: graphViewModel.getVertexByID(edge.startVertexID)?.position ?? CGPoint.zero, endVertexPosition: graphViewModel.getVertexByID(edge.endVertexID)?.position ?? CGPoint.zero, startOffset: graphViewModel.getGraph().getOffsetByID(edge.startVertexID) ?? CGSize.zero, endOffset: graphViewModel.getGraph().getOffsetByID(edge.endVertexID) ?? CGSize.zero, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: size)
+        EdgePath(startVertexPosition: graphViewModel.graph.vertices[edge.startVertexID]?.position ?? CGPoint.zero, endVertexPosition: graphViewModel.graph.vertices[edge.endVertexID]?.position ?? CGPoint.zero, startOffset: graphViewModel.graph.vertices[edge.startVertexID]?.offset ?? CGSize.zero, endOffset: graphViewModel.graph.vertices[edge.endVertexID]?.offset ?? CGSize.zero, controlPoint1: graphViewModel.getControlPoints(for: edge).0, controlPoint2: graphViewModel.getControlPoints(for: edge).1, controlPoint1Offset: graphViewModel.getControlPointOffsets(for: edge).0, controlPoint2Offset: graphViewModel.getControlPointOffsets(for: edge).1, size: size)
     }
     var directed: Edge.Directed {
         get {
@@ -150,20 +163,8 @@ class EdgeViewModel: ObservableObject {
         graphViewModel.removeEdge(edge)
     }
     
-    func getID() -> UUID {
-        return edge.id
-    }
-    
-    func getGraphMode() -> Graph.Mode {
-        graphViewModel.getMode()
-    }
-    
     func getColor() -> Color {
         return edge.color
-    }
-    
-    func getEdgeWeight() -> Double? {
-        graphViewModel.getWeight(edge: edge)
     }
     
     func setEdgeWeight(_ weight: Double) {
@@ -175,19 +176,19 @@ class EdgeViewModel: ObservableObject {
     }
     
     func getStartVertexPosition() -> CGPoint? {
-        graphViewModel.getVertexByID(edge.startVertexID)?.position
+        graphViewModel.graph.vertices[edge.startVertexID]?.position
     }
     
     func getEndVertexPosition() -> CGPoint? {
-        graphViewModel.getVertexByID(edge.endVertexID)?.position
+        graphViewModel.graph.vertices[edge.endVertexID]?.position
     }
     
     func getStartOffset() -> CGSize? {
-        graphViewModel.getGraph().getOffsetByID(edge.startVertexID)
+        graphViewModel.graph.vertices[edge.startVertexID]?.offset
     }
     
     func getEndOffset() -> CGSize? {
-        graphViewModel.getGraph().getOffsetByID(edge.endVertexID)
+        graphViewModel.graph.vertices[edge.endVertexID]?.offset
     }
     
     func getControlPoints() -> (CGPoint, CGPoint) {
@@ -238,8 +239,8 @@ struct EdgeView: View {
             let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: newValue)
             edgeViewModel.weightPositionParameterT = t
             edgeViewModel.weightPositionDistance = distance
-            graphViewModel.setEdgeWeightPositionParameterT(id: edgeViewModel.getID(), t: t)
-            graphViewModel.setEdgeWeightPositionDistance(id: edgeViewModel.getID(), distance: distance)
+            graphViewModel.setEdgeWeightPositionParameterT(id: edgeViewModel.id, t: t)
+            graphViewModel.setEdgeWeightPositionDistance(id: edgeViewModel.id, distance: distance)
         }
     }
     @State private var tempWeightPositionOffset: CGSize = .zero {
@@ -337,18 +338,18 @@ struct EdgeView: View {
 #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
-                    if edgeViewModel.getGraphMode() == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if edgeViewModel.graphViewModel.mode == .edit {
+                        if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                             graphViewModel.selectedEdge = nil
                         }
                         edgeViewModel.removeEdgeFromGraph()
                     }
                 }
                 .onTapGesture(count: 1) {
-                    if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                         graphViewModel.selectedEdge = nil
                     } else {
-                        graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
+                        graphViewModel.selectedEdge = graphViewModel.graph.edges[edgeViewModel.id]
                     }
                 }
         } else if edgeViewModel.strokeStyle == .dashed {
@@ -362,18 +363,18 @@ struct EdgeView: View {
     #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
-                    if edgeViewModel.getGraphMode() == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if edgeViewModel.graphViewModel.mode == .edit {
+                        if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                             graphViewModel.selectedEdge = nil
                         }
                         edgeViewModel.removeEdgeFromGraph()
                     }
                 }
                 .onTapGesture(count: 1) {
-                    if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                         graphViewModel.selectedEdge = nil
                     } else {
-                        graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
+                        graphViewModel.selectedEdge = graphViewModel.graph.edges[edgeViewModel.id]
                     }
                 }
         }
@@ -421,8 +422,8 @@ struct EdgeView: View {
         }
         
         // Control points for selected edge
-        if edgeViewModel.getGraphMode() == .edit {
-            if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+        if edgeViewModel.graphViewModel.mode == .edit {
+            if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                 let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
                 let (controlPoint1Offset, controlPoint2Offset) = edgeViewModel.getControlPointOffsets()
                 let adjustedControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
@@ -495,7 +496,7 @@ struct EdgeView: View {
             
             if edittingWeight {
                 ZStack {
-                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() ?? 0.0 }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
+                    TextField("Enter weight", value: Binding(get: { edgeViewModel.weight }, set: { newValue in edgeViewModel.weight = newValue }), format: .number)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
 #if os(macOS)
@@ -529,10 +530,10 @@ struct EdgeView: View {
                         })
             } else {
                 Group {
-                    Text("\(edgeViewModel.getEdgeWeight()?.formatted() ?? "0")")
+                    Text(edgeViewModel.weight.formatted())
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
-                        .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
+                        .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.id ? Color.teal : Color.primary)
+                        .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.id ? .teal : .clear, radius: 10)
 #if os(iOS)
                     Color.clear
                         .opacity(0.25)
@@ -584,18 +585,9 @@ struct EdgePath {
     var size: CGSize
     
     func makePath() -> Path {
-        let start = startVertexPosition
-        let end = endVertexPosition
-        let startOffset = startOffset
-        let endOffset = endOffset
-        let controlPoint1 = controlPoint1
-        let controlPoint2 = controlPoint2
-        let controlPoint1Offset = controlPoint1Offset
-        let controlPoint2Offset = controlPoint2Offset
-        
         let path = Path { path in
-            let startPoint = CGPoint(x: start.x * size.width + startOffset.width, y: start.y * size.height + startOffset.height)
-            let endPoint = CGPoint(x: end.x * size.width + endOffset.width, y: end.y * size.height + endOffset.height)
+            let startPoint = CGPoint(x: startVertexPosition.x * size.width + startOffset.width, y: startVertexPosition.y * size.height + startOffset.height)
+            let endPoint = CGPoint(x: endVertexPosition.x * size.width + endOffset.width, y: endVertexPosition.y * size.height + endOffset.height)
             path.move(to: startPoint)
             
             let newControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,

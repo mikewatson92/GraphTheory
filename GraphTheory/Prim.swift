@@ -14,7 +14,6 @@ struct Prim {
     
     init(graph: Graph) {
         self.graph = graph
-        self.graph.mode = .algorithm
         self.subGraph = Graph(vertices: Array(graph.vertices.values), edges: [])
     }
     
@@ -164,7 +163,7 @@ struct PrimView: View {
     
     init(graph: Graph) {
         _primViewModel = StateObject(wrappedValue: PrimViewModel(graph: graph))
-        graphViewModel = GraphViewModel(graph: graph, showWeights: true, showModeMenu: false, showAlgorithms: false)
+        graphViewModel = GraphViewModel(graph: graph, showWeights: true)
     }
     
     var body: some View {

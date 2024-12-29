@@ -24,6 +24,12 @@ struct StraightenTutorial: View {
         _graphViewModel = StateObject(wrappedValue: GraphViewModel(graph: graph))
     }
     
+    var edges: [Edge] {
+        get {
+            graphViewModel.getEdges()
+        }
+    }
+    
     var body: some View {
         ZStack {
             if showInstructions {
@@ -61,18 +67,21 @@ struct StraightenTutorial: View {
             if showCanvas {
                 ZStack {
                     GeometryReader { geometry in
-                        ForEach(graphViewModel.getEdges(), id: \.id) { edge in
+                        ForEach(graphViewModel.getEdges()) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                             EdgeView(edgeViewModel: edgeViewModel)
                                 .onLongPressGesture {
-                                    graphViewModel.resetControlPointsAndOffsets(for: edge)
+                                    let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edge)
+                                    graphViewModel.setControlPoint1(for: edge, at: controlPoint1)
+                                    graphViewModel.setControlPoint2(for: edge, at: controlPoint2)
+                                    edgeViewModel.setControlPoint1Offset(.zero)
+                                    edgeViewModel.setControlPoint2Offset(.zero)
                                     withAnimation {
                                         straightenDidHappen = true
                                     }
                                 }
-                                
                         }
-                        ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
+                        ForEach(graphViewModel.getVertices()) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                         }
@@ -80,6 +89,7 @@ struct StraightenTutorial: View {
                     .animation(.easeInOut, value: showCanvas)
                 }
             }
+                    
             
             if straightenDidHappen {
                 ZStack {

@@ -29,7 +29,7 @@ class PracticalTSPViewModel: ObservableObject {
     init(graph: Graph) {
         self.practicalTSP = PracticalTSP(graph: graph)
         self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
-        self.graphViewModel.setMode(.edit)
+        self.graphViewModel.mode = .edit
     }
     
     enum Error: String {

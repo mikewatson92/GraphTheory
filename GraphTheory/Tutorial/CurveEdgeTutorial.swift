@@ -176,24 +176,24 @@ struct CurveEdgeTutorialView: View {
             #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
-                    if edgeViewModel.getGraphMode() == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if edgeViewModel.graphViewModel.mode == .edit {
+                        if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                             graphViewModel.selectedEdge = nil
                         }
                         edgeViewModel.removeEdgeFromGraph()
                     }
                 }
                 .onTapGesture(count: 1) {
-                    if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+                    if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                         graphViewModel.selectedEdge = nil
                     } else {
-                        graphViewModel.selectedEdge = graphViewModel.getGraph().edges[edgeViewModel.getID()]
+                        graphViewModel.selectedEdge = graphViewModel.graph.edges[edgeViewModel.id]
                     }
                 }
         
         // Control points for selected edge
-        if edgeViewModel.getGraphMode() == .edit {
-            if graphViewModel.selectedEdge?.id == edgeViewModel.getID() {
+        if edgeViewModel.graphViewModel.mode == .edit {
+            if graphViewModel.selectedEdge?.id == edgeViewModel.id {
                 let (controlPoint1, controlPoint2) = edgeViewModel.getControlPoints()
                 let (controlPoint1Offset, controlPoint2Offset) = edgeViewModel.getControlPointOffsets()
                 let adjustedControlPoint1 = CGPoint(x: controlPoint1.x * size.width + controlPoint1Offset.width,
@@ -268,7 +268,7 @@ struct CurveEdgeTutorialView: View {
             
             if edittingWeight {
                 ZStack {
-                    TextField("Enter weight", value: Binding(get: { edgeViewModel.getEdgeWeight() ?? 0.0 }, set: { newValue in edgeViewModel.setEdgeWeight(newValue)}), format: .number)
+                    TextField("Enter weight", value: Binding(get: { edgeViewModel.weight }, set: { newValue in edgeViewModel.weight = newValue }), format: .number)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     //.keyboardType()
                     #if os(macOS)
@@ -301,10 +301,10 @@ struct CurveEdgeTutorialView: View {
                             })
             } else {
                 Group {
-                    Text("\(edgeViewModel.getEdgeWeight()?.formatted() ?? "0")")
+                    Text(edgeViewModel.weight.formatted())
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? Color.teal : Color.primary)
-                        .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.getID() ? .teal : .clear, radius: 10)
+                        .foregroundStyle(graphViewModel.selectedEdge?.id == edgeViewModel.id ? Color.teal : Color.primary)
+                        .shadow(color: graphViewModel.selectedEdge?.id == edgeViewModel.id ? .teal : .clear, radius: 10)
                     #if os(iOS)
                     Color.clear
                         .opacity(0.25)

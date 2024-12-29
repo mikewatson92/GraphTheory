@@ -14,6 +14,7 @@ struct ColorTutorial: View {
     @State private var showInstructions = true
     @State private var showCanvas = false
     @State private var colorDidChange = false
+    @State private var showColorPicker = false
     
     var body: some View {
         ZStack {
@@ -72,7 +73,7 @@ struct ColorTutorial: View {
                         ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                                .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                                .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                                 .onTapGesture(count: 1) {
                                     if let selectedVertex = graphViewModel.selectedVertex {
                                         if selectedVertex.id == vertex.id {
@@ -119,36 +120,44 @@ struct ColorTutorial: View {
                 .animation(.easeInOut, value: colorDidChange)
             }
         }
+        .onAppear {
+            showColorPicker = true
+        }
+        .onDisappear {
+            showColorPicker = false
+        }
         .toolbar {
-            ToolbarItem(placement: .automatic) {
-                ColorPicker(
-                    "",
-                    selection: Binding(
-                        get: {
-                            if let selectedEdge = graphViewModel.selectedEdge {
-                                return selectedEdge.color
-                            } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
-                                return selectedVertexColor
-                            } else {
-                                return vertexEdgeColor
+            if showColorPicker {
+                ToolbarItem(placement: .automatic) {
+                    ColorPicker(
+                        "",
+                        selection: Binding(
+                            get: {
+                                if let selectedEdge = graphViewModel.selectedEdge {
+                                    return selectedEdge.color
+                                } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
+                                    return selectedVertexColor
+                                } else {
+                                    return vertexEdgeColor
+                                }
+                            },
+                            set: { newColor in
+                                if let selectedEdge = graphViewModel.selectedEdge {
+                                    colorDidChange = true
+                                    graphViewModel.setColorForEdge(edge: selectedEdge, color: newColor)
+                                    graphViewModel.selectedEdge =  graphViewModel.graph.edges[selectedEdge.id]
+                                } else if let selectedVertex = graphViewModel.selectedVertex {
+                                    colorDidChange = true
+                                    graphViewModel.setVertexColor(vertex: selectedVertex, color: newColor)
+                                    graphViewModel.selectedVertex = graphViewModel.graph.vertices[selectedVertex.id] // Sync selected vertex
+                                } else {
+                                    vertexEdgeColor = newColor
+                                }
                             }
-                        },
-                        set: { newColor in
-                            if let selectedEdge = graphViewModel.selectedEdge {
-                                colorDidChange = true
-                                graphViewModel.setColorForEdge(edge: selectedEdge, color: newColor)
-                                graphViewModel.selectedEdge =  graphViewModel.getGraph().edges[selectedEdge.id]
-                            } else if let selectedVertex = graphViewModel.selectedVertex {
-                                colorDidChange = true
-                                graphViewModel.setColor(vertex: selectedVertex, color: newColor)
-                                graphViewModel.selectedVertex = graphViewModel.getVertexByID(selectedVertex.id) // Sync selected vertex
-                            } else {
-                                vertexEdgeColor = newColor
-                            }
-                        }
+                        )
                     )
-                )
-                .labelsHidden()
+                    .labelsHidden()
+                }
             }
         }
     }

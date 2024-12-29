@@ -36,9 +36,10 @@ struct ClassicalTSP {
 class ClassicalTSPViewModel: ObservableObject {
     @Published private var classicalTSP: ClassicalTSP
     @Published var graphViewModel: GraphViewModel
+    @Published var deletedVertexGraphViewModel: GraphViewModel
     @Published var edgeError: Edge?
     @Published var nearestNeighborCurrentVertex: Vertex?
-    @Published var kruskalViewModel: KruskalViewModel
+    @Published var kruskalViewModel = KruskalViewModel(graphViewModel: GraphViewModel(graph: Graph()))
     var deletedVertexGraph: Graph
     
     var step: ClassicalTSP.Step {
@@ -63,7 +64,8 @@ class ClassicalTSPViewModel: ObservableObject {
         self.classicalTSP = ClassicalTSP(graph: graph)
         self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
         self.deletedVertexGraph = graph
-        self.kruskalViewModel = KruskalViewModel(graph: graph)
+        self.deletedVertexGraphViewModel = GraphViewModel(graph: graph, showWeights: true)
+        self.kruskalViewModel = KruskalViewModel(graphViewModel: deletedVertexGraphViewModel)
     }
     
     func chooseVertex(_ vertex: Vertex) {
@@ -80,9 +82,9 @@ class ClassicalTSPViewModel: ObservableObject {
                 classicalTSP.deletedEdges.append(edge)
             }
             // Remove the deleted vertex and all connected edges from the subgraph
-            deletedVertexGraph.removeVertex(vertex)
+            deletedVertexGraphViewModel.removeVertex(vertex)
             classicalTSP.step = .findingMinimumSpanningTree
-            kruskalViewModel = KruskalViewModel(graph: deletedVertexGraph)
+            kruskalViewModel = KruskalViewModel(graphViewModel: deletedVertexGraphViewModel)
         }
     }
     

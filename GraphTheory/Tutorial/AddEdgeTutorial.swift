@@ -65,7 +65,7 @@ struct AddEdgeTutorial: View {
                         ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                                .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                                .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
                                 .onTapGesture(count: 1) {
                                     if let selectedVertex = graphViewModel.selectedVertex {
                                         if selectedVertex.id == vertex.id {

@@ -40,22 +40,65 @@ struct Vertex: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case id, position, color
     }
-    
-    mutating func setOffset(_ size: CGSize) {
-        offset = size
-    }
 }
 
 class VertexViewModel: ObservableObject {
-    @Published private var vertex: Vertex
+    @Published private(set) var vertex: Vertex
     @Published var graphViewModel: GraphViewModel
+    var id: UUID {
+        get {
+            vertex.id
+        }
+    }
+    var label: String {
+        get {
+            vertex.label
+        } set {
+            vertex.label = newValue
+            graphViewModel.setVertexLabel(id: vertex.id, label: newValue)
+        }
+    }
+    var labelColor: Vertex.LabelColor? {
+        get {
+            vertex.labelColor
+        } set {
+            vertex.labelColor = newValue
+            graphViewModel.setVertexLabelColor(id: vertex.id, labelColor: newValue!)
+        }
+    }
     var mode: [Mode]
+    var position: CGPoint {
+        get {
+            graphViewModel.graph.vertices[vertex.id]?.position ?? CGPoint.zero
+        } set {
+            vertex.position = newValue
+            graphViewModel.setVertexPosition(vertex: vertex, position: newValue)
+        }
+    }
+    var offset: CGSize {
+        get {
+            vertex.offset
+        } set {
+            vertex.offset = newValue
+            graphViewModel.setVertexOffset(vertex: vertex, size: newValue)
+        }
+    }
     var opacity: Double {
         get {
             vertex.opacity
         } set {
             vertex.opacity = newValue
         }
+    }
+    var color: Color? {
+        get { vertex.color }
+        set {
+            vertex.color = newValue
+            graphViewModel.setVertexColor(vertex: vertex, color: newValue!)
+        }
+    }
+    var strokeColor: Color {
+        vertex.strokeColor
     }
     
     init(vertex: Vertex, graphViewModel: GraphViewModel, mode: [Mode] = [.editLabels, .showLabels])
@@ -65,62 +108,8 @@ class VertexViewModel: ObservableObject {
         self.mode = mode
     }
     
-    var color: Color? {
-        get { vertex.color }
-        set {
-            vertex.color = newValue
-            graphViewModel.setColor(vertex: vertex, color: newValue)
-        }
-    }
-    
-    var strokeColor: Color {
-        vertex.strokeColor
-    }
-    
     enum Mode {
         case editLabels, noEditLabels, showLabels, hideLabels
-    }
-    
-    func getVertexID() -> UUID {
-        return vertex.id
-    }
-    
-    func getLabelColor() -> Vertex.LabelColor? {
-        vertex.labelColor
-    }
-    
-    func setLabelColor(_ color: Vertex.LabelColor) {
-        graphViewModel.setVertexLabelColor(id: vertex.id, labelColor: color)
-    }
-    
-    func getPosition() -> CGPoint? {
-        graphViewModel.getVertexByID(vertex.id)?.position
-    }
-    
-    func setPosition(_ position: CGPoint) {
-        graphViewModel.setVertexPosition(vertex: vertex, position: position)
-    }
-    
-    func getOffset() -> CGSize? {
-        graphViewModel.getGraph().getOffsetByID(vertex.id)
-    }
-    
-    func setOffset(size: CGSize) {
-        graphViewModel.setVertexOffset(vertex: vertex, size: size)
-    }
-    
-    func setColor(vertexID: UUID, color: Color) {
-        self.color = color
-        graphViewModel.setColor(vertex: graphViewModel.getVertexByID(vertexID)!, color: color)
-    }
-    
-    func getLabel() -> String {
-        graphViewModel.getVertexByID(vertex.id)?.label ?? ""
-    }
-    
-    func setLabel(_ newLabel: String) {
-        graphViewModel.setVertexLabel(id: vertex.id, label: newLabel)
-        vertex.label = newLabel
     }
 }
 
@@ -132,15 +121,15 @@ struct VertexView: View {
     @State private var edittingLabel: Bool = false
     @State private var tempLabelColor: Vertex.LabelColor? {
         willSet {
-            vertexViewModel.graphViewModel.setVertexLabelColor(id: vertexViewModel.getVertexID(), labelColor: newValue!)
-
+            vertexViewModel.graphViewModel.setVertexLabelColor(id: vertexViewModel.id, labelColor: newValue!)
+            
         }
     }
-    var colorLatexString: String { "\\textcolor{\(vertexViewModel.getLabelColor()?.rawValue ?? (colorScheme == .light ? "white" : "black"))}{\(vertexViewModel.getLabel())}"
+    var colorLatexString: String { "\\textcolor{\(vertexViewModel.labelColor?.rawValue ?? (colorScheme == .light ? "white" : "black"))}{\(vertexViewModel.label)}"
     }
     var labelColor : Color {
         get {
-            switch vertexViewModel.getLabelColor() {
+            switch vertexViewModel.labelColor {
             case nil:
                 return colorScheme == .light ? .white : .black
             case .white:
@@ -171,74 +160,73 @@ struct VertexView: View {
     }
     
     var body: some View {
+        let position = vertexViewModel.position
+        let offset = vertexViewModel.offset
+        
         Group {
-            if let position = vertexViewModel.getPosition(), let offset = vertexViewModel.getOffset() {
-                Group {
-                    Circle()
-                        .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+            Circle()
+                .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
 #if os(macOS)
-                        .frame(width: 20, height: 20)
+                .frame(width: 20, height: 20)
 #elseif os(iOS)
-                        .frame(width: 40, height: 40)
+                .frame(width: 40, height: 40)
 #endif
-                        .foregroundStyle(vertexViewModel.color ?? (colorScheme == .light ? .black : .white))
-                        .opacity(vertexViewModel.opacity)
-                    
-                    Circle()
-                        .stroke(vertexViewModel.strokeColor)
-                        .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+                .foregroundStyle(vertexViewModel.color ?? (colorScheme == .light ? .black : .white))
+                .opacity(vertexViewModel.opacity)
+            
+            Circle()
+                .stroke(vertexViewModel.strokeColor)
+                .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
 #if os(macOS)
-                        .frame(width: 20, height: 20)
+                .frame(width: 20, height: 20)
 #elseif os(iOS)
-                        .frame(width: 40, height: 40)
+                .frame(width: 40, height: 40)
 #endif
-                        .opacity(vertexViewModel.opacity)
-                }
-                .onLongPressGesture {
-                    if mode.contains(.editLabels) {
-                        isTextFieldFocused = true
-                        edittingLabel = true
-                    }
-                }
-                
-                if !edittingLabel && mode.contains(.showLabels) {
-                    #if os(macOS)
-                    StrokeText(text: vertexViewModel.getLabel(), color: labelColor)
-                        .opacity(vertexViewModel.opacity)
-                        .frame(width: size.width, height: size.height, alignment: .center)
-                        .position(x: vertexViewModel.getPosition()!.x * size.width + vertexViewModel.getOffset()!.width, y: vertexViewModel.getPosition()!.y * size.height + vertexViewModel.getOffset()!.height)
-                        .onLongPressGesture {
-                            isTextFieldFocused = true
-                            edittingLabel = true
-                        }
-                    #elseif os(iOS)
-                    LaTeXView(latex: colorLatexString, size: $latexSize)
-                        .opacity(vertexViewModel.opacity)
-                        .frame(width: size.width, height: size.height, alignment: .center)
-                        .offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
-                        .onLongPressGesture {
-                            isTextFieldFocused = true
-                            edittingLabel = true
-                        }
-                    #endif
-                } else if mode.contains(.editLabels) {
-                    TextField("", text: Binding(get: {vertexViewModel.getLabel()}, set: {newValue in vertexViewModel.setLabel(newValue)}))
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
-                        .frame(width: 200, height: 20)
-                        .focused($isTextFieldFocused)
-#if os(iOS)
-                        .keyboardType(UIKeyboardType.default)
-#endif
-                        .onSubmit {
-                            isTextFieldFocused = false
-                            edittingLabel = false
-                        }
-                }
+                .opacity(vertexViewModel.opacity)
+        }
+        .onLongPressGesture {
+            if mode.contains(.editLabels) {
+                isTextFieldFocused = true
+                edittingLabel = true
             }
         }
         .onAppear {
             tempLabelColor = (colorScheme == .light ? .white : .black)
+        }
+        
+        if !edittingLabel && mode.contains(.showLabels) {
+#if os(macOS)
+            StrokeText(text: vertexViewModel.label, color: labelColor)
+                .opacity(vertexViewModel.opacity)
+                .frame(width: size.width, height: size.height, alignment: .center)
+                .position(x: vertexViewModel.position.x * size.width + vertexViewModel.offset.width, y: vertexViewModel.position.y * size.height + vertexViewModel.offset.height)
+                .onLongPressGesture {
+                    isTextFieldFocused = true
+                    edittingLabel = true
+                }
+#elseif os(iOS)
+            LaTeXView(latex: colorLatexString, size: $latexSize)
+                .opacity(vertexViewModel.opacity)
+                .frame(width: size.width, height: size.height, alignment: .center)
+                .offset(x: position.x * size.width + offset.width - latexSize.width / 5, y: position.y * size.height + offset.height - latexSize.height / 5)
+                .onLongPressGesture {
+                    isTextFieldFocused = true
+                    edittingLabel = true
+                }
+#endif
+        } else if mode.contains(.editLabels) {
+            TextField("", text: Binding(get: {vertexViewModel.label}, set: {newValue in vertexViewModel.label = newValue}))
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .position(x: position.x * size.width + offset.width, y: position.y * size.height + offset.height)
+                .frame(width: 200, height: 20)
+                .focused($isTextFieldFocused)
+#if os(iOS)
+                .keyboardType(UIKeyboardType.default)
+#endif
+                .onSubmit {
+                    isTextFieldFocused = false
+                    edittingLabel = false
+                }
         }
     }
 }

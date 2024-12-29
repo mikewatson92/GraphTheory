@@ -51,23 +51,22 @@ struct DeleteTutorial: View {
             if showCanvas {
                 ZStack {
                     GeometryReader { geometry in
-                        ForEach(graphViewModel.getEdges(), id: \.id) { edge in
+                        ForEach(graphViewModel.getEdges()) { edge in
                             let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                             EdgeView(edgeViewModel: edgeViewModel)
                                 .onTapGesture(count: 2) {
                                     graphViewModel.removeEdge(edge)
                                 }
                         }
-                        ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
+                        ForEach(graphViewModel.getVertices()) { vertex in
                             let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                             VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                                .shadow(color: vertexViewModel.getVertexID() == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                                .shadow(color: (vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear), radius: 10)
                                 .onTapGesture(count: 2) {
-                                    if graphViewModel.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
+                                    if graphViewModel.graph.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
                                         graphViewModel.selectedEdge = nil
                                     }
-                                    
-                                    graphViewModel.removeEdgesConnected(to: vertexViewModel.getVertexID())
+                                    graphViewModel.removeEdgesConnected(to: vertexViewModel.id)
                                     graphViewModel.removeVertex(vertex)
                                     graphViewModel.selectedVertex = nil
                                     

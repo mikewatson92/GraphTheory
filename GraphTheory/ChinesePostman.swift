@@ -319,7 +319,7 @@ struct ChinesePostmanView: View {
                                             if edge.id == error.id {
                                                 chinesePostmanViewModel.errorStatus = .none
                                                 edgeError = nil
-                                                edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
+                                                edgeViewModel.color = edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })]
                                                 graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         } else {
@@ -328,10 +328,10 @@ struct ChinesePostmanView: View {
                                             }
                                             if chinesePostmanViewModel.errorStatus != .none {
                                                 edgeError = edge
-                                                edgeViewModel.setColor(.red)
+                                                edgeViewModel.color = .red
                                                 graphViewModel.setColorForEdge(edge: edge, color: .red)
                                             } else {
-                                                edgeViewModel.setColor(edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
+                                                edgeViewModel.color = edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })]
                                                 graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
                                             }
                                         }

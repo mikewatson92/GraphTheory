@@ -360,6 +360,7 @@ class GraphViewModel: ObservableObject {
     @Published var showWeights: Bool
     @Published var selectedVertex: Vertex?
     @Published var selectedEdge: Edge?
+    @Published var edgeDirection = Edge.Directed.none
     var movingVertex: Vertex?
     // A copy of the edges before any changes occur
     var edgesWillMove: [Edge] = []
@@ -412,7 +413,7 @@ class GraphViewModel: ObservableObject {
     
     func addEdge(_ edge: Edge) {
         var edge = edge
-        if edge.controlPoint1 == .zero || edge.controlPoint2 == .zero {
+        if (edge.controlPoint1 == .zero || edge.controlPoint2 == .zero) && edge.startVertexID != edge.endVertexID {
             let (controlPoint1, controlPoint2) = initControlPointsFor(edge: edge)
             edge.controlPoint1 = controlPoint1
             edge.controlPoint2 = controlPoint2
@@ -609,6 +610,11 @@ class GraphViewModel: ObservableObject {
     // When a vertex starts being dragged by translation,
     // update the offsets for the control points of the edge.
     func setEdgeControlPointOffsets(edge: Edge, translation: CGSize, geometrySize: CGSize) {
+        if edge.startVertexID == edge.endVertexID {
+            setControlPoint1Offset(for: edge, translation: translation)
+            setControlPoint2Offset(for: edge, translation: translation)
+            return
+        }
         if let (relativeControlPoint1, relativeControlPoint2) = getEdgeOriginalRelativeControlPoints(edge), let movingVertex = movingVertex {
             var dx1 = CGFloat.zero
             var dy1 = CGFloat.zero
@@ -779,13 +785,10 @@ struct GraphView: View {
     @Environment(\.colorScheme) var colorScheme
     @ObservedObject var graphViewModel: GraphViewModel
     @State private var vertexEdgeColor: Color = .white
-    @State private var edgeDirection = Edge.Directed.none
     
     init(graphViewModel: GraphViewModel) {
         self.graphViewModel = graphViewModel
     }
-    
-    let edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)), Color(#colorLiteral(red: 0.9, green: 0, blue: 0.9, alpha: 1))]
     
     func clear() {
         graphViewModel.clear()
@@ -836,7 +839,17 @@ struct GraphView: View {
             
             for edge in graphViewModel.graph.getConnectedEdges(to: vertex.id) {
                 //Update the control points and control point offsets for every edge connected to a moving vertex
-                graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometrySize)
+                if edge.startVertexID != edge.endVertexID {
+                    graphViewModel.setEdgeRelativeControlPoints(edge: edge, geometrySize: geometrySize)
+                } else {
+                    let controlPoint1 = edge.controlPoint1
+                    let controlPoint2 = edge.controlPoint2
+                    let offset = edge.controlPoint1Offset
+                    graphViewModel.setControlPoint1(for: edge, at: CGPoint(x: controlPoint1.x + offset.width / geometrySize.width,
+                                                                           y: controlPoint1.y + offset.height / geometrySize.height))
+                    graphViewModel.setControlPoint2(for: edge, at: CGPoint(x: controlPoint2.x + offset.width / geometrySize.width,
+                                                                           y: controlPoint2.y + offset.height / geometrySize.height))
+                }
                 graphViewModel.setControlPoint1Offset(for: edge, translation: .zero)
                 graphViewModel.setControlPoint2Offset(for: edge, translation: .zero)
                 // Reposition the weight
@@ -865,6 +878,24 @@ struct GraphView: View {
     }
     
     func handleVertexSingleClickGesture(for vertex: Vertex) {
+        if graphViewModel.mode == .edit || graphViewModel.mode == .explore {
+            graphViewModel.selectedEdge = nil
+            if graphViewModel.selectedVertex == nil {
+                graphViewModel.selectedVertex = graphViewModel.graph.vertices[vertex.id]!
+            } else if graphViewModel.selectedVertex!.id == vertex.id {
+                graphViewModel.selectedVertex = nil
+            } else if graphViewModel.mode == .edit {
+                let newEdge = Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertex.id)
+                graphViewModel.addEdge(newEdge)
+                graphViewModel.setEdgeDirection(edge: newEdge, direction: graphViewModel.edgeDirection)
+                graphViewModel.selectedVertex = nil
+            } else {
+                graphViewModel.selectedVertex = nil
+            }
+        }
+    }
+    
+    func handleVertexDoubleClickGesture(for vertex: Vertex) {
         if graphViewModel.mode == .edit {
             if graphViewModel.graph.getConnectedEdges(to: vertex.id).contains(where: { $0.id == graphViewModel.selectedEdge?.id }) {
                 graphViewModel.selectedEdge = nil
@@ -875,75 +906,11 @@ struct GraphView: View {
         }
     }
     
-    func handleVertexDoubleClickGesture(for vertex: Vertex) {
-        if graphViewModel.mode == .edit || graphViewModel.mode == .explore {
-            graphViewModel.selectedEdge = nil
-            if graphViewModel.selectedVertex == nil {
-                graphViewModel.selectedVertex = graphViewModel.graph.vertices[vertex.id]!
-            } else if graphViewModel.selectedVertex!.id == vertex.id {
-                graphViewModel.selectedVertex = nil
-            } else if graphViewModel.mode == .edit {
-                let newEdge = Edge(startVertexID: graphViewModel.selectedVertex!.id, endVertexID: vertex.id)
-                graphViewModel.addEdge(newEdge)
-                graphViewModel.setEdgeDirection(edge: newEdge, direction: edgeDirection)
-                graphViewModel.selectedVertex = nil
-            } else {
-                graphViewModel.selectedVertex = nil
-            }
-        }
-    }
-    
-    func handleEdgeSingleClickGesture(for edge: Edge) {
-        graphViewModel.selectedVertex = nil
-        switch graphViewModel.mode {
-            // Allows the user to select an edge to display the control points
-        case .edit:
-            if graphViewModel.selectedEdge?.id != edge.id {
-                graphViewModel.selectedEdge = edge
-                edgeDirection = graphViewModel.selectedEdge!.directed
-                
-            } else {
-                graphViewModel.selectedEdge = nil
-            }
-            // Change the colors of the edges to simulate a path through the graph
-        case .explore:
-            graphViewModel.timesEdgeSelected[edge.id]! += 1
-            let timesSelected = graphViewModel.timesEdgeSelected[edge.id]!
-            graphViewModel.setColorForEdge(edge: edge, color: edgeColors[(timesSelected - 1) % edgeColors.count])
-        }
-    }
-    
-    func handleEdgeDoubleClickGesture(for edge: Edge) {
-        if graphViewModel.mode == .edit {
-            graphViewModel.selectedEdge = nil
-        }
-    }
-    
-    func handleEdgeLongPressGesture(for edgeViewModel: EdgeViewModel) {
-        if graphViewModel.mode == .edit {
-            let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edgeViewModel.edge)
-            graphViewModel.setControlPoint1(for: edgeViewModel.edge, at: controlPoint1)
-            graphViewModel.setControlPoint2(for: edgeViewModel.edge, at: controlPoint2)
-        } else if graphViewModel.mode == .explore {
-            graphViewModel.timesEdgeSelected[edgeViewModel.id] = 0
-            graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: .white)
-        }
-    }
-    
     var body: some View {
         GeometryReader{ geometry in
             ForEach(graphViewModel.getEdges()) { edge in
                 let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                 EdgeView(edgeViewModel: edgeViewModel)
-                    .onTapGesture(count: 2) {
-                        handleEdgeDoubleClickGesture(for: edge)
-                    }
-                    .onTapGesture(count: 1) {
-                        handleEdgeSingleClickGesture(for: edge)
-                    }
-                    .onLongPressGesture {
-                        handleEdgeLongPressGesture(for: edgeViewModel)
-                    }
             }
             
             // The vertices
@@ -964,10 +931,10 @@ struct GraphView: View {
                             handleVertexEndDragGesture(for: vertexViewModel, geometrySize: geometry.size)
                         })
                     .onTapGesture(count: 2) {
-                        handleVertexSingleClickGesture(for: vertex)
+                        handleVertexDoubleClickGesture(for: vertex)
                     }
                     .onTapGesture(count: 1) {
-                        handleVertexDoubleClickGesture(for: vertex)
+                        handleVertexSingleClickGesture(for: vertex)
                     }
             }
         }
@@ -1038,6 +1005,23 @@ struct GraphView: View {
                 }
             }
             ToolbarItem(placement: .automatic) {
+                Button(action: {
+                    if let selectedVertex = graphViewModel.selectedVertex {
+                        var edge = Edge(startVertexID: selectedVertex.id, endVertexID: selectedVertex.id)
+                        let x1 = selectedVertex.position.x - 0.1
+                        let y1 = selectedVertex.position.y + 0.1
+                        let x2 = selectedVertex.position.x + 0.1
+                        let y2 = selectedVertex.position.y + 0.1
+                        edge.controlPoint1 = CGPoint(x: x1, y: y1)
+                        edge.controlPoint2 = CGPoint(x: x2, y: y2)
+                        graphViewModel.addEdge(edge)
+                    }
+                }) {
+                    Image(systemName: "point.forward.to.point.capsulepath.fill")
+                        .tint(themeViewModel.theme!.accentColor)
+                }
+            }
+            ToolbarItem(placement: .automatic) {
                 Menu {
                     Toggle(isOn: $graphViewModel.showWeights) {
                         Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accentColor)
@@ -1046,9 +1030,9 @@ struct GraphView: View {
                         if let selectedEdge = graphViewModel.selectedEdge {
                             return graphViewModel.getEdgeDirection(selectedEdge)
                         } else {
-                            return edgeDirection
+                            return graphViewModel.edgeDirection
                         }}, set: { newValue in
-                            edgeDirection = newValue
+                            graphViewModel.edgeDirection = newValue
                             if let selectedEdge = graphViewModel.selectedEdge {
                                 graphViewModel.setEdgeDirection(edge: selectedEdge, direction: newValue)
                             }

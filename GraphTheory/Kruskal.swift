@@ -45,6 +45,7 @@ class KruskalViewModel: ObservableObject {
     init(graphViewModel: GraphViewModel) {
         self.kruskal = Kruskal(graph: graphViewModel.graph)
         self.graphViewModel = graphViewModel
+        self.graphViewModel.showWeights = true
     }
     
     enum ErrorStatus {

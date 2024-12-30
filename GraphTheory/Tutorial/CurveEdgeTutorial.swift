@@ -170,9 +170,9 @@ struct CurveEdgeTutorialView: View {
     var body: some View {
             edgeViewModel.edgePath.makePath()
             #if os(macOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 5)
+            .stroke(edgeViewModel.color, lineWidth: 5)
             #elseif os(iOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+            .stroke(edgeViewModel.color, lineWidth: 15)
             #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {

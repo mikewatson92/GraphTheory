@@ -80,6 +80,14 @@ class EdgeViewModel: ObservableObject {
             graphViewModel.setWeight(edge: edge, weight: newValue)
         }
     }
+    var color: Color {
+        get {
+            edge.color
+        } set {
+            edge.color = newValue
+            graphViewModel.setColorForEdge(edge: edge, color: newValue)
+        }
+    }
     var weightPositionParameterT: CGFloat {
         get {
             edge.weightPositionParameterT
@@ -163,16 +171,8 @@ class EdgeViewModel: ObservableObject {
         graphViewModel.removeEdge(edge)
     }
     
-    func getColor() -> Color {
-        return edge.color
-    }
-    
     func setEdgeWeight(_ weight: Double) {
         graphViewModel.setWeight(edge: edge, weight: weight)
-    }
-    
-    func setColor(_ color: Color) {
-        edge.color = color
     }
     
     func getStartVertexPosition() -> CGPoint? {
@@ -234,6 +234,7 @@ struct EdgeView: View {
     let onWeightChange: () -> Void
     var forwardArrow = Arrow()
     var reverseArrow = Arrow()
+    let edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)), Color(#colorLiteral(red: 0.9, green: 0, blue: 0.9, alpha: 1))]
     @State private var tempWeightPosition: CGPoint {
         willSet {
             let (t, distance) = edgeViewModel.edgePath.closestParameterAndDistance(externalPoint: newValue)
@@ -328,63 +329,89 @@ struct EdgeView: View {
         return pointOnCurve
     }
     
+    func handleSingleClickGesture() {
+        graphViewModel.selectedVertex = nil
+        switch graphViewModel.mode {
+            // Allows the user to select an edge to display the control points
+        case .edit:
+            if graphViewModel.selectedEdge?.id != edgeViewModel.id {
+                graphViewModel.selectedEdge = edgeViewModel.edge
+                graphViewModel.edgeDirection = graphViewModel.selectedEdge!.directed
+                
+            } else {
+                graphViewModel.selectedEdge = nil
+            }
+            // Change the colors of the edges to simulate a path through the graph
+        case .explore:
+            graphViewModel.timesEdgeSelected[edgeViewModel.id]! += 1
+            let timesSelected = graphViewModel.timesEdgeSelected[edgeViewModel.id]!
+            graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: edgeColors[(timesSelected - 1) % edgeColors.count])
+        }
+    }
+    
+    func handleDoubleClickGesture() {
+        if graphViewModel.mode == .edit {
+            graphViewModel.selectedEdge = nil
+        }
+    }
+    
+    func handleLongPressGesture() {
+        if graphViewModel.mode == .edit {
+            let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edgeViewModel.edge)
+            graphViewModel.setControlPoint1(for: edgeViewModel.edge, at: controlPoint1)
+            graphViewModel.setControlPoint2(for: edgeViewModel.edge, at: controlPoint2)
+        } else if graphViewModel.mode == .explore {
+            graphViewModel.timesEdgeSelected[edgeViewModel.id] = 0
+            graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: .white)
+        }
+    }
+    
     var body: some View {
         if edgeViewModel.strokeStyle == .normal {
             edgeViewModel.edgePath.makePath()
 #if os(macOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 5)
+                .stroke(edgeViewModel.color, lineWidth: 5)
 #elseif os(iOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+                .stroke(edgeViewModel.color, lineWidth: 15)
 #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
-                    if edgeViewModel.graphViewModel.mode == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.id {
-                            graphViewModel.selectedEdge = nil
-                        }
-                        edgeViewModel.removeEdgeFromGraph()
-                    }
+                    handleDoubleClickGesture()
                 }
                 .onTapGesture(count: 1) {
-                    if graphViewModel.selectedEdge?.id == edgeViewModel.id {
-                        graphViewModel.selectedEdge = nil
-                    } else {
-                        graphViewModel.selectedEdge = graphViewModel.graph.edges[edgeViewModel.id]
-                    }
+                    handleSingleClickGesture()
                 }
+                .onLongPressGesture(minimumDuration: 1) {
+                    handleLongPressGesture()
+                }
+
         } else if edgeViewModel.strokeStyle == .dashed {
             edgeViewModel.edgePath.makePath()
     #if os(macOS)
                 .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
-                .foregroundStyle(edgeViewModel.getColor())
+                .foregroundStyle(edgeViewModel.color)
     #elseif os(iOS)
                 .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
-                .foregroundStyle(edgeViewModel.getColor())
+                .foregroundStyle(edgeViewModel.color)
     #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
-                    if edgeViewModel.graphViewModel.mode == .edit {
-                        if graphViewModel.selectedEdge?.id == edgeViewModel.id {
-                            graphViewModel.selectedEdge = nil
-                        }
-                        edgeViewModel.removeEdgeFromGraph()
-                    }
+                    handleDoubleClickGesture()
                 }
                 .onTapGesture(count: 1) {
-                    if graphViewModel.selectedEdge?.id == edgeViewModel.id {
-                        graphViewModel.selectedEdge = nil
-                    } else {
-                        graphViewModel.selectedEdge = graphViewModel.graph.edges[edgeViewModel.id]
-                    }
+                    handleSingleClickGesture()
+                }
+                .onLongPressGesture(minimumDuration: 1) {
+                    handleLongPressGesture()
                 }
         }
         
         if edgeViewModel.directed == .forward || edgeViewModel.directed == .bidirectional {
             forwardArrow
 #if os(macOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 4)
+                .stroke(edgeViewModel.color, lineWidth: 4)
 #elseif os(iOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+                .stroke(edgeViewModel.color, lineWidth: 15)
 #endif
                 .rotationEffect(Angle(radians: forwardAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)
@@ -403,9 +430,9 @@ struct EdgeView: View {
         if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {
             reverseArrow
 #if os(macOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 4)
+                .stroke(edgeViewModel.color, lineWidth: 4)
 #elseif os(iOS)
-                .stroke(edgeViewModel.getColor(), lineWidth: 15)
+                .stroke(edgeViewModel.color, lineWidth: 15)
 #endif
                 .rotationEffect(Angle(radians: reverseAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)

@@ -27,6 +27,10 @@ struct ContentView: View {
                     NavigationLink("Matrix", destination: Matrix2DView(matrixViewModel: matrixViewModel))
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
+                Section(header: Text("Textbook")) {
+                    NavigationLink("Konigsberg", destination: KonigsbergView())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)

@@ -171,6 +171,7 @@ class IcosianViewModel: ObservableObject {
 }
 
 struct IcosianView: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject private var icosianViewModel = IcosianViewModel()
     @ObservedObject var graphViewModel: GraphViewModel
@@ -189,7 +190,7 @@ struct IcosianView: View {
         if icosianViewModel.step == .error && edge.id == edgeError?.id {
             edgeError = nil
             icosianViewModel.step = .selectingEdges
-            graphViewModel.setColorForEdge(edge: edge, color: .white)
+            graphViewModel.setColorForEdge(edge: edge, color: colorScheme == .light ? .black : .white)
         } else if icosianViewModel.step == .selectingEdges {
             // Make sure the edge is connected to the selectedVertex
             if let selectedVertex = selectedVertex {

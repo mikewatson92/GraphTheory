@@ -70,7 +70,39 @@ struct KonigsbergView: View {
     }
     
     var body: some View {
-        ZStack {
+        VStack {
+            Group {
+                HStack {
+                    Spacer()
+                    if showInstructions {
+                        Text(step.rawValue)
+                            .foregroundColor(themeViewModel.theme!.primaryColor)
+                            .padding()
+                            .background(themeViewModel.theme!.secondaryColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                        Button {
+                            withAnimation {
+                                showInstructions = false
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                    }
+                    Spacer()
+                    Button {
+                        clear()
+                    } label: {
+                        Image(systemName: "arrow.uturn.left.circle")
+                            .tint(themeViewModel.theme!.accentColor)
+                    }
+                }
+                .padding()
+            }
+            .padding([.top], 25)
+            .zIndex(1)
+            .transition(.move(edge: .top))
+            
             GeometryReader { geometry in
                 ForEach(graphViewModel.getEdges()) { edge in
                     let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
@@ -85,7 +117,7 @@ struct KonigsbergView: View {
                             }
                             .simultaneously(with: TapGesture(count: 1)
                                 .onEnded {
-
+                                    
                                     if step == .selectingEdges {
                                         if !selectedEdges.contains(where: { $0.id == edge.id }) &&
                                             graphViewModel.graph.getConnectedEdges(to: currentVertex!.id).contains(where: { $0.id == edge.id }) {
@@ -138,42 +170,11 @@ struct KonigsbergView: View {
                         )
                 }
             }
-            
-            VStack {
-                HStack {
-                    Spacer()
-                    if showInstructions {
-                        Text(step.rawValue)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Button {
-                            withAnimation {
-                                showInstructions = false
-                            }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
-                        }
-                        Spacer()
-                        Button {
-                            clear()
-                        } label: {
-                            Image(systemName: "arrow.uturn.left.circle")
-                                .tint(themeViewModel.theme!.accentColor)
-                        }
-                    }
-                }
-                Spacer()
-            }
-            .padding([.top], 25)
-            .zIndex(1)
-            .transition(.move(edge: .top))
         }
     }
 }
 
 #Preview {
     KonigsbergView()
+        .environmentObject(ThemeViewModel())
 }

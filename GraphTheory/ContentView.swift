@@ -28,7 +28,9 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Textbook")) {
-                    NavigationLink("Konigsberg", destination: KonigsbergView())
+                    NavigationLink("Introduction", destination: Intro())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Overview", destination: Overview())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Sample Graphs")) {

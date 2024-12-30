@@ -352,6 +352,7 @@ struct EdgeView: View {
     func handleDoubleClickGesture() {
         if graphViewModel.mode == .edit {
             graphViewModel.selectedEdge = nil
+            graphViewModel.removeEdge(edgeViewModel.edge)
         }
     }
     

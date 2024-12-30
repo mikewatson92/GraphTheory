@@ -34,6 +34,10 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                     NavigationLink("Terminology", destination: Terminology())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Undirected Graphs", destination: UndirectedGraph())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Directed Graphs", destination: DirectedGraph())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())
@@ -48,6 +52,8 @@ struct ContentView: View {
                 }
                 Section(header: Text("Games")) {
                     NavigationLink("Icosian Game", destination: IcosianView())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Uncross the Edges", destination: PlanarGraph1View())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Practice")) {

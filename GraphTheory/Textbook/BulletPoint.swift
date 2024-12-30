@@ -13,13 +13,12 @@ struct BulletPoint: View {
     
     var body: some View {
         HStack(alignment: .top) {
-            Text("•")
+            Text("• ")
                 .font(.body)
-                .fontWeight(.bold)
-            Text(header)
-                .fontWeight(.bold)
+                .fontWeight(.bold) +
+            Text("\(header) ")
+                .fontWeight(.bold) +
             Text(text)
-                .multilineTextAlignment(.leading)
             Spacer()
         }
     }

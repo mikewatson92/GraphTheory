@@ -19,7 +19,7 @@ class ThemeViewModel: ObservableObject {
     }
     
     init() {
-        theme = loadSavedSelectedTheme() ?? DefaultThemes.natural
+        theme = loadSavedSelectedTheme() ?? DefaultThemes.cyberPunkDark
         loadCustomThemes()
     }
     

@@ -935,6 +935,7 @@ struct GraphView: View {
             ForEach(graphViewModel.getEdges()) { edge in
                 let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                 EdgeView(edgeViewModel: edgeViewModel)
+
             }
             
             // The vertices
@@ -966,6 +967,22 @@ struct GraphView: View {
             vertexEdgeColor = colorScheme == .light ? .black : .white
         }
         .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button(action: {
+                    for edge in graphViewModel.getEdges() {
+                        var otherEdges = graphViewModel.getEdges()
+                        otherEdges.removeAll(where: { $0.id == edge.id })
+                        for otherEdge in otherEdges {
+                            if EdgeIntersection.intersects(edge, otherEdge, graphViewModel: graphViewModel) {
+                                print("Intersection!")
+                            }
+                        }
+                    }
+                })
+                {
+                    Image(systemName: "xmark.app")
+                }
+            }
             ToolbarItem(placement: .automatic) {
                 ColorPicker(
                     "",

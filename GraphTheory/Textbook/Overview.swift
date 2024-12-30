@@ -39,4 +39,5 @@ struct Overview: View {
 
 #Preview {
     Overview()
+        .environmentObject(ThemeViewModel())
 }

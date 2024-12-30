@@ -32,6 +32,8 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
                     NavigationLink("Overview", destination: Overview())
                         .foregroundStyle(themeViewModel.theme!.secondaryColor)
+                    NavigationLink("Terminology", destination: Terminology())
+                        .foregroundStyle(themeViewModel.theme!.secondaryColor)
                 }
                 Section(header: Text("Sample Graphs")) {
                     NavigationLink("Clebsch Graph Complete Coloring", destination: ClebschGraphCompleteColoringView())

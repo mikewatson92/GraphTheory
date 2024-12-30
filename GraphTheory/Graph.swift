@@ -385,13 +385,26 @@ class GraphViewModel: ObservableObject {
         }
         for edge in graph.edges.values {
             let (controlPoint1, controlPoint2) = initControlPointsFor(edge: edge)
-            if edge.controlPoint1 == .zero {
-                setControlPoint1(for: edge, at: controlPoint1)
-                self.graph.originalEdges[edge.id]?.controlPoint1 = controlPoint1
-            }
-            if edge.controlPoint2 == .zero {
-                setControlPoint2(for: edge, at: controlPoint2)
-                self.graph.originalEdges[edge.id]?.controlPoint2 = controlPoint2
+            if edge.startVertexID != edge.endVertexID {
+                if edge.controlPoint1 == .zero {
+                    setControlPoint1(for: edge, at: controlPoint1)
+                    self.graph.originalEdges[edge.id]?.controlPoint1 = controlPoint1
+                }
+                if edge.controlPoint2 == .zero {
+                    setControlPoint2(for: edge, at: controlPoint2)
+                    self.graph.originalEdges[edge.id]?.controlPoint2 = controlPoint2
+                }
+            } else {
+                let x1 = graph.vertices[edge.startVertexID]!.position.x - 0.1
+                let y1 = graph.vertices[edge.startVertexID]!.position.y + 0.1
+                let x2 = graph.vertices[edge.startVertexID]!.position.x + 0.1
+                let y2 = graph.vertices[edge.startVertexID]!.position.y + 0.1
+                if edge.controlPoint1 == .zero {
+                    setControlPoint1(for: edge, at: CGPoint(x: x1, y: y1))
+                }
+                if edge.controlPoint2 == .zero {
+                    setControlPoint2(for: edge, at: CGPoint(x: x2, y: y2))
+                }
             }
         }
     }
@@ -417,6 +430,17 @@ class GraphViewModel: ObservableObject {
             let (controlPoint1, controlPoint2) = initControlPointsFor(edge: edge)
             edge.controlPoint1 = controlPoint1
             edge.controlPoint2 = controlPoint2
+        } else if edge.startVertexID == edge.endVertexID {
+            let x1 = graph.vertices[edge.startVertexID]!.position.x - 0.1
+            let y1 = graph.vertices[edge.startVertexID]!.position.y + 0.1
+            let x2 = graph.vertices[edge.startVertexID]!.position.x + 0.1
+            let y2 = graph.vertices[edge.startVertexID]!.position.y + 0.1
+            if edge.controlPoint1 == .zero {
+                edge.controlPoint1 = CGPoint(x: x1, y: y1)
+            }
+            if edge.controlPoint2 == .zero {
+                edge.controlPoint2 = CGPoint(x: x2, y: y2)
+            }
         }
         graph.edges[edge.id] = edge
         timesEdgeSelected[edge.id] = 0
@@ -1007,13 +1031,7 @@ struct GraphView: View {
             ToolbarItem(placement: .automatic) {
                 Button(action: {
                     if let selectedVertex = graphViewModel.selectedVertex {
-                        var edge = Edge(startVertexID: selectedVertex.id, endVertexID: selectedVertex.id)
-                        let x1 = selectedVertex.position.x - 0.1
-                        let y1 = selectedVertex.position.y + 0.1
-                        let x2 = selectedVertex.position.x + 0.1
-                        let y2 = selectedVertex.position.y + 0.1
-                        edge.controlPoint1 = CGPoint(x: x1, y: y1)
-                        edge.controlPoint2 = CGPoint(x: x2, y: y2)
+                        let edge = Edge(startVertexID: selectedVertex.id, endVertexID: selectedVertex.id)
                         graphViewModel.addEdge(edge)
                     }
                 }) {

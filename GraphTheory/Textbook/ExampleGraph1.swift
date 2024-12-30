@@ -55,7 +55,7 @@ struct ExampleGraph1View: View {
     @StateObject private var graphViewModel = GraphViewModel(graph: ExampleGraph1().graph)
     
     var body: some View {
-        GraphView(graphViewModel: graphViewModel)
+        Canvas(graphViewModel: graphViewModel)
     }
 }
 

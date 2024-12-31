@@ -36,6 +36,8 @@ struct Intro: View {
                     .frame(width: minimumDimension, height: 1.25 * minimumDimension)
                     .padding()
                 }
+                .padding()
+                .frame(maxWidth: minimumDimension)
             }
         }
     }

@@ -26,10 +26,9 @@ class PracticalTSPViewModel: ObservableObject {
     @Published var graphViewModel: GraphViewModel
     @Published var error = Error.none
     
-    init(graph: Graph) {
-        self.practicalTSP = PracticalTSP(graph: graph)
-        self.graphViewModel = GraphViewModel(graph: graph, showWeights: true)
-        self.graphViewModel.mode = .edit
+    init(graphViewModel: GraphViewModel) {
+        self.practicalTSP = PracticalTSP(graph: graphViewModel.graph)
+        self.graphViewModel = graphViewModel
     }
     
     enum Error: String {
@@ -91,37 +90,37 @@ struct PracticalTSPView: View {
     @ObservedObject var graphViewModel: GraphViewModel
     @State private var showBanner = true
     @State private var showInstructions = true
-    
+        
     func handleVertexTapGesture(_ vertex: Vertex) {
-        if let selectedVertex = practicalTSPViewModel.graphViewModel.selectedVertex {
+        if let selectedVertex = graphViewModel.selectedVertex {
             if selectedVertex.id == vertex.id {
-                practicalTSPViewModel.graphViewModel.selectedVertex = nil
+                graphViewModel.selectedVertex = nil
             } else {
                 practicalTSPViewModel.addEdge(Edge(startVertexID: selectedVertex.id, endVertexID: vertex.id))
-                practicalTSPViewModel.graphViewModel.selectedVertex = nil
+                graphViewModel.selectedVertex = nil
             }
         } else {
             showInstructions = false
             showBanner = false
-            practicalTSPViewModel.graphViewModel.selectedVertex = vertex
+            graphViewModel.selectedVertex = vertex
         }
     }
     
     func handleEdgeTapGesture(_ edge: Edge) {
-        if let selectedEdge = practicalTSPViewModel.graphViewModel.selectedEdge {
+        if let selectedEdge = graphViewModel.selectedEdge {
             if selectedEdge.id == edge.id {
-                practicalTSPViewModel.graphViewModel.selectedEdge = nil
+                graphViewModel.selectedEdge = nil
             } else {
-                practicalTSPViewModel.graphViewModel.selectedEdge = edge
+                graphViewModel.selectedEdge = edge
             }
         } else {
-            practicalTSPViewModel.graphViewModel.selectedEdge = edge
+            graphViewModel.selectedEdge = edge
         }
     }
     
     var body: some View {
         if practicalTSPViewModel.practicalTSP.step == .solvingClassicalTSP {
-            ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: practicalTSPViewModel.graphViewModel.graph))
+            ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))
         } else {
             VStack {
                 if showBanner {
@@ -136,27 +135,31 @@ struct PracticalTSPView: View {
                     }
                 }
                 GeometryReader { geometry in
-                    ForEach(practicalTSPViewModel.graphViewModel.getEdges(), id: \.id) { edge in
-                        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: practicalTSPViewModel.graphViewModel)
+                    ForEach(graphViewModel.getEdges(), id: \.id) { edge in
+                        let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                         EdgeView(edgeViewModel: edgeViewModel, onWeightChange: { practicalTSPViewModel.checkEdgeWeight(edge)
                             if practicalTSPViewModel.error != .none {
                                 showBanner = true
                             }
                         })
-                            .onTapGesture(count: 1) {
-                                handleEdgeTapGesture(edge)
-                            }
+                        .onTapGesture(count: 1) {
+                            handleEdgeTapGesture(edge)
+                        }
                     }
-                    ForEach(practicalTSPViewModel.graphViewModel.getVertices(), id: \.id) { vertex in
-                        let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: practicalTSPViewModel.graphViewModel)
+                    ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
+                        let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                            .shadow(color: practicalTSPViewModel.graphViewModel.selectedVertex?.id == vertex.id ? .green : .clear, radius: 10)
+                            .shadow(color: graphViewModel.selectedVertex?.id == vertex.id ? .green : .clear, radius: 10)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
                                     handleVertexTapGesture(vertex)
                                 }
                             )
                     }
+                }
+                .onAppear {
+                    graphViewModel.showWeights = true
+                    graphViewModel.mode = .edit
                 }
             }
         }

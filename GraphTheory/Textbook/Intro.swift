@@ -37,10 +37,7 @@ struct Intro: View {
                     .padding()
                 }
             }
-            .padding()
-            .frame(width: minimumDimension)
         }
-        .padding()
     }
 }
 

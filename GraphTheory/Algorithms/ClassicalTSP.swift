@@ -192,9 +192,6 @@ struct ClassicalTSPView: View {
                 .padding()
         } else if classicalTSPViewModel.step == .findingMinimumSpanningTree && !kruskalComplete {
             VStack {
-                if showKruskalInstructions {
-                    Instructions(showBanner: $showKruskalInstructions, text: "Apply Kruskal's algorithm to find a minimum spanning tree.")
-                }
                 KruskalView(kruskalViewModel: classicalTSPViewModel.kruskalViewModel, completion: $kruskalComplete)
             }
         } else {

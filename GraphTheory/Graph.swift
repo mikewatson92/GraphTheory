@@ -1021,7 +1021,7 @@ struct GraphView: View {
                     NavigationLink(destination: LazyView(ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph)))) {
                         Text("Classical TSP")
                     }
-                    NavigationLink(destination: LazyView(PracticalTSPView(practicalTSPViewModel: PracticalTSPViewModel(graphViewModel: graphViewModel), graphViewModel: graphViewModel))) {
+                    NavigationLink(destination: LazyView(PracticalTSPView(graphViewModel: graphViewModel))) {
                         Text("Practical TSP")
                     }
                 } label: {

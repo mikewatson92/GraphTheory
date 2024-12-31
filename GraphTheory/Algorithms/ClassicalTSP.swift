@@ -93,6 +93,12 @@ class ClassicalTSPViewModel: ObservableObject {
             for edge in classicalTSP.nearestNeighborEdges {
                 availableEdges.removeAll(where: { $0.id == edge.id })
             }
+            for edge in availableEdges {
+                if classicalTSP.nearestNeighborVisitedVertices.contains(where: { $0.id == edge.startVertexID }) &&
+                    classicalTSP.nearestNeighborVisitedVertices.contains(where: { $0.id == edge.endVertexID }) {
+                    availableEdges.removeAll(where: { $0.id == edge.id })
+                }
+            }
             var availableEdgeWeights: [Double] = []
             for edge in availableEdges {
                 availableEdgeWeights.append(edge.weight)

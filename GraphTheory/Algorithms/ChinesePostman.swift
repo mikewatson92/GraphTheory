@@ -307,6 +307,7 @@ struct ChinesePostmanView: View {
     init(graph: Graph) {
         self._chinesePostmanViewModel = StateObject(wrappedValue: ChinesePostmanViewModel(graph: graph))
         self._graphViewModel = StateObject(wrappedValue: GraphViewModel(graph: graph, showWeights: true))
+        print("Initializing Chinese Postman View.")
     }
     
     var body: some View {

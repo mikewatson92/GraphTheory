@@ -1009,19 +1009,19 @@ struct GraphView: View {
             ToolbarItem(placement: .automatic) {
                 Menu {
                     Text("Algorithm:")
-                    NavigationLink(destination: KruskalView(kruskalViewModel: KruskalViewModel(graphViewModel: GraphViewModel(graph: graphViewModel.graph, showWeights: true)), completion: .constant(false))) {
+                    NavigationLink(destination: LazyView(KruskalView(kruskalViewModel: KruskalViewModel(graphViewModel: GraphViewModel(graph: graphViewModel.graph, showWeights: true)), completion: .constant(false)))) {
                         Text("Kruskal")
                     }
-                    NavigationLink(destination: PrimView(graph: graphViewModel.graph)) {
+                    NavigationLink(destination: LazyView(PrimView(graph: graphViewModel.graph))) {
                         Text("Prim")
                     }
-                    NavigationLink(destination: ChinesePostmanView(graph: graphViewModel.graph)) {
+                    NavigationLink(destination: LazyView(ChinesePostmanView(graph: graphViewModel.graph))) {
                         Text("Chinese Postman Problem")
                     }
-                    NavigationLink(destination: ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))) {
+                    NavigationLink(destination: LazyView(ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph)))) {
                         Text("Classical TSP")
                     }
-                    NavigationLink(destination: PracticalTSPView(practicalTSPViewModel: PracticalTSPViewModel(graphViewModel: graphViewModel), graphViewModel: graphViewModel)) {
+                    NavigationLink(destination: LazyView(PracticalTSPView(practicalTSPViewModel: PracticalTSPViewModel(graphViewModel: graphViewModel), graphViewModel: graphViewModel))) {
                         Text("Practical TSP")
                     }
                 } label: {

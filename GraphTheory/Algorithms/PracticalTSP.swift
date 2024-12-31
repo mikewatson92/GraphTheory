@@ -90,6 +90,12 @@ struct PracticalTSPView: View {
     @ObservedObject var graphViewModel: GraphViewModel
     @State private var showBanner = true
     @State private var showInstructions = true
+    
+    init(practicalTSPViewModel: PracticalTSPViewModel, graphViewModel: GraphViewModel) {
+        self._practicalTSPViewModel = StateObject(wrappedValue: practicalTSPViewModel)
+        self.graphViewModel = graphViewModel
+        print("Initializing PracticalTSP View!")
+    }
         
     func handleVertexTapGesture(_ vertex: Vertex) {
         if let selectedVertex = graphViewModel.selectedVertex {

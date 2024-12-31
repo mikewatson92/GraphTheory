@@ -28,8 +28,7 @@ struct Instructions: View {
                     .foregroundColor(.red)
             }
         }
-        .padding([.top], 25)
-        .padding([.bottom], 10)
+        .padding([.top, .bottom], 25)
         .transition(.move(edge: .top))
     }
 }

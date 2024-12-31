@@ -52,7 +52,7 @@ struct ExampleGraph1 {
 }
 
 struct ExampleGraph1View: View {
-    @StateObject private var graphViewModel = GraphViewModel(graph: ExampleGraph1().graph)
+    @ObservedObject var graphViewModel: GraphViewModel
     
     var body: some View {
         Canvas(graphViewModel: graphViewModel)
@@ -60,6 +60,6 @@ struct ExampleGraph1View: View {
 }
 
 #Preview {
-    ExampleGraph1View()
+    ExampleGraph1View(graphViewModel: GraphViewModel(graph: ExampleGraph1().graph))
         .environmentObject(ThemeViewModel())
 }

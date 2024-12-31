@@ -357,13 +357,15 @@ struct EdgeView: View {
     }
     
     func handleLongPressGesture() {
-        if graphViewModel.mode == .edit {
-            let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edgeViewModel.edge)
-            graphViewModel.setControlPoint1(for: edgeViewModel.edge, at: controlPoint1)
-            graphViewModel.setControlPoint2(for: edgeViewModel.edge, at: controlPoint2)
-        } else if graphViewModel.mode == .explore {
-            graphViewModel.timesEdgeSelected[edgeViewModel.id] = 0
-            graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: .white)
+        if edgeViewModel.edge.startVertexID != edgeViewModel.edge.endVertexID {
+            if graphViewModel.mode == .edit {
+                let (controlPoint1, controlPoint2) = graphViewModel.initControlPointsFor(edge: edgeViewModel.edge)
+                graphViewModel.setControlPoint1(for: edgeViewModel.edge, at: controlPoint1)
+                graphViewModel.setControlPoint2(for: edgeViewModel.edge, at: controlPoint2)
+            } else if graphViewModel.mode == .explore {
+                graphViewModel.timesEdgeSelected[edgeViewModel.id] = 0
+                graphViewModel.setColorForEdge(edge: edgeViewModel.edge, color: .white)
+            }
         }
     }
     

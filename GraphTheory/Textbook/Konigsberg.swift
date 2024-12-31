@@ -71,37 +71,20 @@ struct KonigsbergView: View {
     
     var body: some View {
         VStack {
-            Group {
-                HStack {
-                    Spacer()
-                    if showInstructions {
-                        Text(step.rawValue)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Button {
-                            withAnimation {
-                                showInstructions = false
-                            }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
-                        }
-                    }
-                    Spacer()
-                    Button {
-                        clear()
-                    } label: {
-                        Image(systemName: "arrow.uturn.left.circle")
-                            .tint(themeViewModel.theme!.accentColor)
-                    }
+            HStack {
+                Spacer()
+                if showInstructions {
+                    Instructions(showBanner: $showInstructions, text: step.rawValue)
+                }
+                Spacer()
+                Button {
+                    clear()
+                } label: {
+                    Image(systemName: "arrow.uturn.left.circle")
+                        .tint(themeViewModel.theme!.accentColor)
                 }
                 .padding()
             }
-            .padding([.top], 25)
-            .zIndex(1)
-            .transition(.move(edge: .top))
             
             GeometryReader { geometry in
                 ForEach(graphViewModel.getEdges()) { edge in

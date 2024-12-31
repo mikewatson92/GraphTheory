@@ -297,6 +297,12 @@ struct ChinesePostmanView: View {
     @StateObject var graphViewModel = GraphViewModel(graph: Graph())
     @State private var edgeError: Edge?
     @State private var edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0.3673055172, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1))]
+    @State private var showBanner = true {
+        willSet {
+            showInstructions = false
+        }
+    }
+    @State private var showInstructions = true
     
     init(graph: Graph) {
         self._chinesePostmanViewModel = StateObject(wrappedValue: ChinesePostmanViewModel(graph: graph))
@@ -307,16 +313,27 @@ struct ChinesePostmanView: View {
         if !graphViewModel.graph.isConnected() {
             Text("This graph is not connected, so the Chinese Postman problem has no solution.")
         } else {
-            ZStack {
+            VStack {
+                if showBanner {
+                    if showInstructions {
+                        Instructions(showBanner: $showBanner, text: "Choose a starting vertex. Then select edges to design the optimal walk that traverses all of the edges.")
+                    } else if chinesePostmanViewModel.errorStatus != .none {
+                        Instructions(showBanner: $showBanner, text: chinesePostmanViewModel.errorStatus.rawValue)
+                    } else if chinesePostmanViewModel.step == .finished {
+                        Instructions(showBanner: $showBanner, text: "The solution has a total weight of: \(chinesePostmanViewModel.getSolutionTotalWeight().formatted())")
+                    }
+                }
                 GeometryReader{ geometry in
                     ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                         EdgeView(edgeViewModel: edgeViewModel)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
+                                    showInstructions = false
                                     if chinesePostmanViewModel.step == .selectEdges {
                                         if let error = edgeError {
                                             if edge.id == error.id {
+                                                showBanner = false
                                                 chinesePostmanViewModel.errorStatus = .none
                                                 edgeError = nil
                                                 edgeViewModel.color = edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })]
@@ -330,9 +347,13 @@ struct ChinesePostmanView: View {
                                                 edgeError = edge
                                                 edgeViewModel.color = .red
                                                 graphViewModel.setColorForEdge(edge: edge, color: .red)
+                                                showBanner = true
                                             } else {
                                                 edgeViewModel.color = edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })]
                                                 graphViewModel.setColorForEdge(edge: edge, color: edgeColors[chinesePostmanViewModel.chosenEdges.count(where: { $0.id == edge.id })])
+                                                if chinesePostmanViewModel.step == .finished {
+                                                    showBanner = true
+                                                }
                                             }
                                         }
                                     }
@@ -344,6 +365,7 @@ struct ChinesePostmanView: View {
                             .shadow(color: (chinesePostmanViewModel.currentVertex?.id == vertex.id ? .green : .clear), radius: 10)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
+                                    showInstructions = false
                                     if chinesePostmanViewModel.currentVertex == nil {
                                         chinesePostmanViewModel.currentVertex = vertex
                                         chinesePostmanViewModel.step = .selectEdges
@@ -353,33 +375,6 @@ struct ChinesePostmanView: View {
                 }
                 .onAppear {
                     edgeColors.insert(colorScheme == .light ? .black : .white , at: 0)
-                }
-                
-                if chinesePostmanViewModel.errorStatus != .none {
-                    VStack {
-                        Text(chinesePostmanViewModel.errorStatus.rawValue)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Spacer()
-                    }
-                    .padding([.top], 25)
-                    .zIndex(1)
-                    .transition(.move(edge: .top))
-                }
-                if chinesePostmanViewModel.step == .finished {
-                    VStack {
-                        Text("The solution has a total weight of: \(chinesePostmanViewModel.getSolutionTotalWeight().formatted())")
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Spacer()
-                    }
-                    .padding([.top], 25)
-                    .zIndex(1)
-                    .transition(.move(edge: .top))
                 }
             }
         }

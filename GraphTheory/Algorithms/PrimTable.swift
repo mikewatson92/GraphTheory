@@ -137,6 +137,9 @@ struct PrimTableView: View {
                 HStack {
                     Spacer()
                     VStack(spacing: 0) {
+                        if showBanner {
+                            Instructions(showBanner: $showBanner, text: "The weight of the minimum spanning tree is: \(primViewModel.prim.sumOfWeights.formatted()).")
+                        }
                         // The column headers
                         HStack(spacing: 0) {
                             Spacer()
@@ -179,19 +182,6 @@ struct PrimTableView: View {
                     }
                     Spacer()
                 }
-            }
-            if showBanner {
-                HStack {
-                    Spacer()
-                    Text("The weight of the minimum spanning tree is: \(primViewModel.prim.sumOfWeights.formatted()).")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .transition(.move(edge: .top))
-                Spacer()
             }
         }
         .padding(padding)

@@ -89,6 +89,8 @@ struct PracticalTSPView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject var practicalTSPViewModel: PracticalTSPViewModel
     @ObservedObject var graphViewModel: GraphViewModel
+    @State private var showBanner = true
+    @State private var showInstructions = true
     
     func handleVertexTapGesture(_ vertex: Vertex) {
         if let selectedVertex = practicalTSPViewModel.graphViewModel.selectedVertex {
@@ -99,6 +101,8 @@ struct PracticalTSPView: View {
                 practicalTSPViewModel.graphViewModel.selectedVertex = nil
             }
         } else {
+            showInstructions = false
+            showBanner = false
             practicalTSPViewModel.graphViewModel.selectedVertex = vertex
         }
     }
@@ -119,11 +123,26 @@ struct PracticalTSPView: View {
         if practicalTSPViewModel.practicalTSP.step == .solvingClassicalTSP {
             ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: practicalTSPViewModel.graphViewModel.graph))
         } else {
-            ZStack {
+            VStack {
+                if showBanner {
+                    if showInstructions {
+                        let text = """
+                        Make sure the weights of direct edges are the minimum possible weight.
+                        Then, turn the graph into a complete Euclidean graph.
+                        """
+                        Instructions(showBanner: $showBanner, text: text)
+                    } else if practicalTSPViewModel.error != .none {
+                        Instructions(showBanner: $showBanner, text: practicalTSPViewModel.error.rawValue)
+                    }
+                }
                 GeometryReader { geometry in
                     ForEach(practicalTSPViewModel.graphViewModel.getEdges(), id: \.id) { edge in
                         let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: practicalTSPViewModel.graphViewModel)
-                        EdgeView(edgeViewModel: edgeViewModel, onWeightChange: { practicalTSPViewModel.checkEdgeWeight(edge) })
+                        EdgeView(edgeViewModel: edgeViewModel, onWeightChange: { practicalTSPViewModel.checkEdgeWeight(edge)
+                            if practicalTSPViewModel.error != .none {
+                                showBanner = true
+                            }
+                        })
                             .onTapGesture(count: 1) {
                                 handleEdgeTapGesture(edge)
                             }
@@ -139,19 +158,6 @@ struct PracticalTSPView: View {
                             )
                     }
                 }
-                VStack {
-                    if practicalTSPViewModel.error != .none {
-                        Text(practicalTSPViewModel.error.rawValue)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
-                            .padding()
-                            .background(themeViewModel.theme!.secondaryColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                        Spacer()
-                    }
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
             }
         }
     }

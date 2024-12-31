@@ -48,11 +48,11 @@ class PrimViewModel: ObservableObject {
         case complete
     }
     
-    enum Error {
+    enum Error: String {
         case none
-        case notConnected
-        case cycle
-        case notLowestWeight
+        case notConnected = "That edge is not connected to any of your current vertices."
+        case cycle = "This edge forms a cycle."
+        case notLowestWeight = "This is not the lowest available weight."
     }
 
     func getAllEdges() -> [Edge] {
@@ -168,7 +168,14 @@ struct PrimView: View {
     
     var body: some View {
         
-        ZStack {
+        VStack {
+            if showBanner {
+                if primViewModel.step == .complete {
+                    Instructions(showBanner: $showBanner, text: "The weight of the minimum spanning tree is: \(primViewModel.getTreeWeight().formatted())")
+                } else if primViewModel.error != .none {
+                    Instructions(showBanner: $showBanner, text: primViewModel.error.rawValue)
+                }
+            }
             GeometryReader { geometry in
                 ForEach(primViewModel.getAllEdges(), id: \.id) { edge in
                     let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
@@ -207,64 +214,6 @@ struct PrimView: View {
                                 }
                             })
                 }
-            }
-            if showBanner {
-                VStack {
-                    Text("The weight of the minimum spanning tree is: \(primViewModel.getTreeWeight().formatted())")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Button {
-                        withAnimation {
-                            showBanner = false
-                        }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    }
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
-            } else if primViewModel.error == .notConnected {
-                VStack {
-                    Text("This edge is not connected to any of your chosen vertices.")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
-                
-            } else if primViewModel.error == .cycle {
-                VStack {
-                    Text("This edge forms a cycle.")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
-            } else if primViewModel.error == .notLowestWeight {
-                VStack {
-                    Text("There is another edge with smaller weight.")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
             }
         }
     }

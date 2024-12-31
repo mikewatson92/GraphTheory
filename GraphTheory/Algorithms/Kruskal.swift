@@ -48,10 +48,10 @@ class KruskalViewModel: ObservableObject {
         self.graphViewModel.showWeights = true
     }
     
-    enum ErrorStatus {
+    enum ErrorStatus: String {
         case none
-        case cycleError
-        case notLowestWeightError
+        case cycleError = "This edge forms a cycle."
+        case notLowestWeightError = "There is another edge with smaller weight."
     }
     
     enum CompletionStatus {
@@ -143,11 +143,26 @@ class KruskalViewModel: ObservableObject {
 struct KruskalView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var kruskalViewModel: KruskalViewModel
-    @State private var showBanner = false
+    @State private var showBanner = true {
+        willSet {
+            showInstructions = false
+        }
+    }
+    @State private var showInstructions = true
     @Binding var completion: Bool
     
     var body: some View {
-        ZStack {
+        VStack {
+            if showBanner {
+                if showInstructions {
+                    Instructions(showBanner: $showBanner, text: "Find a minimum spanning tree by selecting edges of minimum weight that do not form a cycle until all vertices are connected.")
+                }
+                else if kruskalViewModel.completionStatus == .completed {
+                    Instructions(showBanner: $showBanner, text: "The weight of the minimum spanning tree is: \(kruskalViewModel.getTreeWeight().formatted())")
+                } else {
+                    Instructions(showBanner: $showBanner, text: kruskalViewModel.errorStatus.rawValue)
+                }
+            }
             GeometryReader { geometry in
                 ForEach(kruskalViewModel.graphViewModel.getEdges(), id: \.id) { edge in
                     let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: kruskalViewModel.graphViewModel)
@@ -160,60 +175,17 @@ struct KruskalView: View {
                                         completion = true
                                         showBanner = true
                                     }
+                                } else if kruskalViewModel.errorStatus != .none {
+                                    showBanner = true
+                                } else {
+                                    showBanner = false
                                 }
                             })
                 }
-                
                 ForEach(kruskalViewModel.graphViewModel.getVertices()) { vertex in
                     let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: kruskalViewModel.graphViewModel, mode: [.showLabels, .noEditLabels])
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                 }
-            }
-            // Banner shown upon completion
-            if showBanner {
-                VStack {
-                    Text("The weight of the minimum spanning tree is: \(kruskalViewModel.getTreeWeight().formatted())")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Button {
-                        withAnimation {
-                            showBanner = false
-                        }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    }
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
-            } else if kruskalViewModel.errorStatus == .cycleError {
-                VStack {
-                    Text("This edge forms a cycle.")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
-            } else if kruskalViewModel.errorStatus == .notLowestWeightError {
-                VStack {
-                    Text("There is another edge with smaller weight.")
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Spacer()
-                }
-                .padding([.top], 25)
-                .zIndex(1)
-                .transition(.move(edge: .top))
             }
         }
     }

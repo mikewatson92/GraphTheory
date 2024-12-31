@@ -138,23 +138,7 @@ struct PlanarGraph1View: View {
     var body: some View {
         VStack {
             if showBanner {
-                VStack {
-                    Text(result.rawValue)
-                        .foregroundColor(themeViewModel.theme!.primaryColor)
-                        .padding()
-                        .background(themeViewModel.theme!.secondaryColor)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                    Button {
-                        withAnimation {
-                            showBanner = false
-                        }
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    }
-                }
-                .padding([.top], 25)
-                .transition(.move(edge: .top))
+                Instructions(showBanner: $showBanner, text: result.rawValue)
             }
             GeometryReader { geometry in
                 ForEach(graphViewModel.getEdges()) { edge in

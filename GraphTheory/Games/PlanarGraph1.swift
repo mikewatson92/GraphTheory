@@ -56,7 +56,6 @@ struct PlanarGraph1View: View {
             for otherEdge in otherEdges {
                 let intersects = EdgeIntersection.intersects(edge, otherEdge, graphViewModel: graphViewModel)
                 if intersects {
-                    showBanner = true
                     return
                 }
             }
@@ -132,7 +131,6 @@ struct PlanarGraph1View: View {
                     
                 }
                 graphViewModel.resetVertexEdgeChanges()
-                
             }
         }
     }
@@ -140,7 +138,7 @@ struct PlanarGraph1View: View {
     var body: some View {
         VStack {
             if showBanner {
-                Group {
+                VStack {
                     Text(result.rawValue)
                         .foregroundColor(themeViewModel.theme!.primaryColor)
                         .padding()
@@ -173,24 +171,9 @@ struct PlanarGraph1View: View {
                                 handleVertexOnDragGesture(for: vertexViewModel, drag: drag, geometrySize: geometry.size)
                             }).onEnded { _ in
                                 handleVertexEndDragGesture(for: vertexViewModel, geometrySize: geometry.size)
+                                checkForCompletion()
                             })
                 }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                Button {
-                    if result == .instructions {
-                        showBanner = false
-                        result = .notFinished
-                    } else {
-                        checkForCompletion()
-                    }
-                } label: {
-                    Image(systemName: "checkmark.circle")
-                        .tint(themeViewModel.theme!.accentColor)
-                }
-
             }
         }
     }

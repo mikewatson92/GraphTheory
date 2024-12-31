@@ -44,7 +44,7 @@ struct PlanarGraph1View: View {
     @State private var result = Result.instructions
     
     enum Result: String {
-        case instructions = "Move the vertices so that none of the edges intersect. Click on the checkmark to check your solution."
+        case instructions = "Move the vertices so that none of the edges intersect."
         case notFinished = "There are still some edges that are intersecting."
         case finished = "Congratulations! You've uncrossed all of the edges!"
     }

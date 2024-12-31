@@ -33,7 +33,7 @@ struct Intro: View {
                             .padding()
                             .frame(width: geometry2.size.width, height: geometry2.size.height)
                     }
-                    .frame(width: minimumDimension, height: 2 * minimumDimension)
+                    .frame(width: minimumDimension, height: 1.25 * minimumDimension)
                     .padding()
                 }
             }
@@ -46,4 +46,5 @@ struct Intro: View {
 
 #Preview {
     Intro()
+        .environmentObject(ThemeViewModel())
 }

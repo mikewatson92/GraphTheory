@@ -968,22 +968,6 @@ struct GraphView: View {
         }
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button(action: {
-                    for edge in graphViewModel.getEdges() {
-                        var otherEdges = graphViewModel.getEdges()
-                        otherEdges.removeAll(where: { $0.id == edge.id })
-                        for otherEdge in otherEdges {
-                            if EdgeIntersection.intersects(edge, otherEdge, graphViewModel: graphViewModel) {
-                                print("Intersection!")
-                            }
-                        }
-                    }
-                })
-                {
-                    Image(systemName: "xmark.app")
-                }
-            }
-            ToolbarItem(placement: .automatic) {
                 ColorPicker(
                     "",
                     selection: Binding(

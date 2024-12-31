@@ -148,7 +148,6 @@ struct Terminology: View {
                 .frame(height: UIScreen.main.bounds.width)
             }
         }
-        .padding()
 #endif
     }
 }

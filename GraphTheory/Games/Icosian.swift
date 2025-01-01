@@ -292,7 +292,7 @@ struct IcosianView: View {
                     visitedVertices = []
                 }) {
                     Image(systemName: "arrow.uturn.left.circle")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
             }
         }

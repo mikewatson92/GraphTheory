@@ -32,7 +32,7 @@ struct WeightsTutorial: View {
                         Spacer()
                         Text("Tap the \(Image(systemName: "number.square.fill")) symbol to show the edge weights. Tap a weight and enter a new number.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
+                            .foregroundColor(themeViewModel.theme!.primary)
                             .padding()
                         Spacer()
                         Spacer()
@@ -89,7 +89,7 @@ struct WeightsTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.theme!.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accent)
                             Spacer()
                         }
                         Spacer()

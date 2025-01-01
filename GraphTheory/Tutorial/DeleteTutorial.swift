@@ -24,7 +24,7 @@ struct DeleteTutorial: View {
                         Spacer()
                         Text("Double tap a vertex or edge to delete it.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
+                            .foregroundColor(themeViewModel.theme!.primary)
                             .padding()
                         Spacer()
                         Spacer()
@@ -100,7 +100,7 @@ struct DeleteTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.theme!.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accent)
                             Spacer()
                         }
                         Spacer()

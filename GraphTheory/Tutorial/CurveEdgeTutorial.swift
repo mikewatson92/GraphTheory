@@ -32,7 +32,7 @@ struct CurveEdgeTutorial: View {
                         Spacer()
                         Text("Tap an edge to select it. Drag the red dots to change the shape.")
                             .font(.largeTitle)
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
+                            .foregroundColor(themeViewModel.theme!.primary)
                             .padding()
                         Spacer()
                         Spacer()
@@ -103,7 +103,7 @@ struct CurveEdgeTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.theme!.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accent)
                             Spacer()
                         }
                         Spacer()

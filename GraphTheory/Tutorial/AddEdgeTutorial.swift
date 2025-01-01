@@ -32,7 +32,7 @@ struct AddEdgeTutorial: View {
                         Text("Tap a vertex to select it. Tap another to draw an edge.")
                             .font(.largeTitle)
                             .padding()
-                            .foregroundColor(themeViewModel.theme!.primaryColor)
+                            .foregroundColor(themeViewModel.theme!.primary)
                         Spacer()
                         Spacer()
                         HStack {
@@ -107,7 +107,7 @@ struct AddEdgeTutorial: View {
                                     .padding([.trailing], 50)
                             }
                             .background(in: RoundedRectangle(cornerRadius: 10))
-                            .backgroundStyle(themeViewModel.theme!.accentColor)
+                            .backgroundStyle(themeViewModel.theme!.accent)
                             Spacer()
                         }
                         Spacer()

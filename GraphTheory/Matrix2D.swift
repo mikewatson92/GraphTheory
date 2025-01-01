@@ -136,13 +136,13 @@ struct Matrix2DView: View {
                 ToolbarItem(placement: .automatic) {
                     Button(action: { clear() }) {
                         Image(systemName: "arrow.uturn.left.circle")
-                            .tint(themeViewModel.theme!.accentColor)
+                            .tint(themeViewModel.theme!.accent)
                     }
                 }
                 ToolbarItem(placement: .automatic) {
                     Button(action: { showPrimsAlgorithm = true }) {
                         Image(systemName: "flask")
-                            .tint(themeViewModel.theme!.accentColor)
+                            .tint(themeViewModel.theme!.accent)
                     }
                 }
             }
@@ -191,14 +191,14 @@ struct GridItemView: View {
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
                             .padding(geometry.size.width / 7.5)
-                            .foregroundColor(themeViewModel.theme!.secondaryColor)
+                            .foregroundColor(themeViewModel.theme!.secondary)
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width / 10)
                             .padding(geometry.size.width / 7.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeViewModel.theme!.primaryColor, lineWidth: min(5, geometry.size.width / 10))
+                            .stroke(themeViewModel.theme!.primary, lineWidth: min(5, geometry.size.width / 10))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                     }
@@ -212,14 +212,14 @@ struct GridItemView: View {
                             .multilineTextAlignment(.center)
                             .aspectRatio(1, contentMode: .fill)
                             .padding(geometry.size.width / 7.5)
-                            .foregroundColor(themeViewModel.theme!.secondaryColor)
+                            .foregroundColor(themeViewModel.theme!.secondary)
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width / 20)
                             .padding(geometry.size.width / 7.5)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(themeViewModel.theme!.primaryColor, lineWidth: min(4, geometry.size.width / 10))
+                            .stroke(themeViewModel.theme!.primary, lineWidth: min(4, geometry.size.width / 10))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .aspectRatio(1, contentMode: .fill)
                     }
@@ -236,7 +236,7 @@ struct GridItemView: View {
                 ))
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
-                    .foregroundColor(themeViewModel.theme!.secondaryColor)
+                    .foregroundColor(themeViewModel.theme!.secondary)
                     .onSubmit {
                         edittingLabel = false
                         if label == "" {
@@ -247,7 +247,7 @@ struct GridItemView: View {
                 TextField("Weight:", value: $weight, format: .number)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding([.leading, .trailing])
-                    .foregroundColor(themeViewModel.theme!.secondaryColor)
+                    .foregroundColor(themeViewModel.theme!.secondary)
                     .onSubmit {
                         edittingLabel = false
                     }

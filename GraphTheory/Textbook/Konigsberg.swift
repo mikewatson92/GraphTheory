@@ -81,7 +81,7 @@ struct KonigsbergView: View {
                     clear()
                 } label: {
                     Image(systemName: "arrow.uturn.left.circle")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
                 .padding()
             }

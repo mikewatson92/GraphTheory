@@ -91,7 +91,8 @@ struct PracticalTSPView: View {
     @State private var showBanner = true
     @State private var showInstructions = true
     
-    init(graphViewModel: GraphViewModel) {
+    init(graph: Graph) {
+        let graphViewModel = GraphViewModel(graph: graph, showWeights: true)
         self._practicalTSPViewModel = StateObject(wrappedValue: PracticalTSPViewModel(graphViewModel: graphViewModel))
         self.graphViewModel = graphViewModel
     }

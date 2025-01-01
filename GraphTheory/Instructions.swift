@@ -15,9 +15,9 @@ struct Instructions: View {
     var body: some View {
         HStack {
             Text(text)
-                .foregroundColor(themeViewModel.theme!.primaryColor)
+                .foregroundColor(themeViewModel.theme!.primary)
                 .padding()
-                .background(themeViewModel.theme!.secondaryColor)
+                .background(themeViewModel.theme!.secondary)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             Button {
                 withAnimation {

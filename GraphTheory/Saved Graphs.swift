@@ -660,9 +660,8 @@ struct PracticalTSP1 {
 }
 
 struct PracticalTSP1View: View {
-    @StateObject private var graphViewModel = GraphViewModel(graph: PracticalTSP1().graph)
     
     var body: some View {
-        PracticalTSPView(graphViewModel: graphViewModel)
+        PracticalTSPView(graph: PracticalTSP1().graph)
     }
 }

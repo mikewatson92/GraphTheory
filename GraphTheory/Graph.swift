@@ -1003,7 +1003,7 @@ struct GraphView: View {
                     clear()
                 }) {
                     Image(systemName: "arrow.uturn.left.circle")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
             }
             ToolbarItem(placement: .automatic) {
@@ -1021,12 +1021,12 @@ struct GraphView: View {
                     NavigationLink(destination: LazyView(ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph)))) {
                         Text("Classical TSP")
                     }
-                    NavigationLink(destination: LazyView(PracticalTSPView(graphViewModel: graphViewModel))) {
+                    NavigationLink(destination: LazyView(PracticalTSPView(graph: graphViewModel.graph))) {
                         Text("Practical TSP")
                     }
                 } label: {
                     Image(systemName: "flask")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
             }
             ToolbarItem(placement: .automatic) {
@@ -1037,13 +1037,13 @@ struct GraphView: View {
                     }
                 }) {
                     Image(systemName: "point.forward.to.point.capsulepath.fill")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
             }
             ToolbarItem(placement: .automatic) {
                 Menu {
                     Toggle(isOn: $graphViewModel.showWeights) {
-                        Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accentColor)
+                        Label("Weights", systemImage: "number.square").tint(themeViewModel.theme!.accent)
                     }
                     Picker("Direction", systemImage: "arrow.left.and.right", selection: Binding(get: {
                         if let selectedEdge = graphViewModel.selectedEdge {
@@ -1060,10 +1060,10 @@ struct GraphView: View {
                                 Text(direction.rawValue).tag(direction)
                             }
                         }
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 } label: {
                     Image(systemName: "arrow.left.arrow.right.square")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
             }
             ToolbarItem(placement: .automatic) {
@@ -1073,7 +1073,7 @@ struct GraphView: View {
                         Text("Edit").tag(Graph.Mode.edit)
                         Text("Explore").tag(Graph.Mode.explore)
                     }
-                    .foregroundStyle(themeViewModel.theme!.accentColor)
+                    .foregroundStyle(themeViewModel.theme!.accent)
                     
                     Picker("Label Color", selection: Binding(
                         get: {
@@ -1096,7 +1096,7 @@ struct GraphView: View {
                 }
                 label: {
                     Image(systemName: "gear")
-                        .tint(themeViewModel.theme!.accentColor)
+                        .tint(themeViewModel.theme!.accent)
                 }
                 
             }

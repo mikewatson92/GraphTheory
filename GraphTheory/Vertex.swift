@@ -115,6 +115,7 @@ class VertexViewModel: ObservableObject {
 
 struct VertexView: View {
     @Environment(\.colorScheme) var colorScheme
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var vertexViewModel: VertexViewModel
     @FocusState private var isTextFieldFocused: Bool
     @State private var latexSize = CGSize(width: 1, height: 1)
@@ -171,7 +172,7 @@ struct VertexView: View {
 #elseif os(iOS)
                 .frame(width: 40, height: 40)
 #endif
-                .foregroundStyle(vertexViewModel.color ?? (colorScheme == .light ? .black : .white))
+                .foregroundStyle(vertexViewModel.color ?? themeViewModel.theme!.primary)
                 .opacity(vertexViewModel.opacity)
             
             Circle()

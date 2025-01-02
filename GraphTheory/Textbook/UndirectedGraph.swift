@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct UndirectedGraph: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
+    
     var body: some View {
         #if os(macOS)
         HStack {
@@ -19,6 +21,7 @@ struct UndirectedGraph: View {
                 BulletPoint(header: "Degree:", text: "the degree of a vertex is the number of edges attached to it. The degree of A is 2. Loops add 2 to the degree, so C has degree 4.")
                     .padding()
             }
+            .foregroundStyle(themeViewModel.theme!.primary)
             UndirectedGraphExampleView()
         }
         .padding()
@@ -33,6 +36,7 @@ struct UndirectedGraph: View {
             UndirectedGraphExampleView()
                 .padding()
         }
+        .foregroundStyle(themeViewModel.theme!.primary)
         #endif
     }
 }

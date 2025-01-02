@@ -54,8 +54,10 @@ class Theme: Codable, @unchecked Sendable {
     var accentGreen: CGFloat
     var accentBlue: CGFloat
     
-    static let cyberPunk = Theme(name: "Cyber Punk", primary: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)), secondary: Color(#colorLiteral(red: 1, green: 0, blue: 0.909978807, alpha: 1)), accent: Color(#colorLiteral(red: 0, green: 1, blue: 0.3673055172, alpha: 1)))
-    static let defaultThemes: [Theme] = [cyberPunk]
+    static let cyberPunk = Theme(name: "Cyber Punk", primary: Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1)), secondary: Color(#colorLiteral(red: 1, green: 0, blue: 0.909978807, alpha: 1)), accent: Color(#colorLiteral(red: 0.6715552807, green: 0, blue: 0.357147187, alpha: 1)))
+    static let electricBlue = Theme(name: "Electric Blue", primary: Color(#colorLiteral(red: 0, green: 0.9606820941, blue: 0.9514998794, alpha: 1)), secondary: Color(#colorLiteral(red: 0, green: 0.6139991879, blue: 0.9716791511, alpha: 1)), accent: Color(#colorLiteral(red: 0.2649971545, green: 0.02243954316, blue: 0.9825904965, alpha: 1)))
+    static let ecstasy = Theme(name: "Ecstasy", primary: Color(#colorLiteral(red: 1, green: 0.1142640188, blue: 0.4959660769, alpha: 1)), secondary: Color(#colorLiteral(red: 0, green: 1, blue: 0.8254417777, alpha: 1)), accent: Color(#colorLiteral(red: 0.6251654625, green: 0.1485461593, blue: 0.9590443969, alpha: 1)))
+    static let defaultThemes: [Theme] = [cyberPunk, electricBlue, ecstasy]
     
     var primary: Color {
         get {

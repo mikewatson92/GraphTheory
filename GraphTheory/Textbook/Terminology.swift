@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct Terminology: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject private var graphViewModel = GraphViewModel(graph: ExampleGraph1().graph)
     
     var body: some View {
@@ -27,6 +28,7 @@ struct Terminology: View {
                             .fontWeight(.bold)
                             .padding()
                     }
+                    .foregroundStyle(themeViewModel.theme!.primary)
                     Spacer()
                     VStack {
                         GeometryReader { geometry2 in

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct DirectedGraph: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
+    
     var body: some View {
         #if os(macOS)
         HStack {
@@ -24,6 +26,7 @@ struct DirectedGraph: View {
                     .padding()
                 Text("Tip: try dragging the arrows!")
             }
+            .foregroundStyle(themeViewModel.theme!.primary)
             DirectedGraphExampleView()
                 .padding()
         }
@@ -43,6 +46,7 @@ struct DirectedGraph: View {
             DirectedGraphExampleView()
                 .padding()
             }
+            .foregroundStyle(themeViewModel.theme!.primary)
         #endif
     }
 }

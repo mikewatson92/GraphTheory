@@ -116,6 +116,7 @@ struct CurveEdgeTutorial: View {
 }
 
 struct CurveEdgeTutorialView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var edgeViewModel: EdgeViewModel
     @ObservedObject var graphViewModel: GraphViewModel
     @FocusState private var isTextFieldFocused: Bool
@@ -170,9 +171,9 @@ struct CurveEdgeTutorialView: View {
     var body: some View {
             edgeViewModel.edgePath.makePath()
             #if os(macOS)
-            .stroke(edgeViewModel.color, lineWidth: 5)
+            .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 5)
             #elseif os(iOS)
-            .stroke(edgeViewModel.color, lineWidth: 15)
+            .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 15)
             #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {

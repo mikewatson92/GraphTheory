@@ -12,7 +12,7 @@ struct Edge: Identifiable, Codable, Hashable {
     let id: UUID
     var startVertexID: UUID
     var endVertexID: UUID
-    var color: Color = Color.primary
+    var color: Color?
     var weight: Double = 0.0
     var weightPositionParameterT: CGFloat = 0.5
     var weightPositionDistance: CGFloat = 0.05
@@ -80,7 +80,7 @@ class EdgeViewModel: ObservableObject {
             graphViewModel.setWeight(edge: edge, weight: newValue)
         }
     }
-    var color: Color {
+    var color: Color? {
         get {
             edge.color
         } set {
@@ -225,6 +225,7 @@ class EdgeViewModel: ObservableObject {
 }
 
 struct EdgeView: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
     @ObservedObject var edgeViewModel: EdgeViewModel
     @ObservedObject var graphViewModel: GraphViewModel
     @FocusState private var isTextFieldFocused: Bool
@@ -373,11 +374,11 @@ struct EdgeView: View {
         if edgeViewModel.strokeStyle == .normal {
             edgeViewModel.edgePath.makePath()
 #if os(macOS)
-                .stroke(edgeViewModel.color, lineWidth: 5)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 5)
 #elseif os(iOS)
-                .stroke(edgeViewModel.color, lineWidth: 15)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 15)
 #endif
-                .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
+                .shadow(color: edittingWeight ? themeViewModel.theme!.accent : .clear, radius: 10)
                 .onTapGesture(count: 2) {
                     handleDoubleClickGesture()
                 }
@@ -392,10 +393,10 @@ struct EdgeView: View {
             edgeViewModel.edgePath.makePath()
     #if os(macOS)
                 .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
-                .foregroundStyle(edgeViewModel.color)
+                .foregroundStyle(edgeViewModel.color ?? themeViewModel.theme!.secondary)
     #elseif os(iOS)
                 .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .round, dash: [5, 10]))
-                .foregroundStyle(edgeViewModel.color)
+                .foregroundStyle(edgeViewModel.color ?? themeViewModel.theme!.secondary)
     #endif
                 .shadow(color: edittingWeight ? .teal : .clear, radius: 10)
                 .onTapGesture(count: 2) {
@@ -412,9 +413,9 @@ struct EdgeView: View {
         if edgeViewModel.directed == .forward || edgeViewModel.directed == .bidirectional {
             forwardArrow
 #if os(macOS)
-                .stroke(edgeViewModel.color, lineWidth: 4)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 4)
 #elseif os(iOS)
-                .stroke(edgeViewModel.color, lineWidth: 15)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 15)
 #endif
                 .rotationEffect(Angle(radians: forwardAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)
@@ -433,9 +434,9 @@ struct EdgeView: View {
         if edgeViewModel.directed == .reverse || edgeViewModel.directed == .bidirectional {
             reverseArrow
 #if os(macOS)
-                .stroke(edgeViewModel.color, lineWidth: 4)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 4)
 #elseif os(iOS)
-                .stroke(edgeViewModel.color, lineWidth: 15)
+                .stroke(edgeViewModel.color ?? themeViewModel.theme!.secondary, lineWidth: 15)
 #endif
                 .rotationEffect(Angle(radians: reverseAngle), anchor: UnitPoint(x: 1, y: 0.5))
                 .frame(width: Arrow.dimension, height: Arrow.dimension)

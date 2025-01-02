@@ -69,6 +69,9 @@ struct ContentView: View {
                         .foregroundStyle(themeViewModel.theme!.secondary)
                 }
             }
+            .listStyle(SidebarListStyle())
+            .background(themeViewModel.theme!.accent.opacity(0.5))
+            .scrollContentBackground(.hidden)
             .foregroundStyle(themeViewModel.theme!.primary)
             .accentColor(themeViewModel.theme!.accent)
             .environmentObject(themeViewModel)
@@ -88,6 +91,7 @@ struct ContentView: View {
                 Canvas(graphViewModel: canvasGraphViewModel)
             }
         }
+        .toolbarBackground(themeViewModel.theme!.accent.opacity(0.5), for: .automatic)
     }
 }
 

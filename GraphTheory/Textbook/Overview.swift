@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct Overview: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
+    
     var body: some View {
         ScrollView {
             VStack {
@@ -33,6 +35,7 @@ struct Overview: View {
                 Text("Graphs aren't just abstract math - they're tools that power some of the most exciting parts of your world. Whether it's understanding social trends, beating your favorite game, or just getting to class on time, graphs make it all possible.")
                     .padding()
             }
+            .foregroundStyle(themeViewModel.theme!.primary)
         }
     }
 }

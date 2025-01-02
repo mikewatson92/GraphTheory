@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct Intro: View {
+    @EnvironmentObject var themeViewModel: ThemeViewModel
+    
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
@@ -33,6 +35,7 @@ struct Intro: View {
                     }
                     .padding()
                 }
+                .foregroundStyle(themeViewModel.theme!.primary)
                 .padding()
                 #if os(macOS)
                 .frame(height: 1.25 * geometry.size.height)

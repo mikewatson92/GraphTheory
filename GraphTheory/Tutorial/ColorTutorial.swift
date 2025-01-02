@@ -133,8 +133,8 @@ struct ColorTutorial: View {
                         "",
                         selection: Binding(
                             get: {
-                                if let selectedEdge = graphViewModel.selectedEdge {
-                                    return selectedEdge.color
+                                if let selectedEdgeColor = graphViewModel.selectedEdge?.color {
+                                    return selectedEdgeColor
                                 } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
                                     return selectedVertexColor
                                 } else {

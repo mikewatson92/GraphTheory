@@ -503,7 +503,7 @@ class GraphViewModel: ObservableObject {
         return (controlPoint1, controlPoint2)
     }
     
-    func setColorForEdge(edge: Edge, color: Color) {
+    func setColorForEdge(edge: Edge, color: Color?) {
         graph.edges[edge.id]?.color = color
     }
     
@@ -808,7 +808,8 @@ struct GraphView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @Environment(\.colorScheme) var colorScheme
     @ObservedObject var graphViewModel: GraphViewModel
-    @State private var vertexEdgeColor: Color = .white
+    @State private var newVertexColor: Color?
+    @State private var newEdgeColor: Color?
     
     init(graphViewModel: GraphViewModel) {
         self.graphViewModel = graphViewModel
@@ -943,10 +944,10 @@ struct GraphView: View {
                 let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                 
                 VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                    .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                    .shadow(color: vertexViewModel.id == graphViewModel.selectedVertex?.id ? themeViewModel.theme!.accent : Color.clear, radius: 10)
                     .onAppear {
                         if vertexViewModel.color == nil {
-                            vertexViewModel.color = vertexEdgeColor
+                            vertexViewModel.color = newVertexColor
                         }
                     }
                     .gesture(DragGesture(minimumDistance: 0.1, coordinateSpace: .local)
@@ -964,7 +965,8 @@ struct GraphView: View {
             }
         }
         .onAppear {
-            vertexEdgeColor = colorScheme == .light ? .black : .white
+            newVertexColor = themeViewModel.theme!.primary
+            newEdgeColor = themeViewModel.theme!.secondary
         }
         .toolbar {
             ToolbarItem(placement: .automatic) {
@@ -972,12 +974,12 @@ struct GraphView: View {
                     "",
                     selection: Binding(
                         get: {
-                            if let selectedEdge = graphViewModel.selectedEdge {
-                                return selectedEdge.color
+                            if let selectedEdgeColor = graphViewModel.selectedEdge?.color {
+                                return selectedEdgeColor
                             } else if let selectedVertexColor = graphViewModel.selectedVertex?.color {
                                 return selectedVertexColor
                             } else {
-                                return vertexEdgeColor
+                                return themeViewModel.theme!.accent
                             }
                         },
                         set: { newColor in
@@ -988,7 +990,6 @@ struct GraphView: View {
                                 graphViewModel.setVertexColor(vertex: selectedVertex, color: newColor)
                                 graphViewModel.selectedVertex = graphViewModel.graph.vertices[selectedVertex.id]! // Sync selected vertex
                             } else {
-                                vertexEdgeColor = newColor
                             }
                         }
                     )
@@ -999,7 +1000,8 @@ struct GraphView: View {
                 Button(action: {
                     graphViewModel.selectedVertex = nil
                     graphViewModel.selectedEdge = nil
-                    vertexEdgeColor = colorScheme == .light ? .black : .white
+                    newVertexColor = themeViewModel.theme!.primary
+                    newEdgeColor = themeViewModel.theme!.secondary
                     clear()
                 }) {
                     Image(systemName: "arrow.uturn.left.circle")

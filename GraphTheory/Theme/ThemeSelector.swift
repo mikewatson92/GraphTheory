@@ -17,32 +17,38 @@ struct ThemeSelector: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(Theme.defaultThemes) { theme in
-                    Button {
-                        themeViewModel.theme = theme
-                    } label: {
-                        ThemePreview(theme: theme)
-                    }
-                }
-                ForEach(themes) { theme in
-                    Button {
-                        themeViewModel.theme = theme
-                    } label: {
-                        ThemePreview(theme: theme)
-                            .layoutPriority(1)
-                    }
-                    .swipeActions {
-                        NavigationLink(destination: ThemeEditor(theme: theme)) {
-                            Image(systemName: "gearshape")
-                        }
-                        Button(role: .destructive) {
-                            deleteTheme(theme: theme)
+                Section("Default") {
+                    ForEach(Theme.defaultThemes) { theme in
+                        Button {
+                            themeViewModel.theme = theme
                         } label: {
-                            Image(systemName: "trash")
+                            ThemePreview(theme: theme)
                         }
+                        .buttonStyle(.borderless)
                     }
                 }
-                .onDelete(perform: deleteTheme(indexes:))
+                Section("Custom") {
+                    ForEach(themes) { theme in
+                        Button {
+                            themeViewModel.theme = theme
+                        } label: {
+                            ThemePreview(theme: theme)
+                                .layoutPriority(1)
+                        }
+                        .buttonStyle(.borderless)
+                        .swipeActions {
+                            NavigationLink(destination: ThemeEditor(theme: theme)) {
+                                Image(systemName: "gearshape")
+                            }
+                            Button(role: .destructive) {
+                                deleteTheme(theme: theme)
+                            } label: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                    }
+                    .onDelete(perform: deleteTheme(indexes:))
+                }
             }
             .toolbar {
                 ToolbarItem {

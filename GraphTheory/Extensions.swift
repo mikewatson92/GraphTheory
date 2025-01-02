@@ -12,7 +12,7 @@ import UIKit
 
 extension Color: Codable {
     public func encode(to encoder: any Encoder) throws {
-        let (red, green, blue) = toRGB(color: self)
+        let (red, green, blue) = Color.toRGB(color: self)
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(red, forKey: .red)
         try container.encode(green, forKey: .green)
@@ -27,7 +27,7 @@ extension Color: Codable {
         self.init(Color(red: red, green: green, blue: blue))
     }
     
-    func toRGB(color: Color) -> (CGFloat, CGFloat, CGFloat) {
+    static func toRGB(color: Color) -> (CGFloat, CGFloat, CGFloat) {
         #if os(macOS)
         let nsColor = NSColor(color).usingColorSpace(.deviceRGB)
         return (nsColor!.redComponent, nsColor!.greenComponent, nsColor!.blueComponent)

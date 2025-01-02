@@ -58,15 +58,36 @@ class Theme: Codable, @unchecked Sendable {
     static let defaultThemes: [Theme] = [cyberPunk]
     
     var primary: Color {
-        Color(red: primaryRed, green: primaryGreen, blue: primaryBlue)
+        get {
+            Color(red: primaryRed, green: primaryGreen, blue: primaryBlue)
+        } set {
+            let (red, green, blue) = Color.toRGB(color: newValue)
+            self.primaryRed = red
+            self.primaryGreen = green
+            self.primaryBlue = blue
+        }
     }
     
     var secondary: Color {
-        Color(red: secondaryRed, green: secondaryGreen, blue: secondaryBlue)
+        get {
+            Color(red: secondaryRed, green: secondaryGreen, blue: secondaryBlue)
+        } set {
+            let (red, green, blue) = Color.toRGB(color: newValue)
+            self.secondaryRed = red
+            self.secondaryGreen = green
+            self.secondaryBlue = blue
+        }
     }
     
     var accent: Color {
-        Color(red: accentRed, green: accentGreen, blue: accentBlue)
+        get {
+            Color(red: accentRed, green: accentGreen, blue: accentBlue)
+        } set {
+            let (red, green, blue) = Color.toRGB(color: newValue)
+            self.accentRed = red
+            self.accentGreen = green
+            self.accentBlue = blue
+        }
     }
     
     #if os(macOS)

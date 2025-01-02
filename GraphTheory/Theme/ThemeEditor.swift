@@ -9,31 +9,43 @@ import SwiftUI
 
 struct ThemeEditor: View {
     @Environment(\.modelContext) private var context
-    @State private var name: String = "Theme Name"
-    @State private var primary: Color = .black
-    @State private var secondary: Color = .white
-    @State private var accent: Color = .cyan
+    @Environment(\.dismiss) private var dismiss
+    @Bindable var theme: Theme
+    let isNew: Bool
     
+    init(theme: Theme, isNew: Bool = false) {
+        self.theme = theme
+        self.isNew = isNew
+    }
     
     var body: some View {
         NavigationStack {
             List {
-                TextField("Theme Name:", text: $name)
+                TextField("Theme Name:", text: $theme.name)
                     .textFieldStyle(.roundedBorder)
                     .padding()
-                ColorPicker("Primary", selection: $primary)
+                ColorPicker("Primary", selection: $theme.primary)
                     .padding()
-                ColorPicker("Secondary", selection: $secondary)
+                ColorPicker("Secondary", selection: $theme.secondary)
                     .padding()
-                ColorPicker("Accent", selection: $accent)
+                ColorPicker("Accent", selection: $theme.accent)
                     .padding()
-                Button("Save") {
-                    let newTheme = Theme(name: name, primary: primary, secondary: secondary, accent: accent)
-                    context.insert(newTheme)
+                ThemePreview(theme: theme)
+            }
+            .toolbar {
+                if isNew {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            dismiss()
+                        }
+                    }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            context.delete(theme)
+                            dismiss()
+                        }
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .padding()
-                ThemePreview(theme: Theme(name: name, primary: primary, secondary: secondary, accent: accent))
             }
         }
         .navigationTitle("Theme Editor")
@@ -41,6 +53,6 @@ struct ThemeEditor: View {
 }
 
 #Preview {
-    ThemeEditor()
-        .environmentObject(ThemeViewModel())
+    //ThemeEditor()
+        //.environmentObject(ThemeViewModel())
 }

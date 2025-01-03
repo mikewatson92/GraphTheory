@@ -41,7 +41,7 @@ class ThemeViewModel: ObservableObject {
 }
 
 @Model
-class Theme: Codable, @unchecked Sendable {
+class Theme: Codable, @unchecked Sendable, Equatable {
     private(set) var id: UUID
     var name: String
     var primaryRed: CGFloat
@@ -139,6 +139,10 @@ class Theme: Codable, @unchecked Sendable {
         self.init(name: name, primary: primary, secondary: secondary, accent: accent)
     }
     #endif
+    
+    static func == (lhs: Theme, rhs: Theme) -> Bool {
+        return lhs.primaryRed == rhs.primaryRed && lhs.primaryGreen == rhs.primaryGreen && lhs.primaryBlue == rhs.primaryBlue && lhs.secondaryRed == rhs.secondaryRed && lhs.secondaryGreen == rhs.secondaryGreen && lhs.secondaryBlue == rhs.secondaryBlue && lhs.accentRed == rhs.accentRed && lhs.accentGreen == rhs.accentGreen && lhs.accentBlue == rhs.accentBlue && lhs.name == rhs.name
+    }
     
     enum CodingKeys: String, CodingKey {
         case id, name, primaryRed, primaryBlue, primaryGreen, secondaryRed, secondaryBlue, secondaryGreen, accentRed, accentBlue, accentGreen

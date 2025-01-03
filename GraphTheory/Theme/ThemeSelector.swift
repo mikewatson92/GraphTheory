@@ -23,6 +23,10 @@ struct ThemeSelector: View {
                             themeViewModel.theme = theme
                         } label: {
                             ThemePreview(theme: theme)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(themeViewModel.theme == theme ? themeViewModel.theme!.accent : .clear, lineWidth: 5)
+                                )
                         }
                         .buttonStyle(.borderless)
                     }
@@ -33,6 +37,10 @@ struct ThemeSelector: View {
                             themeViewModel.theme = theme
                         } label: {
                             ThemePreview(theme: theme)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(themeViewModel.theme == theme ? themeViewModel.theme!.accent : .clear, lineWidth: 5)
+                                )
                                 .layoutPriority(1)
                         }
                         .buttonStyle(.borderless)

@@ -92,6 +92,10 @@ class Theme: Codable, @unchecked Sendable, Equatable {
         }
     }
     
+    var gradient: Gradient {
+        Gradient(colors: [primary, secondary, accent])
+    }
+    
     #if os(macOS)
     init(name: String, primary: NSColor, secondary: NSColor, accent: NSColor) {
         self.id = UUID()

@@ -91,7 +91,7 @@ struct ContentView: View {
                 Canvas(graphViewModel: canvasGraphViewModel)
             }
         }
-        .toolbarBackground(themeViewModel.theme!.accent.opacity(0.5), for: .automatic)
+        //.toolbarBackground(themeViewModel.theme!.accent.opacity(0.5), for: .automatic)
     }
 }
 

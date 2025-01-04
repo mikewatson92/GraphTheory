@@ -70,7 +70,7 @@ struct ContentView: View {
                 }
             }
             .listStyle(SidebarListStyle())
-            .background(themeViewModel.theme!.gradient.opacity(0.5))
+            //.background(themeViewModel.theme!.accent.opacity(0.25))
             .scrollContentBackground(.hidden)
             .foregroundStyle(themeViewModel.theme!.primary)
             .accentColor(themeViewModel.theme!.accent)

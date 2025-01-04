@@ -25,6 +25,7 @@ class PracticalTSPViewModel: ObservableObject {
     @Published var practicalTSP: PracticalTSP
     @Published var graphViewModel: GraphViewModel
     @Published var error = Error.none
+    var themeViewModel = ThemeViewModel()
     
     init(graphViewModel: GraphViewModel) {
         self.practicalTSP = PracticalTSP(graph: graphViewModel.graph)
@@ -126,7 +127,7 @@ struct PracticalTSPView: View {
     
     var body: some View {
         if practicalTSPViewModel.practicalTSP.step == .solvingClassicalTSP {
-            ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph))
+            ClassicalTSPView(graph: graphViewModel.graph)
         } else {
             VStack {
                 if showBanner {
@@ -155,7 +156,7 @@ struct PracticalTSPView: View {
                     ForEach(graphViewModel.getVertices(), id: \.id) { vertex in
                         let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                            .shadow(color: graphViewModel.selectedVertex?.id == vertex.id ? .green : .clear, radius: 10)
+                            .shadow(color: graphViewModel.selectedVertex?.id == vertex.id ? themeViewModel.theme!.accent : .clear, radius: 10)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
                                     handleVertexTapGesture(vertex)
@@ -164,6 +165,7 @@ struct PracticalTSPView: View {
                     }
                 }
                 .onAppear {
+                    practicalTSPViewModel.themeViewModel = themeViewModel
                     graphViewModel.showWeights = true
                     graphViewModel.mode = .edit
                 }

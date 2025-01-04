@@ -35,12 +35,13 @@ struct Kruskal {
 }
 
 class KruskalViewModel: ObservableObject {
-    @Published private var kruskal: Kruskal
+    @Published private(set) var kruskal: Kruskal
     @Published var graphViewModel: GraphViewModel
     @Published var errorStatus = ErrorStatus.none
     @Published var completionStatus = CompletionStatus.inProgress
     @Published var errorEdge: Edge?
     var selectedEdge: Edge?
+    var themeViewModel = ThemeViewModel()
     
     init(graphViewModel: GraphViewModel) {
         self.kruskal = Kruskal(graph: graphViewModel.graph)
@@ -99,7 +100,7 @@ class KruskalViewModel: ObservableObject {
             if edge.id == error.id {
                 errorEdge = nil
                 errorStatus = .none
-                graphViewModel.setColorForEdge(edge: edge, color: Color.primary)
+                graphViewModel.setColorForEdge(edge: edge, color: kruskal.graph.originalEdges[edge.id]?.color)
             }
             return
         }
@@ -133,9 +134,9 @@ class KruskalViewModel: ObservableObject {
             completionStatus = .completed
         }
         kruskal.validEdges.removeAll { $0.id == edge.id }
-        graphViewModel.setColorForEdge(edge: edge, color: .green)
-        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.startVertexID]!, color: .green)
-        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.endVertexID]!, color: .green)
+        graphViewModel.setColorForEdge(edge: edge, color: themeViewModel.theme!.accent)
+        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.startVertexID]!, color: themeViewModel.theme!.accent)
+        graphViewModel.setVertexColor(vertex: kruskal.graph.vertices[edge.endVertexID]!, color: themeViewModel.theme!.accent)
         return
     }
 }
@@ -187,6 +188,9 @@ struct KruskalView: View {
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                 }
             }
+        }
+        .onAppear {
+            kruskalViewModel.themeViewModel = themeViewModel
         }
     }
 }

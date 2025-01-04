@@ -362,7 +362,7 @@ struct ChinesePostmanView: View {
                     ForEach(graphViewModel.getVertices()) { vertex in
                         let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                            .shadow(color: (chinesePostmanViewModel.currentVertex?.id == vertex.id ? .green : .clear), radius: 10)
+                            .shadow(color: (chinesePostmanViewModel.currentVertex?.id == vertex.id ? themeViewModel.theme!.accent : .clear), radius: 10)
                             .highPriorityGesture(TapGesture(count: 1)
                                 .onEnded {
                                     showInstructions = false
@@ -374,7 +374,8 @@ struct ChinesePostmanView: View {
                     }
                 }
                 .onAppear {
-                    edgeColors.insert(colorScheme == .light ? .black : .white , at: 0)
+                    edgeColors.insert(themeViewModel.theme!.accent
+                                      , at: 0)
                 }
             }
         }

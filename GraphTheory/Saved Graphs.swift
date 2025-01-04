@@ -622,10 +622,9 @@ struct ClassicalTSP1 {
 }
 
 struct ClassicalTSP1View: View {
-    @StateObject var classicalTSPViewModel = ClassicalTSPViewModel(graph: ClassicalTSP1().graph)
     
     var body: some View {
-        ClassicalTSPView(classicalTSPViewModel: classicalTSPViewModel)
+        ClassicalTSPView(graph: ClassicalTSP1().graph)
     }
 }
 

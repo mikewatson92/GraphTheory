@@ -1020,7 +1020,7 @@ struct GraphView: View {
                     NavigationLink(destination: LazyView(ChinesePostmanView(graph: graphViewModel.graph))) {
                         Text("Chinese Postman Problem")
                     }
-                    NavigationLink(destination: LazyView(ClassicalTSPView(classicalTSPViewModel: ClassicalTSPViewModel(graph: graphViewModel.graph)))) {
+                    NavigationLink(destination: LazyView(ClassicalTSPView(graph: graphViewModel.graph))) {
                         Text("Classical TSP")
                     }
                     NavigationLink(destination: LazyView(PracticalTSPView(graph: graphViewModel.graph))) {

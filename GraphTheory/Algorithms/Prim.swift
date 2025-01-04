@@ -33,13 +33,16 @@ struct Prim {
 }
 
 class PrimViewModel: ObservableObject {
-    @Published private var prim: Prim
+    @Published private(set) var prim: Prim
     @Published var step = Step.chooseVertex
     @Published var error = Error.none
+    @Published var graphViewModel: GraphViewModel
     var visitedVertices: [Vertex] = []
+    var themeViewModel = ThemeViewModel()
     
-    init(graph: Graph) {
-        self.prim = Prim(graph: graph)
+    init(graphViewModel: GraphViewModel) {
+        self.prim = Prim(graph: graphViewModel.graph)
+        self.graphViewModel = graphViewModel
     }
     
     enum Step {
@@ -53,22 +56,6 @@ class PrimViewModel: ObservableObject {
         case notConnected = "That edge is not connected to any of your current vertices."
         case cycle = "This edge forms a cycle."
         case notLowestWeight = "This is not the lowest available weight."
-    }
-
-    func getAllEdges() -> [Edge] {
-        return Array(prim.graph.edges.values)
-    }
-    
-    func getAllVertices() -> [Vertex] {
-        return Array(prim.graph.vertices.values)
-    }
-    
-    func setVertexColor(vertex: Vertex, color: Color) {
-        prim.graph.vertices[vertex.id]?.color = color
-    }
-    
-    func setEdgeColor(edge: Edge, color: Color) {
-        prim.graph.edges[edge.id]?.color = color
     }
     
     func doesEdgeFormCycle(_ edge: Edge) -> Bool {
@@ -110,11 +97,11 @@ class PrimViewModel: ObservableObject {
         var newVertex: Vertex
         if visitedVertices.contains(where: {$0.id == edge.startVertexID}) {
             newVertex = prim.graph.vertices[edge.endVertexID]!
-            setVertexColor(vertex: newVertex, color: .green)
+            graphViewModel.setVertexColor(vertex: newVertex, color: themeViewModel.theme!.accent)
             visitedVertices.append(newVertex)
         } else {
             newVertex = prim.graph.vertices[edge.startVertexID]!
-            setVertexColor(vertex: newVertex, color: .green)
+            graphViewModel.setVertexColor(vertex: newVertex, color: themeViewModel.theme!.accent)
             visitedVertices.append(newVertex)
         }
         addConnectedEdges(for: newVertex)
@@ -125,18 +112,18 @@ class PrimViewModel: ObservableObject {
     func tryEdge(_ edge: Edge) -> Bool {
         if !visitedVertices.contains(where: {$0.id == edge.startVertexID}) && !visitedVertices.contains(where: {$0.id == edge.endVertexID}) {
             error = .notConnected
-            setEdgeColor(edge: edge, color: .red)
+            graphViewModel.setColorForEdge(edge: edge, color: .red)
             return false
         } else if doesEdgeFormCycle(edge) {
             error = .cycle
-            setEdgeColor(edge: edge, color: .red)
+            graphViewModel.setColorForEdge(edge: edge, color: .red)
             return false
         } else if !isLowestWeight(edge) {
             error = .notLowestWeight
-            setEdgeColor(edge: edge, color: .red)
+            graphViewModel.setColorForEdge(edge: edge, color: .red)
             return false
         } else { // If there are no errors and the edge is valid
-            setEdgeColor(edge: edge, color: .green)
+            graphViewModel.setColorForEdge(edge: edge, color: themeViewModel.theme!.accent)
             prim.subGraph.edges[edge.id] = edge
             prim.validEdges.removeAll { $0.id == edge.id }
             prim.removeEdgesFormingCycles()
@@ -157,13 +144,14 @@ class PrimViewModel: ObservableObject {
 struct PrimView: View {
     @EnvironmentObject var themeViewModel: ThemeViewModel
     @StateObject var primViewModel: PrimViewModel
-    var graphViewModel: GraphViewModel
+    @ObservedObject var graphViewModel: GraphViewModel
     @State private var errorEdge: Edge?
     @State private var showBanner = false
     
     init(graph: Graph) {
-        _primViewModel = StateObject(wrappedValue: PrimViewModel(graph: graph))
-        graphViewModel = GraphViewModel(graph: graph, showWeights: true)
+        let graphViewModel = GraphViewModel(graph: graph, showWeights: true)
+        _primViewModel = StateObject(wrappedValue: PrimViewModel(graphViewModel: graphViewModel))
+        self.graphViewModel = graphViewModel
     }
     
     var body: some View {
@@ -177,7 +165,7 @@ struct PrimView: View {
                 }
             }
             GeometryReader { geometry in
-                ForEach(primViewModel.getAllEdges(), id: \.id) { edge in
+                ForEach(graphViewModel.getEdges(), id: \.id) { edge in
                     let edgeViewModel = EdgeViewModel(edge: edge, size: geometry.size, graphViewModel: graphViewModel)
                     EdgeView(edgeViewModel: edgeViewModel)
                         .highPriorityGesture(TapGesture(count: 1)
@@ -188,7 +176,7 @@ struct PrimView: View {
                                         withAnimation {
                                             primViewModel.error = .none
                                         }
-                                        primViewModel.setEdgeColor(edge: edge, color: Color.primary)
+                                        graphViewModel.setColorForEdge(edge: edge, color: primViewModel.prim.graph.originalEdges[edge.id]?.color)
                                     } else {
                                         withAnimation {
                                             if !primViewModel.tryEdge(edge) {
@@ -201,8 +189,8 @@ struct PrimView: View {
                                 }
                             })
                 }
-                ForEach(primViewModel.getAllVertices()) { vertex in
-                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel, mode: [.noEditLabels, .showLabels])
+                ForEach(graphViewModel.getVertices()) { vertex in
+                    let vertexViewModel = VertexViewModel(vertex: vertex, graphViewModel: graphViewModel)
                     VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
                         .highPriorityGesture(TapGesture(count: 1)
                             .onEnded {
@@ -210,11 +198,14 @@ struct PrimView: View {
                                     primViewModel.visitedVertices.append(vertex)
                                     primViewModel.addConnectedEdges(for: vertex)
                                     primViewModel.step = .selectingEdges
-                                    primViewModel.setVertexColor(vertex: vertex, color: .green)
+                                    graphViewModel.setVertexColor(vertex: vertex, color: themeViewModel.theme!.accent)
                                 }
                             })
                 }
             }
+        }
+        .onAppear {
+            primViewModel.themeViewModel = themeViewModel
         }
     }
 }

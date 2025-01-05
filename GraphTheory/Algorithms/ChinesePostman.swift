@@ -296,7 +296,7 @@ struct ChinesePostmanView: View {
     @StateObject var chinesePostmanViewModel: ChinesePostmanViewModel
     @StateObject var graphViewModel = GraphViewModel(graph: Graph())
     @State private var edgeError: Edge?
-    @State private var edgeColors: [Color] = [Color(#colorLiteral(red: 0, green: 1, blue: 0.3673055172, alpha: 1)), Color(#colorLiteral(red: 0, green: 0.8086963296, blue: 1, alpha: 1))]
+    @State private var edgeColors: [Color] = []
     @State private var showBanner = true {
         willSet {
             showInstructions = false
@@ -374,8 +374,7 @@ struct ChinesePostmanView: View {
                     }
                 }
                 .onAppear {
-                    edgeColors.insert(themeViewModel.theme!.accent
-                                      , at: 0)
+                    edgeColors = [themeViewModel.theme!.secondary, themeViewModel.theme!.accent, themeViewModel.theme!.primary]
                 }
             }
         }

@@ -270,7 +270,7 @@ struct IcosianView: View {
                         let vertexViewModel = VertexViewModel(
                             vertex: vertex, graphViewModel: graphViewModel, mode: [VertexViewModel.Mode.noEditLabels])
                         VertexView(vertexViewModel: vertexViewModel, size: geometry.size)
-                            .shadow(color: vertexViewModel.id == selectedVertex?.id ? Color.green : Color.clear, radius: 10)
+                            .shadow(color: vertexViewModel.id == selectedVertex?.id ? themeViewModel.theme!.accent : Color.clear, radius: 10)
                             .onTapGesture(count: 1) {
                                 // If the user hasn't started the game yet
                                 if icosianViewModel.step == .chooseVertex && visitedVertices.count == 0 {
@@ -283,7 +283,7 @@ struct IcosianView: View {
                                     selectedVertex = nil
                                     visitedVertices = []
                                     icosianViewModel.step = .chooseVertex
-                                    graphViewModel.setVertexColor(vertex: vertex, color: Color.primary)
+                                    graphViewModel.setVertexColor(vertex: vertex, color: themeViewModel.theme!.primary)
                                 } else if graphViewModel.graph.areVerticesAdjacent(selectedVertex!.id, vertex.id) {
                                     // Handle tapping a vertex the same as tapping an edge
                                     let connectingEdges = graphViewModel.graph.getEdgesBetween(selectedVertex!.id, vertex.id)

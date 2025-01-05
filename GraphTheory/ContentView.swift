@@ -70,7 +70,6 @@ struct ContentView: View {
                 }
             }
             .listStyle(SidebarListStyle())
-            //.background(themeViewModel.theme!.accent.opacity(0.25))
             .scrollContentBackground(.hidden)
             .foregroundStyle(themeViewModel.theme!.primary)
             .accentColor(themeViewModel.theme!.accent)
@@ -91,7 +90,6 @@ struct ContentView: View {
                 Canvas(graphViewModel: canvasGraphViewModel)
             }
         }
-        //.toolbarBackground(themeViewModel.theme!.accent.opacity(0.5), for: .automatic)
     }
 }
 
